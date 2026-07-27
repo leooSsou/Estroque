@@ -149,3 +149,26 @@ class EstoqueMovimentacaoModel(HasTenant, Base):
     )
 
 
+class TransferenciaEstoqueModel(HasTenant, Base):
+    """
+    Representação física da tabela transferencias_estoque (Movimentações Interlojas).
+    """
+    __tablename__ = "transferencias_estoque"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    loja_origem_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    loja_destino_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    produto_id: Mapped[UUID] = mapped_column(ForeignKey("produtos.id", ondelete="RESTRICT"), nullable=False)
+    quantidade: Mapped[int] = mapped_column(nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="SOLICITADO")
+    solicitado_por_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    aprovado_por_id: Mapped[UUID | None] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=True)
+    justificativa: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+
+
+

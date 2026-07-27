@@ -266,3 +266,41 @@ class ImportarNFeResponse(BaseModel):
     itens_processados: List[ItemImportadoNFeResponse]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class TransferenciaEstoqueSolicitarRequest(BaseModel):
+    """
+    Schema para solicitação de uma nova transferência de estoque interlojas.
+    """
+    loja_origem_id: UUID = Field(..., description="ID da loja física remetente dos itens.")
+    loja_destino_id: UUID = Field(..., description="ID da loja física destinatária.")
+    produto_id: UUID = Field(..., description="ID do produto a ser transferido.")
+    quantidade: int = Field(..., gt=0, le=1000000, description="Quantidade a ser transferida.")
+
+
+class TransferenciaEstoqueReceberRequest(BaseModel):
+    """
+    Schema para confirmação de recebimento de transferência de estoque.
+    """
+    quantidade_recebida: int = Field(..., ge=0, le=1000000, description="Quantidade física recebida.")
+    justificativa: Optional[str] = Field(None, max_length=255, description="Justificativa obrigatória em caso de divergência.")
+
+
+class TransferenciaEstoqueResponse(BaseModel):
+    """
+    Schema de resposta para uma transferência de estoque.
+    """
+    id: UUID
+    tenant_id: UUID
+    loja_origem_id: UUID
+    loja_destino_id: UUID
+    produto_id: UUID
+    quantidade: int
+    status: str
+    solicitado_por_id: UUID
+    aprovado_por_id: Optional[UUID] = None
+    justificativa: Optional[str] = None
+    criado_em: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
