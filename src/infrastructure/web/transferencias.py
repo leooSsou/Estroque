@@ -46,6 +46,9 @@ def solicitar_transferencia(
     produto_repo = RepositorioProdutoSQLAlchemy(db)
     transferencia_repo = RepositorioTransferenciaEstoqueSQLAlchemy(db)
 
+    from src.infrastructure.web.authorization import verificar_acesso_transferencia
+    verificar_acesso_transferencia(request.loja_origem_id, request.loja_destino_id, current_user)
+
     use_case = SolicitarTransferencia(loja_repo, produto_repo, transferencia_repo)
     input_data = SolicitarTransferenciaInput(
         loja_origem_id=request.loja_origem_id,
@@ -77,6 +80,12 @@ def despachar_transferencia(
     transferencia_repo = RepositorioTransferenciaEstoqueSQLAlchemy(db)
     saldo_repo = RepositorioEstoqueSaldoSQLAlchemy(db)
     movimentacao_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(db)
+
+    transferencia = transferencia_repo.obter_por_id(id, current_user.tenant_id)
+    if not transferencia:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transferência não encontrada.")
+    from src.infrastructure.web.authorization import verificar_acesso_transferencia
+    verificar_acesso_transferencia(transferencia.loja_origem_id, transferencia.loja_destino_id, current_user)
 
     use_case = DespacharTransferencia(transferencia_repo, saldo_repo, movimentacao_repo)
     input_data = DespacharTransferenciaInput(
@@ -110,6 +119,12 @@ def confirmar_recebimento(
     saldo_repo = RepositorioEstoqueSaldoSQLAlchemy(db)
     movimentacao_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(db)
 
+    transferencia = transferencia_repo.obter_por_id(id, current_user.tenant_id)
+    if not transferencia:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transferência não encontrada.")
+    from src.infrastructure.web.authorization import verificar_acesso_transferencia
+    verificar_acesso_transferencia(transferencia.loja_origem_id, transferencia.loja_destino_id, current_user)
+
     use_case = ConfirmarRecebimento(transferencia_repo, saldo_repo, movimentacao_repo)
     input_data = ConfirmarRecebimentoInput(
         transferencia_id=id,
@@ -137,11 +152,13 @@ def listar_todas(
     Lista todas as transferências de estoque do tenant logado.
     """
     transferencia_repo = RepositorioTransferenciaEstoqueSQLAlchemy(db)
-    try:
-        results = transferencia_repo.listar_todas(current_user.tenant_id)
-        return [TransferenciaEstoqueResponse.model_validate(r) for r in results]
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    results = transferencia_repo.listar_todas(current_user.tenant_id)
+    if current_user.role == "GERENTE":
+        results = [
+            r for r in results
+            if current_user.loja_atribuida_id in (r.loja_origem_id, r.loja_destino_id)
+        ]
+    return [TransferenciaEstoqueResponse.model_validate(r) for r in results]
 
 
 @router.get("/{id}", response_model=TransferenciaEstoqueResponse, status_code=status.HTTP_200_OK)
@@ -154,12 +171,9 @@ def obter_por_id(
     Obtém uma transferência de estoque específica por ID.
     """
     transferencia_repo = RepositorioTransferenciaEstoqueSQLAlchemy(db)
-    try:
-        transferencia = transferencia_repo.obter_por_id(id, current_user.tenant_id)
-        if not transferencia:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transferência não encontrada.")
-        return TransferenciaEstoqueResponse.model_validate(transferencia)
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    transferencia = transferencia_repo.obter_por_id(id, current_user.tenant_id)
+    if not transferencia:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transferência não encontrada.")
+    from src.infrastructure.web.authorization import verificar_acesso_transferencia
+    verificar_acesso_transferencia(transferencia.loja_origem_id, transferencia.loja_destino_id, current_user)
+    return TransferenciaEstoqueResponse.model_validate(transferencia)

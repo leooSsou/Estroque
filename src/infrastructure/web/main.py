@@ -36,10 +36,23 @@ app.include_router(transferencias_router)
 
 
 
-# Configuração de CORS (ajustar para produção posteriormente)
+import os
+
+# Configuração de CORS (com fallback seguro de desenvolvimento local)
+cors_origins_str = os.getenv("CORS_ORIGINS", "")
+if cors_origins_str:
+    allow_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+else:
+    allow_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -72,8 +72,8 @@ def importar_xml_nfe(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(e)
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Falha ao processar a NF-e: {str(e)}"
+            detail="Falha ao processar a NF-e: erro interno no servidor."
         )

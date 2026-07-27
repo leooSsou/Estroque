@@ -209,6 +209,34 @@ def test_parser_xml_nfe_vulnerabilidade_xml_bomb():
         NFeParserService.parse_xml(xml_bomb)
 
 
+def test_parser_xml_nfe_vulnerabilidade_xml_bomb_evasao():
+    """
+    Garante que o parser rejeita XMLs mesmo com espaçamentos variados, tabs ou quebras de linha nas tags.
+    """
+    xml_evasao_doctype = """<?xml version="1.0"?>
+    <!   \t\n   DOCTYPE lolz [
+      <!ENTITY lol "lol">
+    ]>
+    <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe">
+      <NFe><infNFe><emit><CNPJ>12345678000195</CNPJ></emit></infNFe></NFe>
+    </nfeProc>
+    """
+    with pytest.raises(ValueError, match="declarações DOCTYPE ou ENTITY não são permitidas"):
+        NFeParserService.parse_xml(xml_evasao_doctype)
+
+    xml_evasao_entity = """<?xml version="1.0"?>
+    <nfeProc xmlns="http://www.portalfiscal.inf.br/nfe">
+      <NFe><infNFe><emit>
+        <!   \n   ENTITY lol "lol">
+        <CNPJ>12345678000195</CNPJ>
+      </emit></infNFe></NFe>
+    </nfeProc>
+    """
+    with pytest.raises(ValueError, match="declarações DOCTYPE ou ENTITY não são permitidas"):
+        NFeParserService.parse_xml(xml_evasao_entity)
+
+
+
 def test_api_importar_xml_nfe_vulnerabilidade_xml_bomb(client: TestClient):
     """
     Garante que a rota HTTP rejeita o upload de XMLs maliciosos com Billion Laughs.
