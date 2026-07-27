@@ -131,10 +131,25 @@ gantt
 ### 🚚 Onda 4: Transferências Logísticas e Auditoria Física
 *Objetivo: Controlar o trânsito de produtos interlojas e gerenciar contagens rotativas.*
 
-- [ ] Máquina de Estados de Transferência (`SOLICITADO`, `DESPACHADO`, `RECEBIDO`, `DIVERGENTE`).
-- [ ] Fluxo de auditoria de divergências e justificativas logísticas.
-- [ ] Caso de uso: Auditoria física de estoque (inventário local) com registro automático de perdas.
-- [ ] Testes de transição de estados de transferência de estoque.
+#### 👥 Divisão de Atividades por Responsável (Frentes Verticais Independentes)
+
+##### 👤 Leonardo (Frente 1: Transferências Logísticas Interlojas - Fim a Fim)
+*Objetivo: Construir do banco à API o fluxo completo de trânsito de mercadorias entre lojas com máquina de estados de forma isolada e segura.*
+* **Atividades**:
+  - [ ] **[Urgência: Alta]** Criar a entidade de domínio `TransferenciaEstoque` com os estados (`SOLICITADO`, `DESPACHADO`, `RECEBIDO`, `DIVERGENTE`) e o contrato `TransferenciaEstoqueRepository` em `src/domain/`.
+  - [ ] **[Urgência: Alta]** Mapear o modelo SQLAlchemy `TransferenciaEstoqueModel` com restrições e relacionamentos físicos e gerar a migração Alembic correspondente.
+  - [ ] **[Urgência: Alta]** Implementar o repositório concreto `RepositorioTransferenciaEstoqueSQLAlchemy` respeitando multi-tenancy e integrando locks pessimistas.
+  - [ ] **[Urgência: Alta]** Desenvolver os Casos de Uso: `SolicitarTransferencia`, `DespacharTransferencia` (aplicando lock e debitando estoque de origem) e `ConfirmarRecebimento` (credita estoque de destino, valida divergências e insere justificativas).
+  - [ ] **[Urgência: Média]** Desenvolver os schemas Pydantic de request/response e as rotas web no FastAPI (`POST /estoque/transferencias`, `/despachar`, `/receber`).
+  - [ ] **[Urgência: Média]** Escrever testes de integração ponta a ponta da máquina de estados, testes de segurança multi-tenant e concorrência física nas travas de saldos de estoque.
+
+##### 👤 Jonathas (Frente 2: Auditoria Física e Ajustes de Inventário - Fim a Fim)
+*Objetivo: Construir do domínio à API o motor de contagem física de estoque e geração automática de perdas/ganhos no ledger.*
+* **Atividades**:
+  - [ ] **[Urgência: Alta]** Criar entidade de domínio representativa de Auditoria/Inventário e regra de negócio para comparação de contagem física vs saldo lógico.
+  - [ ] **[Urgência: Alta]** Desenvolver o Caso de Uso `AuditarEstoqueLoja` que valida a lista de produtos, calcula perdas/ganhos e gera movimentações automáticas de `SAIDA` ou `ENTRADA` ajustando os saldos em `EstoqueSaldo`.
+  - [ ] **[Urgência: Média]** Desenvolver schemas Pydantic para envio da lista de contagens da filial e a rota correspondente FastAPI (`POST /estoque/auditar`).
+  - [ ] **[Urgência: Média]** Escrever testes unitários e de integração validando os cenários de conformidade física, divergências parciais negativas e excedentes.
 
 ---
 
