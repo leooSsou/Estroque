@@ -136,12 +136,12 @@ gantt
 ##### 👤 Leonardo (Frente 1: Transferências Logísticas Interlojas - Fim a Fim)
 *Objetivo: Construir do banco à API o fluxo completo de trânsito de mercadorias entre lojas com máquina de estados de forma isolada e segura.*
 * **Atividades**:
-  - [ ] **[Urgência: Alta]** Criar a entidade de domínio `TransferenciaEstoque` com os estados (`SOLICITADO`, `DESPACHADO`, `RECEBIDO`, `DIVERGENTE`) e o contrato `TransferenciaEstoqueRepository` em `src/domain/`.
-  - [ ] **[Urgência: Alta]** Mapear o modelo SQLAlchemy `TransferenciaEstoqueModel` com restrições e relacionamentos físicos e gerar a migração Alembic correspondente.
-  - [ ] **[Urgência: Alta]** Implementar o repositório concreto `RepositorioTransferenciaEstoqueSQLAlchemy` respeitando multi-tenancy e integrando locks pessimistas.
-  - [ ] **[Urgência: Alta]** Desenvolver os Casos de Uso: `SolicitarTransferencia`, `DespacharTransferencia` (aplicando lock e debitando estoque de origem) e `ConfirmarRecebimento` (credita estoque de destino, valida divergências e insere justificativas).
-  - [ ] **[Urgência: Média]** Desenvolver os schemas Pydantic de request/response e as rotas web no FastAPI (`POST /estoque/transferencias`, `/despachar`, `/receber`).
-  - [ ] **[Urgência: Média]** Escrever testes de integração ponta a ponta da máquina de estados, testes de segurança multi-tenant e concorrência física nas travas de saldos de estoque.
+  - [x] **[Urgência: Alta]** Criar a entidade de domínio `TransferenciaEstoque` com os estados (`SOLICITADO`, `DESPACHADO`, `RECEBIDO`, `DIVERGENTE`) e o contrato `TransferenciaEstoqueRepository` em `src/domain/`.
+  - [x] **[Urgência: Alta]** Mapear o modelo SQLAlchemy `TransferenciaEstoqueModel` com restrições e relacionamentos físicos e gerar a migração Alembic correspondente.
+  - [x] **[Urgência: Alta]** Implementar o repositório concreto `RepositorioTransferenciaEstoqueSQLAlchemy` respeitando multi-tenancy e integrando locks pessimistas.
+  - [x] **[Urgência: Alta]** Desenvolver os Casos de Uso: `SolicitarTransferencia`, `DespacharTransferencia` (aplicando lock e debitando estoque de origem) e `ConfirmarRecebimento` (credita estoque de destino, valida divergências e insere justificativas).
+  - [x] **[Urgência: Média]** Desenvolver os schemas Pydantic de request/response e as rotas web no FastAPI (`POST /estoque/transferencias`, `/despachar`, `/receber`).
+  - [x] **[Urgência: Média]** Escrever testes de integração ponta a ponta da máquina de estados, testes de segurança multi-tenant e concorrência física nas travas de saldos de estoque.
 
 ##### 👤 Jonathas (Frente 2: Auditoria Física e Ajustes de Inventário - Fim a Fim)
 *Objetivo: Construir do domínio à API o motor de contagem física de estoque e geração automática de perdas/ganhos no ledger.*
