@@ -1,4 +1,5 @@
 import pytest
+import random
 from io import BytesIO
 from fastapi.testclient import TestClient
 from src.domain.services.nfe_parser import NFeParserService
@@ -8,6 +9,20 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioProdutoSQLAlchemy,
     RepositorioEstoqueSaldoSQLAlchemy,
 )
+
+def gerar_cnpj_valido() -> str:
+    base = [random.randint(0, 9) for _ in range(12)]
+    pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    s1 = sum(base[i] * pesos1[i] for i in range(12))
+    r1 = s1 % 11
+    d1 = 0 if r1 < 2 else 11 - r1
+    base.append(d1)
+    pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    s2 = sum(base[i] * pesos2[i] for i in range(13))
+    r2 = s2 % 11
+    d2 = 0 if r2 < 2 else 11 - r2
+    base.append(d2)
+    return "".join(map(str, base))
 
 # XML de exemplo para testes de NF-e v4.00
 SAMPLE_NFE_XML = """<?xml version="1.0" encoding="UTF-8"?>
@@ -81,7 +96,10 @@ def test_importar_estoque_nfe_fluxo_completo(db_session):
     fornecedor_repo = RepositorioFornecedorSQLAlchemy(db_session)
     produto_repo = RepositorioProdutoSQLAlchemy(db_session)
     saldo_repo = RepositorioEstoqueSaldoSQLAlchemy(db_session)
-    use_case = ImportarEstoqueNFe(fornecedor_repo, produto_repo, saldo_repo)
+    from src.infrastructure.database.repositorios_concrete import RepositorioLojaSQLAlchemy, RepositorioEstoqueMovimentacaoSQLAlchemy
+    loja_repo = RepositorioLojaSQLAlchemy(db_session)
+    movimentacao_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(db_session)
+    use_case = ImportarEstoqueNFe(fornecedor_repo, produto_repo, saldo_repo, loja_repo, movimentacao_repo)
 
     # Primeia importação (produtos novos no catálogo)
     input_1 = ImportarNFeInput(
@@ -196,10 +214,11 @@ def test_api_importar_xml_nfe_vulnerabilidade_xml_bomb(client: TestClient):
     Garante que a rota HTTP rejeita o upload de XMLs maliciosos com Billion Laughs.
     """
     # 1. Registrar e autenticar um usuário
+    cnpj_tenant = gerar_cnpj_valido()
     client.post("/auth/register", json={
         "nome_fantasia": "Loja NFe Segura",
         "razao_social": "Loja NFe Segura LTDA",
-        "cnpj": "12.345.678/0001-95",
+        "cnpj": cnpj_tenant,
         "dono_nome": "Gerente NFe",
         "dono_email": "gerentebomb@teste.com",
         "dono_senha": "senha_segura_nfe"
@@ -228,3 +247,68 @@ def test_api_importar_xml_nfe_vulnerabilidade_xml_bomb(client: TestClient):
     )
     assert response.status_code == 422
     assert "declarações DOCTYPE ou ENTITY não são permitidas" in response.json()["detail"]
+
+
+def test_api_importar_xml_nfe_com_entrada_fisica_estoque(client: TestClient):
+    """
+    Garante que ao importar XML com loja_id, a API cadastra os produtos e gera os saldos e movimentações físicas no estoque.
+    """
+    # 1. Registrar e autenticar um usuário
+    from uuid import uuid4
+    suffix = uuid4().hex[:6]
+    cnpj_tenant = gerar_cnpj_valido()
+    
+    client.post("/auth/register", json={
+        "nome_fantasia": f"Loja NFe Fisica {suffix}",
+        "razao_social": f"Loja NFe Fisica {suffix} LTDA",
+        "cnpj": cnpj_tenant,
+        "dono_nome": "Gerente Fisica",
+        "dono_email": f"gerentefisica_{suffix}@teste.com",
+        "dono_senha": "senha_segura_nfe"
+    })
+    
+    login_res = client.post("/auth/login", json={
+        "email": f"gerentefisica_{suffix}@teste.com",
+        "senha": "senha_segura_nfe"
+    })
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 2. Criar uma Loja Física
+    cnpj_loja = gerar_cnpj_valido()
+    res_loja = client.post("/lojas/", json={
+        "nome": "Filial NFe Entradas",
+        "cnpj": cnpj_loja,
+        "endereco": "Avenida NFe, 456"
+    }, headers=headers)
+    assert res_loja.status_code == 201
+    loja_id = res_loja.json()["id"]
+
+    # 3. Fazer o upload do XML passando loja_id
+    response = client.post(
+        f"/estoque/importar-xml?loja_id={loja_id}",
+        files={"file": ("nfe.xml", SAMPLE_NFE_XML.encode("utf-8"), "text/xml")},
+        headers=headers
+    )
+    assert response.status_code == 200
+
+    # 4. Verificar os saldos físicos criados no estoque (10 para CAM-POLO-01, 5 para CALCA-JEANS-02)
+    res_saldos = client.get("/estoque/saldos", headers=headers)
+    assert res_saldos.status_code == 200
+    saldos = res_saldos.json()
+    assert len(saldos) == 2
+
+    # Verifica se os saldos batem
+    polo_saldo = [s for s in saldos if s["quantidade"] == 10][0]
+    calca_saldo = [s for s in saldos if s["quantidade"] == 5][0]
+    assert polo_saldo["loja_id"] == loja_id
+    assert calca_saldo["loja_id"] == loja_id
+
+    # 5. Verificar as movimentações registradas no ledger
+    res_movs = client.get("/estoque/movimentacoes", headers=headers)
+    assert res_movs.status_code == 200
+    movs = res_movs.json()
+    assert len(movs) == 2
+    assert all(m["tipo"] == "ENTRADA" for m in movs)
+    assert all("Importacao de NF-e" in m["motivo"] for m in movs)
+

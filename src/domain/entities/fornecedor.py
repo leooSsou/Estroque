@@ -30,8 +30,8 @@ class Fornecedor:
         object.__setattr__(self, "cnpj", cnpj_limpo)
 
         # Validações matemáticas do CNPJ
-        from src.domain.entities.loja import Loja
-        if not Loja._validar_cnpj(cnpj_limpo):
+        from src.domain.utils.validation import validar_cnpj
+        if not validar_cnpj(cnpj_limpo):
             raise ValueError("CNPJ inválido.")
 
         if not isinstance(self.tenant_id, UUID):

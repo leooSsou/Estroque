@@ -70,6 +70,6 @@ class Cliente:
 
     @staticmethod
     def _validar_cnpj(cnpj: str) -> bool:
-        # Reutiliza o validador matemático existente em Loja
-        from src.domain.entities.loja import Loja
-        return Loja._validar_cnpj(cnpj)
+        # Reutiliza o validador matemático centralizado
+        from src.domain.utils.validation import validar_cnpj
+        return validar_cnpj(cnpj)

@@ -58,17 +58,11 @@ def solicitar_transferencia(
 
     try:
         output = use_case.executar(input_data)
-        db.commit()
         return TransferenciaEstoqueResponse.model_validate(output)
     except (LojaNaoEncontradaException, ProdutoNaoEncontradoException) as e:
-        db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ValueError as e:
-        db.rollback()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.post("/{id}/despachar", response_model=TransferenciaEstoqueResponse, status_code=status.HTTP_200_OK)
@@ -93,20 +87,13 @@ def despachar_transferencia(
 
     try:
         output = use_case.executar(input_data)
-        db.commit()
         return TransferenciaEstoqueResponse.model_validate(output)
     except TransferenciaNaoEncontradaException as e:
-        db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except EstoqueInsuficienteException as e:
-        db.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except ValueError as e:
-        db.rollback()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.post("/{id}/receber", response_model=TransferenciaEstoqueResponse, status_code=status.HTTP_200_OK)
@@ -134,17 +121,11 @@ def confirmar_recebimento(
 
     try:
         output = use_case.executar(input_data)
-        db.commit()
         return TransferenciaEstoqueResponse.model_validate(output)
     except TransferenciaNaoEncontradaException as e:
-        db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ValueError as e:
-        db.rollback()
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get("", response_model=List[TransferenciaEstoqueResponse], status_code=status.HTTP_200_OK)

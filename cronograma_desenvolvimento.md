@@ -27,6 +27,16 @@ gantt
 
 ## 📋 Ondas de Desenvolvimento e Checklists
 
+## 🛠️ Otimizações Técnicas & Refatorações (Concluído)
+*Objetivo: Elevar a qualidade técnica, remover redundâncias arquiteturais e implementar a entrada de estoque físico automático por NF-e.*
+
+- [x] **Centralização da Validação de CNPJ**: Criada a biblioteca `validation.py` no domínio e unificada em todas as entidades (`Tenant`, `Loja`, `Cliente` e `Fornecedor`), removendo acoplamentos indesejados.
+- [x] **Limpeza Transacional**: Remoção do controle manual de transações em `transferencias.py` e `estoque_nfe.py`, delegando o controle transacional exclusivamente à dependência do FastAPI `get_db`.
+- [x] **Entrada Física de Estoque na NF-e**: Atualizados o caso de uso e a rota de importação para, opcionalmente, realizar a entrada de saldos com lock pessimista e gravação no ledger de movimentações de estoque, validando isolamento (BOLA).
+- [x] **Suíte de Testes robustecida**: Adicionado teste de integração completo de NF-e física, totalizando **103 testes executados com 100% de sucesso**.
+
+---
+
 ### 🌌 Onda 1: Setup, Banco de Dados e Isolamento Multi-tenant
 *Objetivo: Estabelecer o alicerce técnico e garantir a segurança lógica dos inquilinos (tenants) no banco de dados.*
 
