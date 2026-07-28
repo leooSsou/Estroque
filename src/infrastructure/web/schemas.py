@@ -304,3 +304,38 @@ class TransferenciaEstoqueResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class ItemAuditoriaRequest(BaseModel):
+    produto_id: UUID = Field(..., description="ID do produto.")
+    quantidade_fisica: int = Field(..., ge=0, description="Quantidade física contada.")
+
+
+class AuditarEstoqueRequest(BaseModel):
+    loja_id: UUID = Field(..., description="ID da loja onde a auditoria ocorreu.")
+    itens: List[ItemAuditoriaRequest] = Field(..., min_length=1, description="Lista de itens contados.")
+
+
+class AuditoriaFisicaItemResponse(BaseModel):
+    id: UUID
+    produto_id: UUID
+    quantidade_fisica: int
+    quantidade_sistema: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AuditoriaFisicaResponse(BaseModel):
+    id: UUID
+    loja_id: UUID
+    tenant_id: UUID
+    data_auditoria: Optional[datetime] = None
+    itens: List[AuditoriaFisicaItemResponse]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AuditarEstoqueResponse(BaseModel):
+    auditoria: AuditoriaFisicaResponse
+    movimentacoes_geradas: List[MovimentacaoEstoqueResponse]
+
+    model_config = ConfigDict(from_attributes=True)
