@@ -10,6 +10,7 @@ from src.domain.repositories.fornecedor_repository import FornecedorRepository
 from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
 from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
 from src.domain.repositories.transferencia_estoque_repository import TransferenciaEstoqueRepository
+from src.domain.repositories.auditoria_fisica_repository import AuditoriaFisicaRepository
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.usuario import Usuario
 from src.domain.entities.loja import Loja
@@ -19,6 +20,7 @@ from src.domain.entities.fornecedor import Fornecedor
 from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
 from src.domain.entities.transferencia_estoque import TransferenciaEstoque
+from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
 from src.infrastructure.database.models import (
     TenantModel,
     UsuarioModel,
@@ -29,6 +31,8 @@ from src.infrastructure.database.models import (
     EstoqueSaldoModel,
     EstoqueMovimentacaoModel,
     TransferenciaEstoqueModel,
+    AuditoriaFisicaModel,
+    AuditoriaFisicaItemModel,
 )
 
 class RepositorioTenantSQLAlchemy(TenantRepository):
@@ -774,4 +778,66 @@ class RepositorioTransferenciaEstoqueSQLAlchemy(TransferenciaEstoqueRepository):
         return [self._to_entity(m) for m in models]
 
 
+class RepositorioAuditoriaFisicaSQLAlchemy(AuditoriaFisicaRepository):
+    """
+    Implementação concreta do repositório de Auditoria Física usando SQLAlchemy.
+    """
+    def __init__(self, db: Session) -> None:
+        self.db = db
 
+    def _to_entity(self, model: AuditoriaFisicaModel) -> AuditoriaFisica:
+        itens_entity = [
+            AuditoriaFisicaItem(
+                id=item_model.id,
+                produto_id=item_model.produto_id,
+                quantidade_fisica=item_model.quantidade_fisica,
+                quantidade_sistema=item_model.quantidade_sistema
+            )
+            for item_model in model.itens
+        ]
+        return AuditoriaFisica(
+            id=model.id,
+            loja_id=model.loja_id,
+            tenant_id=model.tenant_id,
+            itens=itens_entity,
+            data_auditoria=model.data_auditoria
+        )
+
+    def salvar(self, auditoria: AuditoriaFisica) -> AuditoriaFisica:
+        self.db.info["tenant_id"] = auditoria.tenant_id
+        model = self.db.query(AuditoriaFisicaModel).filter(
+            AuditoriaFisicaModel.id == auditoria.id
+        ).first()
+
+        if not model:
+            model = AuditoriaFisicaModel(
+                id=auditoria.id,
+                loja_id=auditoria.loja_id,
+                tenant_id=auditoria.tenant_id,
+                data_auditoria=auditoria.data_auditoria
+            )
+            for item in auditoria.itens:
+                item_model = AuditoriaFisicaItemModel(
+                    id=item.id,
+                    auditoria_id=auditoria.id,
+                    produto_id=item.produto_id,
+                    quantidade_fisica=item.quantidade_fisica,
+                    quantidade_sistema=item.quantidade_sistema
+                )
+                model.itens.append(item_model)
+            self.db.add(model)
+        else:
+            pass
+
+        self.db.flush()
+        return self._to_entity(model)
+
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[AuditoriaFisica]:
+        self.db.info["tenant_id"] = tenant_id
+        model = self.db.query(AuditoriaFisicaModel).filter(
+            AuditoriaFisicaModel.id == id
+        ).first()
+        
+        if not model:
+            return None
+        return self._to_entity(model)
