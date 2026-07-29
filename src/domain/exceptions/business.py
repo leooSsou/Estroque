@@ -130,4 +130,13 @@ class EstoqueInsuficienteException(DomainException):
         )
 
 
+class TransferenciaNaoEncontradaException(DomainException):
+    """
+    Exceção lançada quando a busca por uma transferência de estoque falha.
+    """
+    def __init__(self, identifier: str) -> None:
+        super().__init__(f"Transferência de estoque com identificador '{identifier}' não foi encontrada.")
+
+
+
 

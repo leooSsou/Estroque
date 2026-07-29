@@ -2,7 +2,7 @@ from typing import Optional
 from uuid import UUID, uuid4
 from datetime import datetime
 from sqlalchemy import String, DateTime, text, Float, Boolean, UniqueConstraint, ForeignKey
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from src.infrastructure.database.mixins import HasTenant
 
@@ -149,3 +149,54 @@ class EstoqueMovimentacaoModel(HasTenant, Base):
     )
 
 
+class TransferenciaEstoqueModel(HasTenant, Base):
+    """
+    Representação física da tabela transferencias_estoque (Movimentações Interlojas).
+    """
+    __tablename__ = "transferencias_estoque"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    loja_origem_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    loja_destino_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    produto_id: Mapped[UUID] = mapped_column(ForeignKey("produtos.id", ondelete="RESTRICT"), nullable=False)
+    quantidade: Mapped[int] = mapped_column(nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="SOLICITADO")
+    solicitado_por_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    aprovado_por_id: Mapped[UUID | None] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=True)
+    justificativa: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    criado_em: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+
+
+class AuditoriaFisicaModel(HasTenant, Base):
+    """
+    Representação física da tabela auditorias_fisicas.
+    """
+    __tablename__ = "auditorias_fisicas"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    data_auditoria: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+    itens = relationship("AuditoriaFisicaItemModel", back_populates="auditoria", cascade="all, delete-orphan")
+
+
+class AuditoriaFisicaItemModel(Base):
+    """
+    Representação física da tabela auditoria_fisica_itens.
+    """
+    __tablename__ = "auditoria_fisica_itens"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    auditoria_id: Mapped[UUID] = mapped_column(ForeignKey("auditorias_fisicas.id", ondelete="CASCADE"), nullable=False)
+    produto_id: Mapped[UUID] = mapped_column(ForeignKey("produtos.id", ondelete="RESTRICT"), nullable=False)
+    quantidade_fisica: Mapped[int] = mapped_column(nullable=False)
+    quantidade_sistema: Mapped[int] = mapped_column(nullable=False)
+
+    auditoria = relationship("AuditoriaFisicaModel", back_populates="itens")

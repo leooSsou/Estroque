@@ -27,6 +27,16 @@ gantt
 
 ## 📋 Ondas de Desenvolvimento e Checklists
 
+## 🛠️ Otimizações Técnicas & Refatorações (Concluído)
+*Objetivo: Elevar a qualidade técnica, remover redundâncias arquiteturais e implementar a entrada de estoque físico automático por NF-e.*
+
+- [x] **Centralização da Validação de CNPJ**: Criada a biblioteca `validation.py` no domínio e unificada em todas as entidades (`Tenant`, `Loja`, `Cliente` e `Fornecedor`), removendo acoplamentos indesejados.
+- [x] **Limpeza Transacional**: Remoção do controle manual de transações em `transferencias.py` e `estoque_nfe.py`, delegando o controle transacional exclusivamente à dependência do FastAPI `get_db`.
+- [x] **Entrada Física de Estoque na NF-e**: Atualizados o caso de uso e a rota de importação para, opcionalmente, realizar a entrada de saldos com lock pessimista e gravação no ledger de movimentações de estoque, validando isolamento (BOLA).
+- [x] **Suíte de Testes robustecida**: Adicionado teste de integração completo de NF-e física, totalizando **103 testes executados com 100% de sucesso**.
+
+---
+
 ### 🌌 Onda 1: Setup, Banco de Dados e Isolamento Multi-tenant
 *Objetivo: Estabelecer o alicerce técnico e garantir a segurança lógica dos inquilinos (tenants) no banco de dados.*
 
@@ -131,10 +141,25 @@ gantt
 ### 🚚 Onda 4: Transferências Logísticas e Auditoria Física
 *Objetivo: Controlar o trânsito de produtos interlojas e gerenciar contagens rotativas.*
 
-- [ ] Máquina de Estados de Transferência (`SOLICITADO`, `DESPACHADO`, `RECEBIDO`, `DIVERGENTE`).
-- [ ] Fluxo de auditoria de divergências e justificativas logísticas.
-- [ ] Caso de uso: Auditoria física de estoque (inventário local) com registro automático de perdas.
-- [ ] Testes de transição de estados de transferência de estoque.
+#### 👥 Divisão de Atividades por Responsável (Frentes Verticais Independentes)
+
+##### 👤 Leonardo (Frente 1: Transferências Logísticas Interlojas - Fim a Fim)
+*Objetivo: Construir do banco à API o fluxo completo de trânsito de mercadorias entre lojas com máquina de estados de forma isolada e segura.*
+* **Atividades**:
+  - [x] **[Urgência: Alta]** Criar a entidade de domínio `TransferenciaEstoque` com os estados (`SOLICITADO`, `DESPACHADO`, `RECEBIDO`, `DIVERGENTE`) e o contrato `TransferenciaEstoqueRepository` em `src/domain/`.
+  - [x] **[Urgência: Alta]** Mapear o modelo SQLAlchemy `TransferenciaEstoqueModel` com restrições e relacionamentos físicos e gerar a migração Alembic correspondente.
+  - [x] **[Urgência: Alta]** Implementar o repositório concreto `RepositorioTransferenciaEstoqueSQLAlchemy` respeitando multi-tenancy e integrando locks pessimistas.
+  - [x] **[Urgência: Alta]** Desenvolver os Casos de Uso: `SolicitarTransferencia`, `DespacharTransferencia` (aplicando lock e debitando estoque de origem) e `ConfirmarRecebimento` (credita estoque de destino, valida divergências e insere justificativas).
+  - [x] **[Urgência: Média]** Desenvolver os schemas Pydantic de request/response e as rotas web no FastAPI (`POST /estoque/transferencias`, `/despachar`, `/receber`).
+  - [x] **[Urgência: Média]** Escrever testes de integração ponta a ponta da máquina de estados, testes de segurança multi-tenant e concorrência física nas travas de saldos de estoque.
+
+##### 👤 Jonathas (Frente 2: Auditoria Física e Ajustes de Inventário - Fim a Fim)
+*Objetivo: Construir do domínio à API o motor de contagem física de estoque e geração automática de perdas/ganhos no ledger.*
+* **Atividades**:
+  - [x] **[Urgência: Alta]** Criar entidade de domínio representativa de Auditoria/Inventário e regra de negócio para comparação de contagem física vs saldo lógico.
+  - [x] **[Urgência: Alta]** Desenvolver o Caso de Uso `AuditarEstoqueLoja` que valida a lista de produtos, calcula perdas/ganhos e gera movimentações automáticas de `SAIDA` ou `ENTRADA` ajustando os saldos em `EstoqueSaldo`.
+  - [x] **[Urgência: Média]** Desenvolver schemas Pydantic para envio da lista de contagens da filial e a rota correspondente FastAPI (`POST /estoque/auditar`).
+  - [x] **[Urgência: Média]** Escrever testes unitários e de integração validando os cenários de conformidade física, divergências parciais negativas e excedentes.
 
 ---
 
