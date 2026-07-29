@@ -166,11 +166,30 @@ gantt
 ### 💰 Onda 5: Faturamento Administrativo, Financeiro e CRM
 *Objetivo: Permitir vendas na retaguarda e integrar com fluxo de caixa e contas a pagar/receber.*
 
-- [ ] Lógica de **Venda Administrativa** (formas de pagamento, descontos e itens de venda).
-- [ ] Integração de Caixa: Geração automática de `FinanceiroLancamento` (receita) na finalização de vendas.
-- [ ] Regra de Crediário: Incremento de `saldo_devedor_crediario` no cliente se a venda for no crediário.
-- [ ] Controle manual de despesas operacionais da loja.
-- [ ] Testes de fluxo financeiro completo de ponta a ponta.
+#### 👥 Divisão de Atividades por Responsável (Frentes Verticais Independentes)
+
+##### 👤 Leonardo (Frente 1: Venda Administrativa e Crediário - Fim a Fim)
+*Objetivo: Construir o fluxo completo de registro de venda na retaguarda com múltiplos itens, descontos, formas de pagamento e limite de crediário por cliente.*
+* **Atividades**:
+  - [ ] Criar as entidades de domínio `Venda` e `ItemVenda` com validação de status e regras de negócio.
+  - [ ] Mapear os modelos SQLAlchemy físicos de `vendas` e `itens_venda` e gerar a migração Alembic.
+  - [ ] Implementar os repositórios SQLAlchemy concretos para Venda.
+  - [ ] Desenvolver o Caso de Uso `RegistrarVendaAdministrativa` (valida estoque físico de cada item, aplica descontos, registra forma de pagamento e calcula o total).
+  - [ ] Implementar a regra de **Crediário**: verificar limite de crédito do cliente, bloquear venda se ultrapassado, e atualizar o `saldo_devedor_crediario` no cadastro do cliente caso a venda seja nesta modalidade.
+  - [ ] Desenvolver schemas Pydantic de entrada/saída e as rotas web no FastAPI (`POST /vendas`, `GET /vendas/{id}`).
+  - [ ] Escrever testes de integração e concorrência ponta a ponta (verificando débito do estoque físico, controle multi-tenant e verificação de limite de crediário).
+
+##### 👤 Jonathas (Frente 2: Gestão Financeira e Despesas - Fim a Fim)
+*Objetivo: Construir o motor financeiro com lançamentos automáticos de vendas (receitas), controle manual de despesas operacionais e integração com o fluxo de caixa.*
+* **Atividades**:
+  - [ ] Criar a entidade de domínio `FinanceiroLancamento` (tipo receita/despesa, valor, categoria, status de pagamento) e seu contrato de repositório.
+  - [ ] Mapear o modelo SQLAlchemy físico `FinanceiroLancamentoModel` e gerar a migração Alembic correspondente.
+  - [ ] Implementar o repositório SQLAlchemy concreto para lançamentos financeiros.
+  - [ ] Desenvolver o Caso de Uso `RegistrarDespesaLoja` (controle manual de contas a pagar e despesas operacionais da filial).
+  - [ ] Implementar a **Integração de Caixa**: na finalização de uma venda (executada pela Frente 1), disparar automaticamente um lançamento do tipo `RECEITA` vinculado ao caixa da loja correspondente.
+  - [ ] Desenvolver schemas Pydantic e as rotas web no FastAPI (`POST /financeiro/despesas`, `GET /financeiro/lancamentos` com filtros de período e tipo).
+  - [ ] Escrever testes unitários e de integração de fluxo de caixa, verificando a criação automática de receitas e validação de despesas.
+
 
 ---
 
