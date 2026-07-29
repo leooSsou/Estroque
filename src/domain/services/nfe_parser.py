@@ -35,7 +35,7 @@ class NFeParserService:
         # Segurança contra XML Bomb / Billion Laughs e XXE
         # NF-e legítimas nunca contêm declarações DOCTYPE ou ENTITY
         xml_str = xml_content if isinstance(xml_content, str) else xml_content.decode("utf-8", errors="ignore")
-        if "<!doctype" in xml_str.lower() or "<!entity" in xml_str.lower():
+        if re.search(r"<!\s*doctype", xml_str, re.IGNORECASE) or re.search(r"<!\s*entity", xml_str, re.IGNORECASE):
             raise ValueError("XML inválido por motivos de segurança: declarações DOCTYPE ou ENTITY não são permitidas.")
 
         if isinstance(xml_content, str):

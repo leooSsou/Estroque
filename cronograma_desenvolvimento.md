@@ -156,10 +156,10 @@ gantt
 ##### 👤 Jonathas (Frente 2: Auditoria Física e Ajustes de Inventário - Fim a Fim)
 *Objetivo: Construir do domínio à API o motor de contagem física de estoque e geração automática de perdas/ganhos no ledger.*
 * **Atividades**:
-  - [ ] **[Urgência: Alta]** Criar entidade de domínio representativa de Auditoria/Inventário e regra de negócio para comparação de contagem física vs saldo lógico.
-  - [ ] **[Urgência: Alta]** Desenvolver o Caso de Uso `AuditarEstoqueLoja` que valida a lista de produtos, calcula perdas/ganhos e gera movimentações automáticas de `SAIDA` ou `ENTRADA` ajustando os saldos em `EstoqueSaldo`.
-  - [ ] **[Urgência: Média]** Desenvolver schemas Pydantic para envio da lista de contagens da filial e a rota correspondente FastAPI (`POST /estoque/auditar`).
-  - [ ] **[Urgência: Média]** Escrever testes unitários e de integração validando os cenários de conformidade física, divergências parciais negativas e excedentes.
+  - [x] **[Urgência: Alta]** Criar entidade de domínio representativa de Auditoria/Inventário e regra de negócio para comparação de contagem física vs saldo lógico.
+  - [x] **[Urgência: Alta]** Desenvolver o Caso de Uso `AuditarEstoqueLoja` que valida a lista de produtos, calcula perdas/ganhos e gera movimentações automáticas de `SAIDA` ou `ENTRADA` ajustando os saldos em `EstoqueSaldo`.
+  - [x] **[Urgência: Média]** Desenvolver schemas Pydantic para envio da lista de contagens da filial e a rota correspondente FastAPI (`POST /estoque/auditar`).
+  - [x] **[Urgência: Média]** Escrever testes unitários e de integração validando os cenários de conformidade física, divergências parciais negativas e excedentes.
 
 ---
 

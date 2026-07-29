@@ -4,15 +4,21 @@ from typing import List, Optional
 
 from src.domain.entities.fornecedor import Fornecedor
 from src.domain.entities.produto import Produto
+from src.domain.entities.estoque_saldo import EstoqueSaldo
+from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
 from src.domain.repositories.fornecedor_repository import FornecedorRepository
 from src.domain.repositories.produto_repository import ProdutoRepository
 from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
+from src.domain.repositories.loja_repository import LojaRepository
+from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
 from src.domain.services.nfe_parser import NFeParserService, NFeDados, ItemNFe
+from src.domain.exceptions.business import LojaNaoEncontradaException
 
 @dataclass(frozen=True)
 class ImportarNFeInput:
     xml_content: bytes | str
     tenant_id: UUID
+    loja_id: Optional[UUID] = None
     markup_padrao: float = 0.5  # 50% de markup por padrão para novos produtos
 
 
@@ -39,13 +45,23 @@ class ImportarEstoqueNFe:
         self,
         fornecedor_repo: FornecedorRepository,
         produto_repo: ProdutoRepository,
-        saldo_repo: EstoqueSaldoRepository
+        saldo_repo: EstoqueSaldoRepository,
+        loja_repo: LojaRepository,
+        movimentacao_repo: EstoqueMovimentacaoRepository
     ) -> None:
         self.fornecedor_repo = fornecedor_repo
         self.produto_repo = produto_repo
         self.saldo_repo = saldo_repo
+        self.loja_repo = loja_repo
+        self.movimentacao_repo = movimentacao_repo
 
     def executar(self, input_data: ImportarNFeInput) -> ImportarNFeOutput:
+        # Se loja_id for informado, valida BOLA (existência da loja vinculada ao tenant)
+        if input_data.loja_id:
+            loja_existente = self.loja_repo.obter_por_id(input_data.loja_id, input_data.tenant_id)
+            if not loja_existente:
+                raise LojaNaoEncontradaException(str(input_data.loja_id))
+
         # 1. Faz o parsing do XML da NF-e
         nfe_dados: NFeDados = NFeParserService.parse_xml(input_data.xml_content)
 
@@ -138,6 +154,40 @@ class ImportarEstoqueNFe:
                 )
                 produto_salvo = self.produto_repo.salvar(novo_produto)
                 is_novo = True
+
+            # Entrada física de estoque opcional
+            if input_data.loja_id:
+                saldo_loja = self.saldo_repo.obter_por_loja_e_produto_com_lock(
+                    loja_id=input_data.loja_id,
+                    produto_id=produto_salvo.id,
+                    tenant_id=input_data.tenant_id
+                )
+                if not saldo_loja:
+                    saldo_loja = EstoqueSaldo(
+                        loja_id=input_data.loja_id,
+                        produto_id=produto_salvo.id,
+                        quantidade=0,
+                        tenant_id=input_data.tenant_id
+                    )
+                qtd_inteira = int(item.quantidade)
+                saldo_loja_atualizado = EstoqueSaldo(
+                    id=saldo_loja.id,
+                    loja_id=saldo_loja.loja_id,
+                    produto_id=saldo_loja.produto_id,
+                    quantidade=saldo_loja.quantidade + qtd_inteira,
+                    tenant_id=saldo_loja.tenant_id
+                )
+                self.saldo_repo.salvar(saldo_loja_atualizado)
+                
+                movimentacao_entrada = EstoqueMovimentacao(
+                    loja_id=input_data.loja_id,
+                    produto_id=produto_salvo.id,
+                    tipo="ENTRADA",
+                    quantidade=qtd_inteira,
+                    motivo="Entrada por Importacao de NF-e",
+                    tenant_id=input_data.tenant_id
+                )
+                self.movimentacao_repo.salvar(movimentacao_entrada)
 
             itens_output.append(ItemImportadoOutput(
                 produto=produto_salvo,

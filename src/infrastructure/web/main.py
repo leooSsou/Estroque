@@ -11,6 +11,8 @@ from src.infrastructure.web.clientes import router as clientes_router
 from src.infrastructure.web.fornecedores import router as fornecedores_router
 from src.infrastructure.web.estoque import router as estoque_router
 from src.infrastructure.web.estoque_nfe import router as estoque_nfe_router
+from src.infrastructure.web.transferencias import router as transferencias_router
+from src.infrastructure.web.estoque_auditoria import router as auditoria_router
 
 app = FastAPI(
     title="Gerenciador de Lojas SaaS - API",
@@ -31,13 +33,27 @@ app.include_router(clientes_router)
 app.include_router(fornecedores_router)
 app.include_router(estoque_router)
 app.include_router(estoque_nfe_router)
+app.include_router(transferencias_router)
+app.include_router(auditoria_router)
 
 
+import os
 
-# Configuração de CORS (ajustar para produção posteriormente)
+# Configuração de CORS (com fallback seguro de desenvolvimento local)
+cors_origins_str = os.getenv("CORS_ORIGINS", "")
+if cors_origins_str:
+    allow_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+else:
+    allow_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

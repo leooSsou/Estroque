@@ -45,6 +45,9 @@ def movimentar_estoque(
     loja_repo = RepositorioLojaSQLAlchemy(db)
     produto_repo = RepositorioProdutoSQLAlchemy(db)
 
+    from src.infrastructure.web.authorization import exigir_acesso_loja
+    exigir_acesso_loja(request.loja_id, current_user)
+
     use_case = RegistrarMovimentacaoEstoque(saldo_repo, movimentacao_repo, loja_repo, produto_repo)
 
     input_data = RegistrarMovimentacaoEstoqueInput(
@@ -80,6 +83,8 @@ def listar_saldos(
     """
     repo = RepositorioEstoqueSaldoSQLAlchemy(db)
     saldos = repo.listar_todos(current_user.tenant_id)
+    if current_user.role == "GERENTE":
+        saldos = [s for s in saldos if s.loja_id == current_user.loja_atribuida_id]
     return [EstoqueSaldoResponse.model_validate(s) for s in saldos]
 
 
@@ -93,4 +98,6 @@ def listar_movimentacoes(
     """
     repo = RepositorioEstoqueMovimentacaoSQLAlchemy(db)
     movs = repo.listar_todas(current_user.tenant_id)
+    if current_user.role == "GERENTE":
+        movs = [m for m in movs if m.loja_id == current_user.loja_atribuida_id]
     return [MovimentacaoEstoqueResponse.model_validate(m) for m in movs]
