@@ -33,7 +33,7 @@ gantt
 - [x] **Centralização da Validação de CNPJ**: Criada a biblioteca `validation.py` no domínio e unificada em todas as entidades (`Tenant`, `Loja`, `Cliente` e `Fornecedor`), removendo acoplamentos indesejados.
 - [x] **Limpeza Transacional**: Remoção do controle manual de transações em `transferencias.py` e `estoque_nfe.py`, delegando o controle transacional exclusivamente à dependência do FastAPI `get_db`.
 - [x] **Entrada Física de Estoque na NF-e**: Atualizados o caso de uso e a rota de importação para, opcionalmente, realizar a entrada de saldos com lock pessimista e gravação no ledger de movimentações de estoque, validando isolamento (BOLA).
-- [x] **Suíte de Testes robustecida**: Adicionado teste de integração completo de NF-e física, totalizando **103 testes executados com 100% de sucesso**.
+- [x] Suíte de Testes robustecida: Adicionado teste de integração completo de NF-e física, vendas e crediário, totalizando **115 testes executados com 100% de sucesso**.
 
 ---
 
@@ -171,13 +171,13 @@ gantt
 ##### 👤 Leonardo (Frente 1: Venda Administrativa e Crediário - Fim a Fim)
 *Objetivo: Construir o fluxo completo de registro de venda na retaguarda com múltiplos itens, descontos, formas de pagamento e limite de crediário por cliente.*
 * **Atividades**:
-  - [ ] Criar as entidades de domínio `Venda` e `ItemVenda` com validação de status e regras de negócio.
-  - [ ] Mapear os modelos SQLAlchemy físicos de `vendas` e `itens_venda` e gerar a migração Alembic.
-  - [ ] Implementar os repositórios SQLAlchemy concretos para Venda.
-  - [ ] Desenvolver o Caso de Uso `RegistrarVendaAdministrativa` (valida estoque físico de cada item, aplica descontos, registra forma de pagamento e calcula o total).
-  - [ ] Implementar a regra de **Crediário**: verificar limite de crédito do cliente, bloquear venda se ultrapassado, e atualizar o `saldo_devedor_crediario` no cadastro do cliente caso a venda seja nesta modalidade.
-  - [ ] Desenvolver schemas Pydantic de entrada/saída e as rotas web no FastAPI (`POST /vendas`, `GET /vendas/{id}`).
-  - [ ] Escrever testes de integração e concorrência ponta a ponta (verificando débito do estoque físico, controle multi-tenant e verificação de limite de crediário).
+  - [x] Criar as entidades de domínio `Venda` e `ItemVenda` com validação de status e regras de negócio.
+  - [x] Mapear os modelos SQLAlchemy físicos de `vendas` e `itens_venda` e gerar a migração Alembic.
+  - [x] Implementar os repositórios SQLAlchemy concretos para Venda.
+  - [x] Desenvolver o Caso de Uso `RegistrarVendaAdministrativa` (valida estoque físico de cada item, aplica descontos, registra forma de pagamento e calcula o total).
+  - [x] Implementar a regra de **Crediário**: verificar limite de crédito do cliente, bloquear venda se ultrapassado, e atualizar o `saldo_devedor_crediario` no cadastro do cliente caso a venda seja nesta modalidade.
+  - [x] Desenvolver schemas Pydantic de entrada/saída e as rotas web no FastAPI (`POST /vendas`, `GET /vendas/{id}`).
+  - [x] Escrever testes de integração e concorrência ponta a ponta (verificando débito do estoque físico, controle multi-tenant e verificação de limite de crediário).
 
 ##### 👤 Jonathas (Frente 2: Gestão Financeira e Despesas - Fim a Fim)
 *Objetivo: Construir o motor financeiro com lançamentos automáticos de vendas (receitas), controle manual de despesas operacionais e integração com o fluxo de caixa.*
