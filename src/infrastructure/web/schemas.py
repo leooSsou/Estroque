@@ -139,6 +139,7 @@ class ClienteCreateRequest(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100, description="Nome do cliente.")
     email: EmailStr = Field(..., description="E-mail do cliente.")
     documento: str = Field(..., min_length=11, max_length=18, description="CPF ou CNPJ do cliente.")
+    limite_credito: float = Field(default=0.0, ge=0.0, description="Limite de crédito do cliente.")
 
 
 class ClienteUpdateRequest(BaseModel):
@@ -148,6 +149,8 @@ class ClienteUpdateRequest(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100, description="Nome do cliente.")
     email: EmailStr = Field(..., description="E-mail do cliente.")
     ativo: bool = Field(..., description="Status de atividade do cliente.")
+    limite_credito: float = Field(default=0.0, ge=0.0, description="Limite de crédito do cliente.")
+    saldo_devedor_crediario: float = Field(default=0.0, ge=0.0, description="Saldo devedor do crediário.")
 
 
 class ClienteResponse(BaseModel):
@@ -160,6 +163,8 @@ class ClienteResponse(BaseModel):
     documento: str
     tenant_id: UUID
     ativo: bool
+    limite_credito: float
+    saldo_devedor_crediario: float
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -339,3 +344,43 @@ class AuditarEstoqueResponse(BaseModel):
     movimentacoes_geradas: List[MovimentacaoEstoqueResponse]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ItemVendaRequest(BaseModel):
+    produto_id: UUID = Field(..., description="ID do produto vendido.")
+    quantidade: int = Field(..., gt=0, description="Quantidade vendida.")
+
+
+class RegistrarVendaRequest(BaseModel):
+    loja_id: UUID = Field(..., description="ID da loja de origem da venda.")
+    cliente_id: Optional[UUID] = Field(None, description="ID do cliente (obrigatório se forma_pagamento for CREDIARIO).")
+    forma_pagamento: str = Field(..., description="Forma de pagamento (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO).")
+    desconto: float = Field(default=0.0, ge=0.0, description="Valor do desconto aplicado.")
+    itens: List[ItemVendaRequest] = Field(..., min_length=1, description="Lista de produtos e quantidades.")
+
+
+class ItemVendaResponse(BaseModel):
+    id: UUID
+    produto_id: UUID
+    quantidade: int
+    preco_unitario: float
+    tenant_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VendaResponse(BaseModel):
+    id: UUID
+    loja_id: UUID
+    cliente_id: Optional[UUID] = None
+    usuario_id: UUID
+    status: str
+    forma_pagamento: str
+    valor_total: float
+    desconto: float
+    data_venda: Optional[datetime] = None
+    tenant_id: UUID
+    itens: List[ItemVendaResponse]
+
+    model_config = ConfigDict(from_attributes=True)
+

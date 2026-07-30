@@ -13,6 +13,8 @@ class Cliente:
     tenant_id: UUID
     id: UUID = field(default_factory=uuid4)
     ativo: bool = True
+    limite_credito: float = 0.0
+    saldo_devedor_crediario: float = 0.0
 
     def __post_init__(self) -> None:
         if not isinstance(self.nome, str) or not self.nome.strip():
@@ -49,6 +51,12 @@ class Cliente:
 
         if not isinstance(self.ativo, bool):
             raise ValueError("O campo ativo deve ser um booleano.")
+
+        if not isinstance(self.limite_credito, (int, float)) or self.limite_credito < 0:
+            raise ValueError("O limite de crédito deve ser um número maior ou igual a zero.")
+
+        if not isinstance(self.saldo_devedor_crediario, (int, float)) or self.saldo_devedor_crediario < 0:
+            raise ValueError("O saldo devedor do crediário deve ser um número maior ou igual a zero.")
 
     @staticmethod
     def _validar_cpf(cpf: str) -> bool:

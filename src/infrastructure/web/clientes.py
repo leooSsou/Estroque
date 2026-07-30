@@ -43,7 +43,8 @@ def criar_cliente(
         nome=request.nome,
         email=request.email,
         documento=request.documento,
-        tenant_id=current_user.tenant_id
+        tenant_id=current_user.tenant_id,
+        limite_credito=request.limite_credito
     )
     
     try:
@@ -116,7 +117,9 @@ def atualizar_cliente(
         nome=request.nome,
         email=request.email,
         ativo=request.ativo,
-        tenant_id=current_user.tenant_id
+        tenant_id=current_user.tenant_id,
+        limite_credito=request.limite_credito,
+        saldo_devedor_crediario=request.saldo_devedor_crediario
     )
     
     try:

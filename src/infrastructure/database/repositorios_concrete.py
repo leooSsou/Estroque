@@ -10,6 +10,7 @@ from src.domain.repositories.fornecedor_repository import FornecedorRepository
 from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
 from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
 from src.domain.repositories.transferencia_estoque_repository import TransferenciaEstoqueRepository
+from src.domain.repositories.venda_repository import VendaRepository
 from src.domain.repositories.auditoria_fisica_repository import AuditoriaFisicaRepository
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.usuario import Usuario
@@ -21,6 +22,8 @@ from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
 from src.domain.entities.transferencia_estoque import TransferenciaEstoque
 from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
+from src.domain.entities.venda import Venda
+from src.domain.entities.item_venda import ItemVenda
 from src.infrastructure.database.models import (
     TenantModel,
     UsuarioModel,
@@ -33,6 +36,8 @@ from src.infrastructure.database.models import (
     TransferenciaEstoqueModel,
     AuditoriaFisicaModel,
     AuditoriaFisicaItemModel,
+    VendaModel,
+    ItemVendaModel,
 )
 
 class RepositorioTenantSQLAlchemy(TenantRepository):
@@ -391,7 +396,9 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
                 email=cliente.email,
                 documento=cliente.documento,
                 tenant_id=cliente.tenant_id,
-                ativo=cliente.ativo
+                ativo=cliente.ativo,
+                limite_credito=cliente.limite_credito,
+                saldo_devedor_crediario=cliente.saldo_devedor_crediario
             )
             self.db.add(model)
         else:
@@ -399,6 +406,8 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             model.email = cliente.email
             model.documento = cliente.documento
             model.ativo = cliente.ativo
+            model.limite_credito = cliente.limite_credito
+            model.saldo_devedor_crediario = cliente.saldo_devedor_crediario
             
         self.db.flush()
         
@@ -408,7 +417,9 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             email=model.email,
             documento=model.documento,
             tenant_id=model.tenant_id,
-            ativo=model.ativo
+            ativo=model.ativo,
+            limite_credito=model.limite_credito,
+            saldo_devedor_crediario=model.saldo_devedor_crediario
         )
 
     def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Cliente]:
@@ -422,7 +433,9 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             email=model.email,
             documento=model.documento,
             tenant_id=model.tenant_id,
-            ativo=model.ativo
+            ativo=model.ativo,
+            limite_credito=model.limite_credito,
+            saldo_devedor_crediario=model.saldo_devedor_crediario
         )
 
     def obter_por_documento(self, documento: str, tenant_id: UUID) -> Optional[Cliente]:
@@ -437,7 +450,9 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             email=model.email,
             documento=model.documento,
             tenant_id=model.tenant_id,
-            ativo=model.ativo
+            ativo=model.ativo,
+            limite_credito=model.limite_credito,
+            saldo_devedor_crediario=model.saldo_devedor_crediario
         )
 
     def listar_todos(self, tenant_id: UUID) -> List[Cliente]:
@@ -450,7 +465,9 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
                 email=m.email,
                 documento=m.documento,
                 tenant_id=m.tenant_id,
-                ativo=m.ativo
+                ativo=m.ativo,
+                limite_credito=m.limite_credito,
+                saldo_devedor_crediario=m.saldo_devedor_crediario
             )
             for m in models
         ]
@@ -841,3 +858,90 @@ class RepositorioAuditoriaFisicaSQLAlchemy(AuditoriaFisicaRepository):
         if not model:
             return None
         return self._to_entity(model)
+
+
+class RepositorioVendaSQLAlchemy(VendaRepository):
+    """
+    Implementação concreta do repositório de Venda usando SQLAlchemy.
+    """
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def _to_entity(self, model: VendaModel) -> Venda:
+        itens_entity = [
+            ItemVenda(
+                id=item_model.id,
+                produto_id=item_model.produto_id,
+                quantidade=item_model.quantidade,
+                preco_unitario=item_model.preco_unitario,
+                tenant_id=item_model.tenant_id
+            )
+            for item_model in model.itens
+        ]
+        return Venda(
+            id=model.id,
+            loja_id=model.loja_id,
+            usuario_id=model.usuario_id,
+            cliente_id=model.cliente_id,
+            status=model.status,
+            forma_pagamento=model.forma_pagamento,
+            valor_total=model.valor_total,
+            desconto=model.desconto,
+            tenant_id=model.tenant_id,
+            itens=itens_entity,
+            data_venda=model.data_venda
+        )
+
+    def salvar(self, venda: Venda) -> Venda:
+        self.db.info["tenant_id"] = venda.tenant_id
+        model = self.db.query(VendaModel).filter(VendaModel.id == venda.id).first()
+
+        if not model:
+            model = VendaModel(
+                id=venda.id,
+                loja_id=venda.loja_id,
+                usuario_id=venda.usuario_id,
+                cliente_id=venda.cliente_id,
+                status=venda.status,
+                forma_pagamento=venda.forma_pagamento,
+                valor_total=venda.valor_total,
+                desconto=venda.desconto,
+                tenant_id=venda.tenant_id,
+                data_venda=venda.data_venda
+            )
+            for item in venda.itens:
+                item_model = ItemVendaModel(
+                    id=item.id,
+                    venda_id=venda.id,
+                    produto_id=item.produto_id,
+                    quantidade=item.quantidade,
+                    preco_unitario=item.preco_unitario,
+                    tenant_id=item.tenant_id
+                )
+                model.itens.append(item_model)
+            self.db.add(model)
+        else:
+            model.status = venda.status
+            model.forma_pagamento = venda.forma_pagamento
+            model.valor_total = venda.valor_total
+            model.desconto = venda.desconto
+            model.cliente_id = venda.cliente_id
+
+        self.db.flush()
+        return self._to_entity(model)
+
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Venda]:
+        self.db.info["tenant_id"] = tenant_id
+        model = self.db.query(VendaModel).filter(VendaModel.id == id).first()
+        if not model:
+            return None
+        return self._to_entity(model)
+
+    def listar_todas(self, tenant_id: UUID, loja_id: Optional[UUID] = None) -> List[Venda]:
+        self.db.info["tenant_id"] = tenant_id
+        query = self.db.query(VendaModel)
+        if loja_id:
+            query = query.filter(VendaModel.loja_id == loja_id)
+        models = query.all()
+        return [self._to_entity(m) for m in models]
+
