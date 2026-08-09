@@ -242,3 +242,25 @@ class ItemVendaModel(Base):
 
     venda = relationship("VendaModel", back_populates="itens")
 
+
+class FinanceiroLancamentoModel(HasTenant, Base):
+    """
+    Representação física da tabela financeiro_lancamentos.
+    """
+    __tablename__ = "financeiro_lancamentos"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    tipo: Mapped[str] = mapped_column(String(10), nullable=False)  # "RECEITA" ou "DESPESA"
+    valor: Mapped[float] = mapped_column(Float, nullable=False)
+    categoria: Mapped[str] = mapped_column(String(50), nullable=False)
+    status_pagamento: Mapped[str] = mapped_column(String(20), nullable=False)  # "PENDENTE" ou "PAGO"
+    data_lancamento: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+    data_pagamento: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    loja = relationship("LojaModel")
+

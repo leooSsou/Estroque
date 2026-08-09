@@ -7,11 +7,13 @@ from src.domain.entities.cliente import Cliente
 from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
 from src.domain.repositories.venda_repository import VendaRepository
+from src.domain.repositories.financeiro_lancamento_repository import FinanceiroLancamentoRepository
 from src.domain.repositories.loja_repository import LojaRepository
 from src.domain.repositories.cliente_repository import ClienteRepository
 from src.domain.repositories.produto_repository import ProdutoRepository
 from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
 from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
+from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
 from src.domain.exceptions.business import (
     LojaNaoEncontradaException,
     ClienteNaoEncontradoException,
@@ -48,6 +50,7 @@ class RegistrarVendaAdministrativa:
     def __init__(
         self,
         venda_repo: VendaRepository,
+        financeiro_repo: FinanceiroLancamentoRepository,
         loja_repo: LojaRepository,
         cliente_repo: ClienteRepository,
         produto_repo: ProdutoRepository,
@@ -55,6 +58,7 @@ class RegistrarVendaAdministrativa:
         movimentacao_repo: EstoqueMovimentacaoRepository,
     ) -> None:
         self.venda_repo = venda_repo
+        self.financeiro_repo = financeiro_repo
         self.loja_repo = loja_repo
         self.cliente_repo = cliente_repo
         self.produto_repo = produto_repo
@@ -185,5 +189,19 @@ class RegistrarVendaAdministrativa:
             itens=itens_venda
         )
         venda_salva = self.venda_repo.salvar(venda)
+
+        # 7. Registra Lançamento Financeiro Automático (RECEITA)
+        status_pagamento = "PENDENTE" if venda_salva.status == "PENDENTE" else "PAGO"
+        lancamento = FinanceiroLancamento(
+            loja_id=venda_salva.loja_id,
+            tipo="RECEITA",
+            valor=venda_salva.valor_total,
+            categoria="Venda de Produtos",
+            status_pagamento=status_pagamento,
+            tenant_id=venda_salva.tenant_id,
+            data_lancamento=venda_salva.data_venda,
+            data_pagamento=venda_salva.data_venda if status_pagamento == "PAGO" else None
+        )
+        self.financeiro_repo.salvar(lancamento)
         
         return RegistrarVendaAdministrativaOutput(venda=venda_salva)

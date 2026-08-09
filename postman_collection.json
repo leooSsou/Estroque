@@ -483,6 +483,66 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Gestão Financeira & Caixa",
+			"item": [
+				{
+					"name": "Registrar Despesa",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"loja_id\": \"COLE_O_ID_DA_LOJA\",\n  \"valor\": 350.00,\n  \"categoria\": \"Limpeza / Insumos\",\n  \"status_pagamento\": \"PAGO\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/financeiro/despesas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"financeiro",
+								"despesas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Lançamentos de Caixa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/financeiro/lancamentos?tipo=RECEITA&loja_id=COLE_O_ID_DA_LOJA",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"financeiro",
+								"lancamentos"
+							],
+							"query": [
+								{
+									"key": "tipo",
+									"value": "RECEITA"
+								},
+								{
+									"key": "loja_id",
+									"value": "COLE_O_ID_DA_LOJA"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {

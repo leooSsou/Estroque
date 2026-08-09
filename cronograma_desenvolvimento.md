@@ -182,13 +182,13 @@ gantt
 ##### 👤 Jonathas (Frente 2: Gestão Financeira e Despesas - Fim a Fim)
 *Objetivo: Construir o motor financeiro com lançamentos automáticos de vendas (receitas), controle manual de despesas operacionais e integração com o fluxo de caixa.*
 * **Atividades**:
-  - [ ] Criar a entidade de domínio `FinanceiroLancamento` (tipo receita/despesa, valor, categoria, status de pagamento) e seu contrato de repositório.
-  - [ ] Mapear o modelo SQLAlchemy físico `FinanceiroLancamentoModel` e gerar a migração Alembic correspondente.
-  - [ ] Implementar o repositório SQLAlchemy concreto para lançamentos financeiros.
-  - [ ] Desenvolver o Caso de Uso `RegistrarDespesaLoja` (controle manual de contas a pagar e despesas operacionais da filial).
-  - [ ] Implementar a **Integração de Caixa**: na finalização de uma venda (executada pela Frente 1), disparar automaticamente um lançamento do tipo `RECEITA` vinculado ao caixa da loja correspondente.
-  - [ ] Desenvolver schemas Pydantic e as rotas web no FastAPI (`POST /financeiro/despesas`, `GET /financeiro/lancamentos` com filtros de período e tipo).
-  - [ ] Escrever testes unitários e de integração de fluxo de caixa, verificando a criação automática de receitas e validação de despesas.
+  - [x] Criar a entidade de domínio `FinanceiroLancamento` (tipo receita/despesa, valor, categoria, status de pagamento) e seu contrato de repositório.
+  - [x] Mapear o modelo SQLAlchemy físico `FinanceiroLancamentoModel` e gerar a migração Alembic correspondente.
+  - [x] Implementar o repositório SQLAlchemy concreto para lançamentos financeiros.
+  - [x] Desenvolver o Caso de Uso `RegistrarDespesaLoja` (controle manual de contas a pagar e despesas operacionais da filial).
+  - [x] Implementar a **Integração de Caixa**: na finalização de uma venda (executada pela Frente 1), disparar automaticamente um lançamento do tipo `RECEITA` vinculado ao caixa da loja correspondente.
+  - [x] Desenvolver schemas Pydantic e as rotas web no FastAPI (`POST /financeiro/despesas`, `GET /financeiro/lancamentos` com filtros de período e tipo).
+  - [x] Escrever testes unitários e de integração de fluxo de caixa, verificando a criação automática de receitas e validação de despesas.
 
 
 ---

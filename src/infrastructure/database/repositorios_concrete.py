@@ -1,5 +1,6 @@
 from typing import Optional, List
 from uuid import UUID
+from datetime import datetime
 from sqlalchemy.orm import Session
 from src.domain.repositories.tenant_repository import TenantRepository
 from src.domain.repositories.usuario_repository import UsuarioRepository
@@ -11,6 +12,7 @@ from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoReposit
 from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
 from src.domain.repositories.transferencia_estoque_repository import TransferenciaEstoqueRepository
 from src.domain.repositories.venda_repository import VendaRepository
+from src.domain.repositories.financeiro_lancamento_repository import FinanceiroLancamentoRepository
 from src.domain.repositories.auditoria_fisica_repository import AuditoriaFisicaRepository
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.usuario import Usuario
@@ -24,6 +26,7 @@ from src.domain.entities.transferencia_estoque import TransferenciaEstoque
 from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
 from src.domain.entities.venda import Venda
 from src.domain.entities.item_venda import ItemVenda
+from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
 from src.infrastructure.database.models import (
     TenantModel,
     UsuarioModel,
@@ -38,6 +41,7 @@ from src.infrastructure.database.models import (
     AuditoriaFisicaItemModel,
     VendaModel,
     ItemVendaModel,
+    FinanceiroLancamentoModel,
 )
 
 class RepositorioTenantSQLAlchemy(TenantRepository):
@@ -944,4 +948,86 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
             query = query.filter(VendaModel.loja_id == loja_id)
         models = query.all()
         return [self._to_entity(m) for m in models]
+
+
+class RepositorioFinanceiroLancamentoSQLAlchemy(FinanceiroLancamentoRepository):
+    """
+    Implementação concreta do repositório de lançamentos financeiros usando SQLAlchemy.
+    """
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def _to_entity(self, model: FinanceiroLancamentoModel) -> FinanceiroLancamento:
+        return FinanceiroLancamento(
+            id=model.id,
+            loja_id=model.loja_id,
+            tipo=model.tipo,
+            valor=model.valor,
+            categoria=model.categoria,
+            status_pagamento=model.status_pagamento,
+            tenant_id=model.tenant_id,
+            data_lancamento=model.data_lancamento,
+            data_pagamento=model.data_pagamento
+        )
+
+    def salvar(self, lancamento: FinanceiroLancamento) -> FinanceiroLancamento:
+        self.db.info["tenant_id"] = lancamento.tenant_id
+        model = self.db.query(FinanceiroLancamentoModel).filter(
+            FinanceiroLancamentoModel.id == lancamento.id
+        ).first()
+
+        if not model:
+            model = FinanceiroLancamentoModel(
+                id=lancamento.id,
+                loja_id=lancamento.loja_id,
+                tipo=lancamento.tipo,
+                valor=lancamento.valor,
+                categoria=lancamento.categoria,
+                status_pagamento=lancamento.status_pagamento,
+                tenant_id=lancamento.tenant_id,
+                data_lancamento=lancamento.data_lancamento,
+                data_pagamento=lancamento.data_pagamento
+            )
+            self.db.add(model)
+        else:
+            model.tipo = lancamento.tipo
+            model.valor = lancamento.valor
+            model.categoria = lancamento.categoria
+            model.status_pagamento = lancamento.status_pagamento
+            model.data_pagamento = lancamento.data_pagamento
+
+        self.db.flush()
+        return self._to_entity(model)
+
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[FinanceiroLancamento]:
+        self.db.info["tenant_id"] = tenant_id
+        model = self.db.query(FinanceiroLancamentoModel).filter(
+            FinanceiroLancamentoModel.id == id
+        ).first()
+        if not model:
+            return None
+        return self._to_entity(model)
+
+    def listar_por_filtros(
+        self,
+        tenant_id: UUID,
+        loja_id: Optional[UUID] = None,
+        tipo: Optional[str] = None,
+        data_inicio: Optional[datetime] = None,
+        data_fim: Optional[datetime] = None
+    ) -> List[FinanceiroLancamento]:
+        self.db.info["tenant_id"] = tenant_id
+        query = self.db.query(FinanceiroLancamentoModel)
+        if loja_id:
+            query = query.filter(FinanceiroLancamentoModel.loja_id == loja_id)
+        if tipo:
+            query = query.filter(FinanceiroLancamentoModel.tipo == tipo)
+        if data_inicio:
+            query = query.filter(FinanceiroLancamentoModel.data_lancamento >= data_inicio)
+        if data_fim:
+            query = query.filter(FinanceiroLancamentoModel.data_lancamento <= data_fim)
+        
+        models = query.all()
+        return [self._to_entity(m) for m in models]
+
 

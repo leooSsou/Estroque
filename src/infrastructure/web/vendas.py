@@ -19,6 +19,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioProdutoSQLAlchemy,
     RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioFinanceiroLancamentoSQLAlchemy,
 )
 from src.domain.exceptions.business import (
     LojaNaoEncontradaException,
@@ -48,6 +49,7 @@ def registrar_venda(
     exigir_acesso_loja(request.loja_id, current_user)
 
     venda_repo = RepositorioVendaSQLAlchemy(db)
+    financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
     loja_repo = RepositorioLojaSQLAlchemy(db)
     cliente_repo = RepositorioClienteSQLAlchemy(db)
     produto_repo = RepositorioProdutoSQLAlchemy(db)
@@ -56,6 +58,7 @@ def registrar_venda(
 
     use_case = RegistrarVendaAdministrativa(
         venda_repo=venda_repo,
+        financeiro_repo=financeiro_repo,
         loja_repo=loja_repo,
         cliente_repo=cliente_repo,
         produto_repo=produto_repo,

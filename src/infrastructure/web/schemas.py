@@ -384,3 +384,25 @@ class VendaResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class RegistrarDespesaRequest(BaseModel):
+    loja_id: UUID = Field(..., description="ID da loja associada à despesa.")
+    valor: float = Field(..., gt=0, description="Valor da despesa.")
+    categoria: str = Field(..., min_length=1, max_length=50, description="Categoria da despesa.")
+    status_pagamento: str = Field(..., description="Status do pagamento (PENDENTE ou PAGO).")
+    data_pagamento: Optional[datetime] = Field(None, description="Data de efetivação do pagamento.")
+
+
+class FinanceiroLancamentoResponse(BaseModel):
+    id: UUID
+    loja_id: UUID
+    tipo: str
+    valor: float
+    categoria: str
+    status_pagamento: str
+    data_lancamento: datetime
+    data_pagamento: Optional[datetime] = None
+    tenant_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
