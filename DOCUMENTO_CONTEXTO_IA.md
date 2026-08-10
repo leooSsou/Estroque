@@ -1,7 +1,7 @@
 # 🚀 Documento de Contexto Geral e Handoff do Projeto (Gerenciador de Lojas SaaS)
 
 > **Atenção para qualquer IA ou Desenvolvedor resumindo este projeto:**  
-> Este documento contém **todo o contexto arquitetural, estado atual do código, testes, governança Git e o plano da próxima etapa (Onda 3)**. Leia este documento com atenção antes de tomar qualquer ação no código.
+> Este documento contém **todo o contexto arquitetural, estado atual do código, testes, governança Git e o plano da próxima etapa (Onda 6)**. Leia este documento com atenção antes de tomar qualquer ação no código.
 
 ---
 
@@ -144,7 +144,7 @@ docker compose ps
 ```bash
 docker compose exec backend pytest
 ```
-*(Espera-se que todos os 59 testes passem com 100% de sucesso).*
+*(Espera-se que todos os 107 testes passem com 100% de sucesso).*
 
 ### 4. Executar Migrações do Alembic (se necessário):
 ```bash
@@ -157,6 +157,6 @@ docker compose exec backend alembic upgrade head
 
 > **Para a IA que assumir o atendimento neste novo ambiente:**
 > 1. Diga ao usuário que você leu este documento (`DOCUMENTO_CONTEXTO_IA.md`).
-> 2. Confirme que entende o estado do projeto (Ondas 1 e 2 100% concluídas com 59 testes passando).
-> 3. Informe que estamos prontos para iniciar a **Frente 1 da Onda 3** (desenvolvimento do Ledger de Estoque & Controle de Concorrência Fim a Fim por Leonardo e você).
+> 2. Confirme que entende o estado do projeto (Ondas 1 a 5 100% concluídas com 107 testes passando).
+> 3. Informe que estamos prontos para iniciar a **Frente 1 da Onda 6** (Analytics, Dashboards e Curva ABC).
 > 4. Siga rigorosamente a Clean Architecture e os padrões de teste descritos neste documento.
