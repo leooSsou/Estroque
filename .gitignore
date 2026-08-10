@@ -46,3 +46,6 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Scripts locais de teste
+e2e_simulation.py
