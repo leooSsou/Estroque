@@ -1,0 +1,590 @@
+{
+	"info": {
+		"_postman_id": "9a3e02c0-5417-4576-ba1c-dc1689f6a997",
+		"name": "Gerenciador Lojas SaaS API (Completo)",
+		"description": "Coleção completa para testes de todas as rotas do Gerenciador de Lojas SaaS, incluindo controle de limites de crediário, movimentações físicas de estoque, auditorias e transferências interlojas.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Autenticação",
+			"item": [
+				{
+					"name": "Registrar Tenant e Dono",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome_fantasia\": \"Rede Central\",\n  \"razao_social\": \"Rede Central de Varejo Ltda\",\n  \"cnpj\": \"26.762.981/0001-06\",\n  \"dono_nome\": \"Dono Principal\",\n  \"dono_email\": \"dono@redecentral.com\",\n  \"dono_senha\": \"senha_segura_123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Efetuar Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.access_token) {",
+									"    pm.collectionVariables.set(\"token\", jsonData.access_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"dono@redecentral.com\",\n  \"senha\": \"senha_segura_123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gestão de Lojas",
+			"item": [
+				{
+					"name": "Cadastrar Loja",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Filial Centro\",\n  \"cnpj\": \"02.188.445/0001-72\",\n  \"endereco\": \"Av. Central, 100 - Centro\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/lojas/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"lojas",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Lojas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/lojas/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"lojas",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gestão de Produtos",
+			"item": [
+				{
+					"name": "Cadastrar Produto",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Teclado Mecanico Gamer\",\n  \"sku\": \"TEC-G-01\",\n  \"preco_custo\": 120.00,\n  \"preco_venda\": 250.00,\n  \"markup\": 1.08,\n  \"codigo_barras\": \"7891000123456\",\n  \"fornecedor_id\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/produtos/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"produtos",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Produtos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/produtos/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"produtos",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gestão de Clientes",
+			"item": [
+				{
+					"name": "Cadastrar Cliente (Com Limite)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Carlos Silva\",\n  \"email\": \"carlos.silva@email.com\",\n  \"documento\": \"12345678909\",\n  \"limite_credito\": 1000.00\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/clientes/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clientes",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Clientes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/clientes/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"clientes",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ledger de Estoque",
+			"item": [
+				{
+					"name": "Movimentar Estoque (Entrada/Saída)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"loja_id\": \"COLE_O_ID_DA_LOJA\",\n  \"produto_id\": \"COLE_O_ID_DO_PRODUTO\",\n  \"tipo\": \"ENTRADA\",\n  \"quantidade\": 50,\n  \"motivo\": \"Aprovisionamento inicial\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/estoque/movimentar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"estoque",
+								"movimentar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Saldos Lógicos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/estoque/saldos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"estoque",
+								"saldos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Transferências Interlojas",
+			"item": [
+				{
+					"name": "Solicitar Transferência",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"loja_origem_id\": \"ID_DA_LOJA_ORIGEM\",\n  \"loja_destino_id\": \"ID_DA_LOJA_DESTINO\",\n  \"produto_id\": \"ID_DO_PRODUTO\",\n  \"quantidade\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/estoque/transferencias",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"estoque",
+								"transferencias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Despachar Transferência",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/estoque/transferencias/COLE_O_ID_DA_TRANSFERENCIA/despachar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"estoque",
+								"transferencias",
+								"COLE_O_ID_DA_TRANSFERENCIA",
+								"despachar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Receber Transferência",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"divergencias_justificativa\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/estoque/transferencias/COLE_O_ID_DA_TRANSFERENCIA/receber",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"estoque",
+								"transferencias",
+								"COLE_O_ID_DA_TRANSFERENCIA",
+								"receber"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auditoria Física",
+			"item": [
+				{
+					"name": "Auditar Estoque (Inventário)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"loja_id\": \"ID_DA_LOJA\",\n  \"itens\": [\n    {\n      \"produto_id\": \"ID_DO_PRODUTO\",\n      \"quantidade_fisica\": 45\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/estoque/auditar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"estoque",
+								"auditar"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Vendas e Crediário",
+			"item": [
+				{
+					"name": "Registrar Venda (PIX / Dinheiro)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"loja_id\": \"ID_DA_LOJA\",\n  \"cliente_id\": \"ID_DO_CLIENTE_OPCIONAL\",\n  \"forma_pagamento\": \"PIX\",\n  \"desconto\": 10.00,\n  \"itens\": [\n    {\n      \"produto_id\": \"ID_DO_PRODUTO\",\n      \"quantidade\": 2\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/vendas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registrar Venda (Crediário)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"loja_id\": \"ID_DA_LOJA\",\n  \"cliente_id\": \"ID_DO_CLIENTE_OBRIGATORIO\",\n  \"forma_pagamento\": \"CREDIARIO\",\n  \"desconto\": 0.00,\n  \"itens\": [\n    {\n      \"produto_id\": \"ID_DO_PRODUTO\",\n      \"quantidade\": 1\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/vendas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Vendas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/vendas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter Venda por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/vendas/COLE_O_ID_DA_VENDA",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"vendas",
+								"COLE_O_ID_DA_VENDA"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gestão Financeira & Caixa",
+			"item": [
+				{
+					"name": "Registrar Despesa",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"loja_id\": \"COLE_O_ID_DA_LOJA\",\n  \"valor\": 350.00,\n  \"categoria\": \"Limpeza / Insumos\",\n  \"status_pagamento\": \"PAGO\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/financeiro/despesas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"financeiro",
+								"despesas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Lançamentos de Caixa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/financeiro/lancamentos?tipo=RECEITA&loja_id=COLE_O_ID_DA_LOJA",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"financeiro",
+								"lancamentos"
+							],
+							"query": [
+								{
+									"key": "tipo",
+									"value": "RECEITA"
+								},
+								{
+									"key": "loja_id",
+									"value": "COLE_O_ID_DA_LOJA"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -13,7 +13,11 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioLojaSQLAlchemy,
     RepositorioProdutoSQLAlchemy
 )
-from src.domain.exceptions.business import DomainException
+from src.domain.exceptions.business import (
+    DomainException,
+    LojaNaoEncontradaException,
+    ProdutoNaoEncontradoException,
+)
 
 router = APIRouter(
     prefix="/estoque",
@@ -56,15 +60,10 @@ def auditar_estoque(
     )
 
     try:
-        resultado = use_case.executar(input_data)
-        db.commit()
-        return resultado
+        return use_case.executar(input_data)
+    except (LojaNaoEncontradaException, ProdutoNaoEncontradoException) as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DomainException as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except ValueError as e:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

@@ -15,6 +15,7 @@ class CriarClienteInput:
     email: str
     documento: str
     tenant_id: UUID
+    limite_credito: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -40,7 +41,8 @@ class CriarCliente:
             nome=input_data.nome,
             email=input_data.email,
             documento=input_data.documento,
-            tenant_id=input_data.tenant_id
+            tenant_id=input_data.tenant_id,
+            limite_credito=input_data.limite_credito
         )
 
         # 3. Salva no banco
@@ -93,6 +95,8 @@ class AtualizarClienteInput:
     email: str
     ativo: bool
     tenant_id: UUID
+    limite_credito: float = 0.0
+    saldo_devedor_crediario: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -120,7 +124,9 @@ class AtualizarCliente:
             documento=cliente.documento,
             tenant_id=cliente.tenant_id,
             id=cliente.id,
-            ativo=input_data.ativo
+            ativo=input_data.ativo,
+            limite_credito=input_data.limite_credito,
+            saldo_devedor_crediario=input_data.saldo_devedor_crediario
         )
 
         # 3. Salva no banco

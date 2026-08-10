@@ -91,6 +91,8 @@ class ClienteModel(HasTenant, Base):
     email: Mapped[str] = mapped_column(String(100), nullable=False)
     documento: Mapped[str] = mapped_column(String(14), nullable=False)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    limite_credito: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    saldo_devedor_crediario: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("documento", "tenant_id", name="uq_clientes_documento_tenant"),
@@ -200,3 +202,65 @@ class AuditoriaFisicaItemModel(Base):
     quantidade_sistema: Mapped[int] = mapped_column(nullable=False)
 
     auditoria = relationship("AuditoriaFisicaModel", back_populates="itens")
+
+
+class VendaModel(HasTenant, Base):
+    """
+    Representação física da tabela vendas.
+    """
+    __tablename__ = "vendas"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    cliente_id: Mapped[UUID | None] = mapped_column(ForeignKey("clientes.id", ondelete="RESTRICT"), nullable=True)
+    usuario_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDENTE")
+    forma_pagamento: Mapped[str] = mapped_column(String(20), nullable=False)
+    valor_total: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    desconto: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    data_venda: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+
+    itens = relationship("ItemVendaModel", back_populates="venda", cascade="all, delete-orphan")
+
+
+class ItemVendaModel(Base):
+    """
+    Representação física da tabela itens_venda.
+    """
+    __tablename__ = "itens_venda"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    venda_id: Mapped[UUID] = mapped_column(ForeignKey("vendas.id", ondelete="CASCADE"), nullable=False)
+    produto_id: Mapped[UUID] = mapped_column(ForeignKey("produtos.id", ondelete="RESTRICT"), nullable=False)
+    quantidade: Mapped[int] = mapped_column(nullable=False)
+    preco_unitario: Mapped[float] = mapped_column(Float, nullable=False)
+    tenant_id: Mapped[UUID] = mapped_column(nullable=False)
+
+    venda = relationship("VendaModel", back_populates="itens")
+
+
+class FinanceiroLancamentoModel(HasTenant, Base):
+    """
+    Representação física da tabela financeiro_lancamentos.
+    """
+    __tablename__ = "financeiro_lancamentos"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    tipo: Mapped[str] = mapped_column(String(10), nullable=False)  # "RECEITA" ou "DESPESA"
+    valor: Mapped[float] = mapped_column(Float, nullable=False)
+    categoria: Mapped[str] = mapped_column(String(50), nullable=False)
+    status_pagamento: Mapped[str] = mapped_column(String(20), nullable=False)  # "PENDENTE" ou "PAGO"
+    data_lancamento: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+    data_pagamento: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    loja = relationship("LojaModel")
+

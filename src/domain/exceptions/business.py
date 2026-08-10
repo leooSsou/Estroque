@@ -138,5 +138,21 @@ class TransferenciaNaoEncontradaException(DomainException):
         super().__init__(f"Transferência de estoque com identificador '{identifier}' não foi encontrada.")
 
 
+class LimiteCreditoExcedidoException(DomainException):
+    """
+    Exceção lançada quando uma venda no crediário excede o limite de crédito do cliente.
+    """
+    def __init__(self, cliente_id: str, limite: float, saldo_atual: float, solicitado: float) -> None:
+        self.cliente_id = cliente_id
+        self.limite = limite
+        self.saldo_atual = saldo_atual
+        self.solicitado = solicitado
+        super().__init__(
+            f"Limite de crédito excedido para o cliente '{cliente_id}'. "
+            f"Limite: {limite}, Saldo Devedor Atual: {saldo_atual}, Valor da Compra: {solicitado}."
+        )
+
+
+
 
 
