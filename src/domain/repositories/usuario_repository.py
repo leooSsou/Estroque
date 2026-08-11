@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 from uuid import UUID
+
 from src.domain.entities.usuario import Usuario
+
 
 class UsuarioRepository(ABC):
     """
@@ -14,18 +15,15 @@ class UsuarioRepository(ABC):
         Salva ou atualiza um Usuário na persistência.
         Retorna a entidade salva (com ID se aplicável).
         """
-        pass
 
     @abstractmethod
-    def obter_por_email(self, email: str) -> Optional[Usuario]:
+    def obter_por_email(self, email: str) -> Usuario | None:
         """
         Busca um Usuário cadastrado pelo e-mail.
         """
-        pass
 
     @abstractmethod
-    def obter_por_id(self, id: UUID) -> Optional[Usuario]:
+    def obter_por_id(self, id: UUID) -> Usuario | None:
         """
         Busca um Usuário cadastrado pelo ID.
         """
-        pass

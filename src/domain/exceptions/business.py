@@ -2,7 +2,6 @@ class DomainException(Exception):
     """
     Classe base para todas as exceções de negócio do domínio.
     """
-    pass
 
 
 class CnpjEmUsoException(DomainException):

@@ -1,7 +1,9 @@
 import pytest
-from sqlalchemy import update, delete, text
+from sqlalchemy import delete, text, update
 from sqlalchemy.orm import Session
+
 from src.infrastructure.database.models import TenantModel, UsuarioModel
+
 
 def setup_dados_teste(db_session: Session):
     """

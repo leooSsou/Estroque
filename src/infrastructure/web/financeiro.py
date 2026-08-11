@@ -1,30 +1,33 @@
+from datetime import datetime
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List, Optional
-from datetime import datetime
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
 from src.domain.entities.usuario import Usuario
-from src.infrastructure.web.schemas import RegistrarDespesaRequest, FinanceiroLancamentoResponse
-from src.use_cases.financeiro.registrar_despesa import (
-    RegistrarDespesaLoja,
-    RegistrarDespesaInput,
-)
-from src.use_cases.financeiro.listar_lancamentos import (
-    ListarLancamentosFinanceiros,
-    ListarLancamentosInput,
+from src.domain.exceptions.business import (
+    DomainException,
+    LojaNaoEncontradaException,
 )
 from src.infrastructure.database.repositorios_concrete import (
     RepositorioFinanceiroLancamentoSQLAlchemy,
     RepositorioLojaSQLAlchemy,
 )
-from src.domain.exceptions.business import (
-    DomainException,
-    LojaNaoEncontradaException,
-)
+from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import exigir_acesso_loja
+from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.schemas import (
+    FinanceiroLancamentoResponse,
+    RegistrarDespesaRequest,
+)
+from src.use_cases.financeiro.listar_lancamentos import (
+    ListarLancamentosFinanceiros,
+    ListarLancamentosInput,
+)
+from src.use_cases.financeiro.registrar_despesa import (
+    RegistrarDespesaInput,
+    RegistrarDespesaLoja,
+)
 
 router = APIRouter(
     prefix="/financeiro",
@@ -72,15 +75,15 @@ def registrar_despesa(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
-@router.get("/lancamentos", response_model=List[FinanceiroLancamentoResponse], status_code=status.HTTP_200_OK)
+@router.get("/lancamentos", response_model=list[FinanceiroLancamentoResponse], status_code=status.HTTP_200_OK)
 def listar_lancamentos(
-    loja_id: Optional[UUID] = None,
-    tipo: Optional[str] = None,
-    data_inicio: Optional[datetime] = None,
-    data_fim: Optional[datetime] = None,
+    loja_id: UUID | None = None,
+    tipo: str | None = None,
+    data_inicio: datetime | None = None,
+    data_fim: datetime | None = None,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> List[FinanceiroLancamentoResponse]:
+) -> list[FinanceiroLancamentoResponse]:
     """
     Lista e filtra os lançamentos de fluxo de caixa (receitas/despesas) do inquilino.
     Garante isolamento de filial para gerentes.
@@ -105,6 +108,6 @@ def listar_lancamentos(
 
     try:
         output = use_case.executar(input_data)
-        return [FinanceiroLancamentoResponse.model_validate(l) for l in output.lancamentos]
+        return [FinanceiroLancamentoResponse.model_validate(lancamento) for lancamento in output.lancamentos]
     except DomainException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

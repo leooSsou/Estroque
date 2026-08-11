@@ -1,30 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from src.infrastructure.web.limiter import limiter
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.security.password import BcryptServicoCriptografia
-from src.infrastructure.security.jwt_handler import criar_token_acesso
+from src.domain.entities.usuario import Usuario
+from src.domain.exceptions.business import (
+    CnpjEmUsoException,
+    CredenciaisInvalidasException,
+    EmailEmUsoException,
+)
 from src.infrastructure.database.repositorios_concrete import (
     RepositorioTenantSQLAlchemy,
     RepositorioUsuarioSQLAlchemy,
 )
-from src.use_cases.autenticacao.criar_tenant import CriarTenant, CriarTenantInput
-from src.use_cases.autenticacao.autenticar_usuario import AutenticarUsuario, AutenticarUsuarioInput
-from src.domain.exceptions.business import (
-    CnpjEmUsoException,
-    EmailEmUsoException,
-    CredenciaisInvalidasException,
-)
-from src.domain.entities.usuario import Usuario
+from src.infrastructure.database.session import get_db
+from src.infrastructure.security.jwt_handler import criar_token_acesso
+from src.infrastructure.security.password import BcryptServicoCriptografia
+from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.limiter import limiter
 from src.infrastructure.web.schemas import (
-    RegisterRequest,
-    RegisterResponse,
     LoginRequest,
     LoginResponse,
+    RegisterRequest,
+    RegisterResponse,
     UserResponse,
 )
-from src.infrastructure.web.dependencies import get_current_user
+from src.use_cases.autenticacao.autenticar_usuario import (
+    AutenticarUsuario,
+    AutenticarUsuarioInput,
+)
+from src.use_cases.autenticacao.criar_tenant import CriarTenant, CriarTenantInput
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 

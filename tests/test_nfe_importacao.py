@@ -1,14 +1,16 @@
-import pytest
 import random
-from io import BytesIO
+
+import pytest
 from fastapi.testclient import TestClient
+
 from src.domain.services.nfe_parser import NFeParserService
-from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeInput
 from src.infrastructure.database.repositorios_concrete import (
+    RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioFornecedorSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
 )
+from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeInput
+
 
 def gerar_cnpj_valido() -> str:
     base = [random.randint(0, 9) for _ in range(12)]
@@ -96,7 +98,10 @@ def test_importar_estoque_nfe_fluxo_completo(db_session):
     fornecedor_repo = RepositorioFornecedorSQLAlchemy(db_session)
     produto_repo = RepositorioProdutoSQLAlchemy(db_session)
     saldo_repo = RepositorioEstoqueSaldoSQLAlchemy(db_session)
-    from src.infrastructure.database.repositorios_concrete import RepositorioLojaSQLAlchemy, RepositorioEstoqueMovimentacaoSQLAlchemy
+    from src.infrastructure.database.repositorios_concrete import (
+        RepositorioEstoqueMovimentacaoSQLAlchemy,
+        RepositorioLojaSQLAlchemy,
+    )
     loja_repo = RepositorioLojaSQLAlchemy(db_session)
     movimentacao_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(db_session)
     use_case = ImportarEstoqueNFe(fornecedor_repo, produto_repo, saldo_repo, loja_repo, movimentacao_repo)

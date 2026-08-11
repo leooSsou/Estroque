@@ -1,13 +1,16 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
-from datetime import timedelta, timezone, datetime
 from jose import jwt
-from src.infrastructure.security.password import gerar_hash_senha, verificar_senha
+
 from src.infrastructure.security.jwt_handler import (
+    ALGORITHM,
+    SECRET_KEY,
     criar_token_acesso,
     decodificar_token_acesso,
-    SECRET_KEY,
-    ALGORITHM
 )
+from src.infrastructure.security.password import gerar_hash_senha, verificar_senha
+
 
 def test_hashing_senhas():
     """

@@ -1,20 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi.errors import RateLimitExceeded
 from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
-from src.infrastructure.web.limiter import limiter
 from src.infrastructure.web.auth import router as auth_router
+from src.infrastructure.web.clientes import router as clientes_router
+from src.infrastructure.web.estoque import router as estoque_router
+from src.infrastructure.web.estoque_auditoria import router as auditoria_router
+from src.infrastructure.web.estoque_nfe import router as estoque_nfe_router
+from src.infrastructure.web.financeiro import router as financeiro_router
+from src.infrastructure.web.fornecedores import router as fornecedores_router
+from src.infrastructure.web.limiter import limiter
 from src.infrastructure.web.lojas import router as lojas_router
 from src.infrastructure.web.produtos import router as produtos_router
-from src.infrastructure.web.clientes import router as clientes_router
-from src.infrastructure.web.fornecedores import router as fornecedores_router
-from src.infrastructure.web.estoque import router as estoque_router
-from src.infrastructure.web.estoque_nfe import router as estoque_nfe_router
 from src.infrastructure.web.transferencias import router as transferencias_router
-from src.infrastructure.web.estoque_auditoria import router as auditoria_router
 from src.infrastructure.web.vendas import router as vendas_router
-from src.infrastructure.web.financeiro import router as financeiro_router
 
 app = FastAPI(
     title="Gerenciador de Lojas SaaS - API",

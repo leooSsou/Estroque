@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
-from typing import Optional
+
 
 @dataclass(frozen=True)
 class Produto:
@@ -13,8 +13,8 @@ class Produto:
     preco_venda: float
     markup: float
     tenant_id: UUID
-    codigo_barras: Optional[str] = None
-    fornecedor_id: Optional[UUID] = None
+    codigo_barras: str | None = None
+    fornecedor_id: UUID | None = None
     id: UUID = field(default_factory=uuid4)
     ativo: bool = True
 

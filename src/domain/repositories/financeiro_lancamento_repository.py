@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
+
 from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
+
 
 class FinanceiroLancamentoRepository(ABC):
     """
@@ -11,21 +12,18 @@ class FinanceiroLancamentoRepository(ABC):
     @abstractmethod
     def salvar(self, lancamento: FinanceiroLancamento) -> FinanceiroLancamento:
         """Persiste ou atualiza um lançamento financeiro."""
-        pass
 
     @abstractmethod
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[FinanceiroLancamento]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> FinanceiroLancamento | None:
         """Obtém um lançamento pelo seu ID e tenant_id."""
-        pass
 
     @abstractmethod
     def listar_por_filtros(
         self,
         tenant_id: UUID,
-        loja_id: Optional[UUID] = None,
-        tipo: Optional[str] = None,
-        data_inicio: Optional[datetime] = None,
-        data_fim: Optional[datetime] = None
-    ) -> List[FinanceiroLancamento]:
+        loja_id: UUID | None = None,
+        tipo: str | None = None,
+        data_inicio: datetime | None = None,
+        data_fim: datetime | None = None
+    ) -> list[FinanceiroLancamento]:
         """Lista os lançamentos aplicando filtros opcionais."""
-        pass

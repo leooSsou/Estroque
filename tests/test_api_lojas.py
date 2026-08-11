@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+
 def test_crud_lojas_fluxo_completo(client: TestClient):
     """
     Testa o fluxo completo de cadastro, listagem, busca e edição de Lojas por uma API autenticada.

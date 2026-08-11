@@ -1,20 +1,21 @@
-import pytest
-from uuid import uuid4
 from datetime import datetime
+
+import pytest
 from sqlalchemy.orm import Session
 
-from src.domain.entities.tenant import Tenant
+from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.loja import Loja
 from src.domain.entities.produto import Produto
-from src.domain.entities.estoque_saldo import EstoqueSaldo
-from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
+from src.domain.entities.tenant import Tenant
 from src.infrastructure.database.repositorios_concrete import (
-    RepositorioTenantSQLAlchemy,
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioLojaSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioTenantSQLAlchemy,
 )
+
 
 @pytest.fixture
 def setup_dados(db_session: Session):

@@ -1,5 +1,6 @@
 import re
 
+
 def validar_cnpj(cnpj: str) -> bool:
     """
     Validação matemática do algoritmo do CNPJ (Cadastro Nacional da Pessoa Jurídica).

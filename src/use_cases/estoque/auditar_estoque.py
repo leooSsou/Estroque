@@ -1,16 +1,23 @@
 from dataclasses import dataclass
-from typing import List, Dict, Any
 from uuid import UUID
 
 from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
-from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
-from src.domain.repositories.auditoria_fisica_repository import AuditoriaFisicaRepository
+from src.domain.entities.estoque_saldo import EstoqueSaldo
+from src.domain.exceptions.business import (
+    LojaNaoEncontradaException,
+    ProdutoNaoEncontradoException,
+)
+from src.domain.repositories.auditoria_fisica_repository import (
+    AuditoriaFisicaRepository,
+)
+from src.domain.repositories.estoque_movimentacao_repository import (
+    EstoqueMovimentacaoRepository,
+)
 from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
-from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
 from src.domain.repositories.loja_repository import LojaRepository
 from src.domain.repositories.produto_repository import ProdutoRepository
-from src.domain.exceptions.business import LojaNaoEncontradaException, ProdutoNaoEncontradoException
+
 
 @dataclass(frozen=True)
 class ItemAuditoriaInput:
@@ -21,12 +28,12 @@ class ItemAuditoriaInput:
 class AuditarEstoqueInput:
     loja_id: UUID
     tenant_id: UUID
-    itens_contados: List[ItemAuditoriaInput]
+    itens_contados: list[ItemAuditoriaInput]
 
 @dataclass(frozen=True)
 class AuditarEstoqueOutput:
     auditoria: AuditoriaFisica
-    movimentacoes_geradas: List[EstoqueMovimentacao]
+    movimentacoes_geradas: list[EstoqueMovimentacao]
 
 class AuditarEstoqueLoja:
     """

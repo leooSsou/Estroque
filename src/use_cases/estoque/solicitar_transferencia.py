@@ -1,10 +1,17 @@
 from dataclasses import dataclass
 from uuid import UUID
+
 from src.domain.entities.transferencia_estoque import TransferenciaEstoque
+from src.domain.exceptions.business import (
+    LojaNaoEncontradaException,
+    ProdutoNaoEncontradoException,
+)
 from src.domain.repositories.loja_repository import LojaRepository
 from src.domain.repositories.produto_repository import ProdutoRepository
-from src.domain.repositories.transferencia_estoque_repository import TransferenciaEstoqueRepository
-from src.domain.exceptions.business import LojaNaoEncontradaException, ProdutoNaoEncontradoException
+from src.domain.repositories.transferencia_estoque_repository import (
+    TransferenciaEstoqueRepository,
+)
+
 
 @dataclass(frozen=True)
 class SolicitarTransferenciaInput:

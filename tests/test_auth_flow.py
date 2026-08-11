@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+
 def test_fluxo_autenticacao_completo(client: TestClient):
     """
     Testa o ciclo completo de registro, login e obtenção de dados do usuário logado.

@@ -1,6 +1,5 @@
 import re
 from dataclasses import dataclass, field
-from typing import Optional
 from uuid import UUID, uuid4
 
 # Roles/Perfis válidos no escopo do sistema
@@ -17,7 +16,7 @@ class Usuario:
     role: str
     tenant_id: UUID
     id: UUID = field(default_factory=uuid4)
-    loja_atribuida_id: Optional[UUID] = None
+    loja_atribuida_id: UUID | None = None
 
     def __post_init__(self) -> None:
         # Validações de tipo

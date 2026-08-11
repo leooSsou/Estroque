@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional, List
 from uuid import UUID
+
 from src.domain.entities.loja import Loja
+
 
 class LojaRepository(ABC):
     """
@@ -14,25 +15,21 @@ class LojaRepository(ABC):
         Salva ou atualiza uma Loja na persistência.
         Retorna a entidade salva.
         """
-        pass
 
     @abstractmethod
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Loja]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Loja | None:
         """
         Busca uma Loja cadastrada pelo ID e tenant_id.
         """
-        pass
 
     @abstractmethod
-    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Optional[Loja]:
+    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Loja | None:
         """
         Busca uma Loja cadastrada pelo CNPJ e tenant_id.
         """
-        pass
 
     @abstractmethod
-    def listar_todas(self, tenant_id: UUID) -> List[Loja]:
+    def listar_todas(self, tenant_id: UUID) -> list[Loja]:
         """
         Lista todas as lojas cadastradas para um determinado Tenant.
         """
-        pass

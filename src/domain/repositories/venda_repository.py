@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from uuid import UUID
-from typing import Optional, List
+
 from src.domain.entities.venda import Venda
+
 
 class VendaRepository(ABC):
     """
@@ -12,9 +13,9 @@ class VendaRepository(ABC):
         pass
 
     @abstractmethod
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Venda]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Venda | None:
         pass
 
     @abstractmethod
-    def listar_todas(self, tenant_id: UUID, loja_id: Optional[UUID] = None) -> List[Venda]:
+    def listar_todas(self, tenant_id: UUID, loja_id: UUID | None = None) -> list[Venda]:
         pass

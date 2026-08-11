@@ -1,28 +1,30 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
 from src.domain.entities.usuario import Usuario
-from src.infrastructure.database.repositorios_concrete import RepositorioClienteSQLAlchemy
-from src.use_cases.catalogo.gerenciar_cliente import (
-    CriarCliente,
-    CriarClienteInput,
-    ObterCliente,
-    ListarClientes,
-    AtualizarCliente,
-    AtualizarClienteInput,
-)
-from src.infrastructure.web.schemas import (
-    ClienteCreateRequest,
-    ClienteUpdateRequest,
-    ClienteResponse,
-)
 from src.domain.exceptions.business import (
     ClienteNaoEncontradoException,
     DocumentoClienteEmUsoException,
+)
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioClienteSQLAlchemy,
+)
+from src.infrastructure.database.session import get_db
+from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.schemas import (
+    ClienteCreateRequest,
+    ClienteResponse,
+    ClienteUpdateRequest,
+)
+from src.use_cases.catalogo.gerenciar_cliente import (
+    AtualizarCliente,
+    AtualizarClienteInput,
+    CriarCliente,
+    CriarClienteInput,
+    ListarClientes,
+    ObterCliente,
 )
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
@@ -62,11 +64,11 @@ def criar_cliente(
         )
 
 
-@router.get("/", response_model=List[ClienteResponse])
+@router.get("/", response_model=list[ClienteResponse])
 def listar_clientes(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> List[ClienteResponse]:
+) -> list[ClienteResponse]:
     """
     Retorna a lista de clientes cadastrados para o Tenant ativo.
     """

@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
-from typing import List
 
 from src.domain.entities.loja import Loja
-from src.domain.repositories.loja_repository import LojaRepository
 from src.domain.exceptions.business import (
-    LojaNaoEncontradaException,
     CnpjLojaEmUsoException,
+    LojaNaoEncontradaException,
 )
+from src.domain.repositories.loja_repository import LojaRepository
+
 
 @dataclass(frozen=True)
 class CriarLojaInput:
@@ -71,7 +71,7 @@ class ObterLoja:
 
 @dataclass(frozen=True)
 class ListarLojasOutput:
-    lojas: List[Loja]
+    lojas: list[Loja]
 
 
 class ListarLojas:

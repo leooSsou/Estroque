@@ -1,11 +1,13 @@
-import pytest
 import random
+from datetime import datetime
+from uuid import UUID, uuid4
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from uuid import UUID, uuid4
-from datetime import datetime
-from src.infrastructure.database.models import TenantModel, LojaModel, UsuarioModel
+
+from src.infrastructure.database.models import UsuarioModel
 from src.infrastructure.security.jwt_handler import criar_token_acesso
+
 
 def gerar_cnpj_valido() -> str:
     """Gera um CNPJ matematicamente válido."""
@@ -110,11 +112,11 @@ def test_listar_lancamentos_com_filtros(client: TestClient) -> None:
     assert len(res_list.json()) == 2
 
     # Filtrar por tipo
-    res_tipo = client.get(f"/financeiro/lancamentos?tipo=DESPESA", headers=headers)
+    res_tipo = client.get("/financeiro/lancamentos?tipo=DESPESA", headers=headers)
     assert len(res_tipo.json()) == 2
 
     # Filtrar por receita (deve estar vazia)
-    res_receita = client.get(f"/financeiro/lancamentos?tipo=RECEITA", headers=headers)
+    res_receita = client.get("/financeiro/lancamentos?tipo=RECEITA", headers=headers)
     assert len(res_receita.json()) == 0
 
 

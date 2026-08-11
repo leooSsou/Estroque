@@ -1,6 +1,4 @@
-import pytest
 from fastapi.testclient import TestClient
-from uuid import uuid4
 
 # CNPJs matematicamente válidos
 CNPJ_A = "26.762.981/0001-06"

@@ -1,10 +1,12 @@
-import pytest
-from uuid import uuid4
 from datetime import datetime
+from uuid import uuid4
 
-from src.domain.entities.estoque_saldo import EstoqueSaldo
+import pytest
+
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.exceptions.business import EstoqueInsuficienteException
+
 
 def test_criar_estoque_saldo_valido() -> None:
     loja_id = uuid4()
