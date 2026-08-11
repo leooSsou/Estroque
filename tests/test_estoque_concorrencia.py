@@ -1,34 +1,35 @@
-import pytest
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from fastapi.testclient import TestClient
 from uuid import uuid4
+
+import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.infrastructure.database.models import (
-    Base,
-    TenantModel,
-    LojaModel,
-    ProdutoModel,
-    EstoqueSaldoModel,
-    EstoqueMovimentacaoModel,
-)
-from src.domain.entities.tenant import Tenant
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.loja import Loja
 from src.domain.entities.produto import Produto
-from src.domain.entities.estoque_saldo import EstoqueSaldo
+from src.domain.entities.tenant import Tenant
 from src.domain.exceptions.business import EstoqueInsuficienteException
+from src.infrastructure.database.models import (
+    Base,
+    EstoqueMovimentacaoModel,
+    EstoqueSaldoModel,
+    LojaModel,
+    ProdutoModel,
+    TenantModel,
+)
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
+    RepositorioLojaSQLAlchemy,
+    RepositorioProdutoSQLAlchemy,
+    RepositorioTenantSQLAlchemy,
+)
 from src.use_cases.estoque.registrar_movimentacao import (
     RegistrarMovimentacaoEstoque,
     RegistrarMovimentacaoEstoqueInput,
-)
-from src.infrastructure.database.repositorios_concrete import (
-    RepositorioTenantSQLAlchemy,
-    RepositorioLojaSQLAlchemy,
-    RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioEstoqueMovimentacaoSQLAlchemy,
 )
 
 CNPJ_A = "26.762.981/0001-06"
@@ -248,7 +249,7 @@ def test_concorrencia_debitos_excedidos(setup_pg_concorrencia) -> None:
             return "INSUFICIENTE"
         except Exception as e:
             thread_session.rollback()
-            return f"ERRO: {str(e)}"
+            return f"ERRO: {e!s}"
         finally:
             thread_session.close()
 

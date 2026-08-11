@@ -1,6 +1,7 @@
+import re
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
-import re
+
 
 @dataclass(frozen=True)
 class Cliente:

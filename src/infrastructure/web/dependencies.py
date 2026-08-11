@@ -1,12 +1,15 @@
+from uuid import UUID
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from uuid import UUID
 
+from src.domain.entities.usuario import Usuario
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioUsuarioSQLAlchemy,
+)
 from src.infrastructure.database.session import get_db
 from src.infrastructure.security.jwt_handler import decodificar_token_acesso
-from src.infrastructure.database.repositorios_concrete import RepositorioUsuarioSQLAlchemy
-from src.domain.entities.usuario import Usuario
 
 # Configura o fluxo de token Bearer do OAuth2 (aponta para a rota de login)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")

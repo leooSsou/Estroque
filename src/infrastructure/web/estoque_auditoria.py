@@ -1,22 +1,26 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
 from src.domain.entities.usuario import Usuario
-from src.infrastructure.web.schemas import AuditarEstoqueRequest, AuditarEstoqueResponse
-from src.use_cases.estoque.auditar_estoque import AuditarEstoqueLoja, AuditarEstoqueInput, ItemAuditoriaInput
-from src.infrastructure.database.repositorios_concrete import (
-    RepositorioAuditoriaFisicaSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioEstoqueMovimentacaoSQLAlchemy,
-    RepositorioLojaSQLAlchemy,
-    RepositorioProdutoSQLAlchemy
-)
 from src.domain.exceptions.business import (
     DomainException,
     LojaNaoEncontradaException,
     ProdutoNaoEncontradoException,
+)
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioAuditoriaFisicaSQLAlchemy,
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
+    RepositorioLojaSQLAlchemy,
+    RepositorioProdutoSQLAlchemy,
+)
+from src.infrastructure.database.session import get_db
+from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.schemas import AuditarEstoqueRequest, AuditarEstoqueResponse
+from src.use_cases.estoque.auditar_estoque import (
+    AuditarEstoqueInput,
+    AuditarEstoqueLoja,
+    ItemAuditoriaInput,
 )
 
 router = APIRouter(

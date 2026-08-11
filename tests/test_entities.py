@@ -1,9 +1,11 @@
-import pytest
 from uuid import uuid4
-from src.domain.entities.tenant import Tenant
-from src.domain.entities.usuario import Usuario
+
+import pytest
+
 from src.domain.entities.loja import Loja
 from src.domain.entities.produto import Produto
+from src.domain.entities.tenant import Tenant
+from src.domain.entities.usuario import Usuario
 
 
 def test_criar_tenant_valido():

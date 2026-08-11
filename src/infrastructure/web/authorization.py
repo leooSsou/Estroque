@@ -1,6 +1,9 @@
-from fastapi import HTTPException, status
 from uuid import UUID
+
+from fastapi import HTTPException, status
+
 from src.domain.entities.usuario import Usuario
+
 
 def exigir_acesso_loja(loja_id: UUID, user: Usuario) -> None:
     """

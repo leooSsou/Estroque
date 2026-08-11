@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+
 def test_health_check_endpoint(client: TestClient):
     """
     Testa se o endpoint de health check responde corretamente com HTTP 200 e a mensagem esperada.

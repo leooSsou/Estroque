@@ -1,6 +1,9 @@
-from fastapi.testclient import TestClient
 from datetime import timedelta
+
+from fastapi.testclient import TestClient
+
 from src.infrastructure.security.jwt_handler import criar_token_acesso
+
 
 def test_isolamento_leitura_api_multi_tenant(client: TestClient):
     """

@@ -1,28 +1,30 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
 from src.domain.entities.usuario import Usuario
-from src.infrastructure.database.repositorios_concrete import RepositorioProdutoSQLAlchemy
-from src.use_cases.catalogo.gerenciar_produto import (
-    CriarProduto,
-    CriarProdutoInput,
-    ObterProduto,
-    ListarProdutos,
-    AtualizarProduto,
-    AtualizarProdutoInput,
-)
-from src.infrastructure.web.schemas import (
-    ProdutoCreateRequest,
-    ProdutoUpdateRequest,
-    ProdutoResponse,
-)
 from src.domain.exceptions.business import (
     ProdutoNaoEncontradoException,
     SkuProdutoEmUsoException,
+)
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioProdutoSQLAlchemy,
+)
+from src.infrastructure.database.session import get_db
+from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.schemas import (
+    ProdutoCreateRequest,
+    ProdutoResponse,
+    ProdutoUpdateRequest,
+)
+from src.use_cases.catalogo.gerenciar_produto import (
+    AtualizarProduto,
+    AtualizarProdutoInput,
+    CriarProduto,
+    CriarProdutoInput,
+    ListarProdutos,
+    ObterProduto,
 )
 
 router = APIRouter(prefix="/produtos", tags=["Produtos"])
@@ -66,11 +68,11 @@ def criar_produto(
         )
 
 
-@router.get("/", response_model=List[ProdutoResponse])
+@router.get("/", response_model=list[ProdutoResponse])
 def listar_produtos(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> List[ProdutoResponse]:
+) -> list[ProdutoResponse]:
     """
     Retorna a lista de produtos cadastrados para o Tenant ativo.
     """

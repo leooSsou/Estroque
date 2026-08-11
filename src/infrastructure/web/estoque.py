@@ -1,31 +1,30 @@
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
-from uuid import UUID
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
 from src.domain.entities.usuario import Usuario
+from src.domain.exceptions.business import (
+    EstoqueInsuficienteException,
+    LojaNaoEncontradaException,
+    ProdutoNaoEncontradoException,
+)
 from src.infrastructure.database.repositorios_concrete import (
-    RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioLojaSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
+)
+from src.infrastructure.database.session import get_db
+from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.schemas import (
+    EstoqueSaldoResponse,
+    MovimentacaoEstoqueRequest,
+    MovimentacaoEstoqueResponse,
+    RegistroMovimentacaoEstoqueResponse,
 )
 from src.use_cases.estoque.registrar_movimentacao import (
     RegistrarMovimentacaoEstoque,
     RegistrarMovimentacaoEstoqueInput,
-)
-from src.infrastructure.web.schemas import (
-    MovimentacaoEstoqueRequest,
-    EstoqueSaldoResponse,
-    MovimentacaoEstoqueResponse,
-    RegistroMovimentacaoEstoqueResponse,
-)
-from src.domain.exceptions.business import (
-    LojaNaoEncontradaException,
-    ProdutoNaoEncontradoException,
-    EstoqueInsuficienteException,
 )
 
 router = APIRouter(prefix="/estoque", tags=["Estoque"])
@@ -73,11 +72,11 @@ def movimentar_estoque(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
-@router.get("/saldos", response_model=List[EstoqueSaldoResponse])
+@router.get("/saldos", response_model=list[EstoqueSaldoResponse])
 def listar_saldos(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
-) -> List[EstoqueSaldoResponse]:
+) -> list[EstoqueSaldoResponse]:
     """
     Lista todos os saldos consolidados de estoque vinculados ao Tenant do usuário logado.
     """
@@ -88,11 +87,11 @@ def listar_saldos(
     return [EstoqueSaldoResponse.model_validate(s) for s in saldos]
 
 
-@router.get("/movimentacoes", response_model=List[MovimentacaoEstoqueResponse])
+@router.get("/movimentacoes", response_model=list[MovimentacaoEstoqueResponse])
 def listar_movimentacoes(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user),
-) -> List[MovimentacaoEstoqueResponse]:
+) -> list[MovimentacaoEstoqueResponse]:
     """
     Retorna o histórico imutável (ledger) de movimentações de estoque vinculados ao Tenant.
     """

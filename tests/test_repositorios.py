@@ -1,14 +1,16 @@
 import pytest
 from sqlalchemy.orm import Session
+
+from src.domain.entities.loja import Loja
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.usuario import Usuario
-from src.domain.entities.loja import Loja
 from src.infrastructure.database.models import UsuarioModel
 from src.infrastructure.database.repositorios_concrete import (
+    RepositorioLojaSQLAlchemy,
     RepositorioTenantSQLAlchemy,
     RepositorioUsuarioSQLAlchemy,
-    RepositorioLojaSQLAlchemy,
 )
+
 
 def test_persistir_tenant_e_usuario(db_session: Session) -> None:
     """

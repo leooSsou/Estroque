@@ -1,21 +1,24 @@
 from dataclasses import dataclass
-from uuid import UUID
-from typing import List, Optional
 from datetime import datetime
+from uuid import UUID
+
 from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
-from src.domain.repositories.financeiro_lancamento_repository import FinanceiroLancamentoRepository
+from src.domain.repositories.financeiro_lancamento_repository import (
+    FinanceiroLancamentoRepository,
+)
+
 
 @dataclass(frozen=True)
 class ListarLancamentosInput:
     tenant_id: UUID
-    loja_id: Optional[UUID] = None
-    tipo: Optional[str] = None
-    data_inicio: Optional[datetime] = None
-    data_fim: Optional[datetime] = None
+    loja_id: UUID | None = None
+    tipo: str | None = None
+    data_inicio: datetime | None = None
+    data_fim: datetime | None = None
 
 @dataclass(frozen=True)
 class ListarLancamentosOutput:
-    lancamentos: List[FinanceiroLancamento]
+    lancamentos: list[FinanceiroLancamento]
 
 class ListarLancamentosFinanceiros:
     """

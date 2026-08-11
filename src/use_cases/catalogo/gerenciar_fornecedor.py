@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
-from typing import List
 
 from src.domain.entities.fornecedor import Fornecedor
-from src.domain.repositories.fornecedor_repository import FornecedorRepository
 from src.domain.exceptions.business import (
-    FornecedorNaoEncontradoException,
     CnpjFornecedorEmUsoException,
+    FornecedorNaoEncontradoException,
 )
+from src.domain.repositories.fornecedor_repository import FornecedorRepository
+
 
 @dataclass(frozen=True)
 class CriarFornecedorInput:
@@ -71,7 +71,7 @@ class ObterFornecedor:
 
 @dataclass(frozen=True)
 class ListarFornecedoresOutput:
-    fornecedores: List[Fornecedor]
+    fornecedores: list[Fornecedor]
 
 
 class ListarFornecedores:

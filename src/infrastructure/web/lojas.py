@@ -1,28 +1,28 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
 
+from src.domain.entities.usuario import Usuario
+from src.domain.exceptions.business import (
+    CnpjLojaEmUsoException,
+    LojaNaoEncontradaException,
+)
+from src.infrastructure.database.repositorios_concrete import RepositorioLojaSQLAlchemy
 from src.infrastructure.database.session import get_db
 from src.infrastructure.web.dependencies import get_current_user
-from src.domain.entities.usuario import Usuario
-from src.infrastructure.database.repositorios_concrete import RepositorioLojaSQLAlchemy
-from src.use_cases.catalogo.gerenciar_loja import (
-    CriarLoja,
-    CriarLojaInput,
-    ObterLoja,
-    ListarLojas,
-    AtualizarLoja,
-    AtualizarLojaInput,
-)
 from src.infrastructure.web.schemas import (
     LojaCreateRequest,
-    LojaUpdateRequest,
     LojaResponse,
+    LojaUpdateRequest,
 )
-from src.domain.exceptions.business import (
-    LojaNaoEncontradaException,
-    CnpjLojaEmUsoException,
+from src.use_cases.catalogo.gerenciar_loja import (
+    AtualizarLoja,
+    AtualizarLojaInput,
+    CriarLoja,
+    CriarLojaInput,
+    ListarLojas,
+    ObterLoja,
 )
 
 router = APIRouter(prefix="/lojas", tags=["Lojas"])
@@ -61,11 +61,11 @@ def criar_loja(
         )
 
 
-@router.get("/", response_model=List[LojaResponse])
+@router.get("/", response_model=list[LojaResponse])
 def listar_lojas(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> List[LojaResponse]:
+) -> list[LojaResponse]:
     """
     Retorna a lista de todas as lojas vinculadas ao Tenant do usuário autenticado.
     """

@@ -1,42 +1,37 @@
-import pytest
 import os
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from uuid import uuid4
+
+import pytest
 from fastapi.testclient import TestClient
-from uuid import uuid4, UUID
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.infrastructure.database.models import (
-    Base,
-    TenantModel,
-    LojaModel,
-    ProdutoModel,
-    EstoqueSaldoModel,
-    EstoqueMovimentacaoModel,
-    TransferenciaEstoqueModel,
-)
-from src.domain.entities.tenant import Tenant
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.loja import Loja
 from src.domain.entities.produto import Produto
-from src.domain.entities.estoque_saldo import EstoqueSaldo
-from src.domain.entities.usuario import Usuario
+from src.domain.entities.tenant import Tenant
 from src.domain.entities.transferencia_estoque import TransferenciaEstoque
-from src.domain.exceptions.business import EstoqueInsuficienteException, TransferenciaNaoEncontradaException
-
+from src.domain.entities.usuario import Usuario
+from src.infrastructure.database.models import (
+    Base,
+    EstoqueSaldoModel,
+)
 from src.infrastructure.database.repositorios_concrete import (
-    RepositorioTenantSQLAlchemy,
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioLojaSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioTenantSQLAlchemy,
     RepositorioTransferenciaEstoqueSQLAlchemy,
     RepositorioUsuarioSQLAlchemy,
 )
+from src.use_cases.estoque.despachar_transferencia import (
+    DespacharTransferencia,
+    DespacharTransferenciaInput,
+)
 
-from src.use_cases.estoque.solicitar_transferencia import SolicitarTransferencia, SolicitarTransferenciaInput
-from src.use_cases.estoque.despachar_transferencia import DespacharTransferencia, DespacharTransferenciaInput
-from src.use_cases.estoque.confirmar_recebimento import ConfirmarRecebimento, ConfirmarRecebimentoInput
 
 def gerar_cnpj_valido() -> str:
     """
@@ -548,7 +543,7 @@ def test_concorrencia_despacho_duplo_da_mesma_transferencia():
             results.append("SUCCESS")
         except Exception as e:
             db.rollback()
-            results.append(f"FAIL: {str(e)}")
+            results.append(f"FAIL: {e!s}")
         finally:
             db.close()
 

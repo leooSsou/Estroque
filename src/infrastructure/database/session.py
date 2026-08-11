@@ -1,8 +1,9 @@
 import os
-from typing import Generator
+from collections.abc import Generator
+
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, event, TextClause
-from sqlalchemy.orm import sessionmaker, Session, ORMExecuteState, with_loader_criteria
+from sqlalchemy import TextClause, create_engine, event
+from sqlalchemy.orm import ORMExecuteState, Session, sessionmaker, with_loader_criteria
 
 from src.infrastructure.database.mixins import HasTenant
 

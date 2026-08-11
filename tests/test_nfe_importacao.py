@@ -1,14 +1,16 @@
-import pytest
 import random
-from io import BytesIO
+
+import pytest
 from fastapi.testclient import TestClient
+
 from src.domain.services.nfe_parser import NFeParserService
-from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeInput
 from src.infrastructure.database.repositorios_concrete import (
+    RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioFornecedorSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
 )
+from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeInput
+
 
 def gerar_cnpj_valido() -> str:
     base = [random.randint(0, 9) for _ in range(12)]
@@ -93,10 +95,25 @@ def test_importar_estoque_nfe_fluxo_completo(db_session):
     from uuid import uuid4
     tenant_id = uuid4()
 
+    # Cria o Tenant real para respeitar a FK fornecedores_tenant_id_fkey (PostgreSQL)
+    from src.domain.entities.tenant import Tenant
+    from src.infrastructure.database.repositorios_concrete import RepositorioTenantSQLAlchemy
+    db_session.info["ignore_tenant_filter"] = True
+    RepositorioTenantSQLAlchemy(db_session).salvar(Tenant(
+        id=tenant_id,
+        nome_fantasia="Tenant NFe Teste",
+        razao_social="Tenant NFe Teste Ltda",
+        cnpj="26.762.981/0001-06"
+    ))
+    db_session.info["ignore_tenant_filter"] = False
+
     fornecedor_repo = RepositorioFornecedorSQLAlchemy(db_session)
     produto_repo = RepositorioProdutoSQLAlchemy(db_session)
     saldo_repo = RepositorioEstoqueSaldoSQLAlchemy(db_session)
-    from src.infrastructure.database.repositorios_concrete import RepositorioLojaSQLAlchemy, RepositorioEstoqueMovimentacaoSQLAlchemy
+    from src.infrastructure.database.repositorios_concrete import (
+        RepositorioEstoqueMovimentacaoSQLAlchemy,
+        RepositorioLojaSQLAlchemy,
+    )
     loja_repo = RepositorioLojaSQLAlchemy(db_session)
     movimentacao_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(db_session)
     use_case = ImportarEstoqueNFe(fornecedor_repo, produto_repo, saldo_repo, loja_repo, movimentacao_repo)
@@ -122,8 +139,17 @@ def test_importar_estoque_nfe_fluxo_completo(db_session):
 
     # Criar 10 unidades de estoque com custo 40.0 para prod_1
     from src.domain.entities.estoque_saldo import EstoqueSaldo
+    from src.domain.entities.loja import Loja
+    loja_id = uuid4()
+    loja_repo.salvar(Loja(
+        id=loja_id,
+        nome="Filial NFe Teste",
+        cnpj="02.188.445/0001-72",
+        endereco="Av NFe, 100",
+        tenant_id=tenant_id
+    ))
     saldo_repo.salvar(EstoqueSaldo(
-        loja_id=uuid4(),
+        loja_id=loja_id,
         produto_id=prod_1.id,
         quantidade=10,
         tenant_id=tenant_id

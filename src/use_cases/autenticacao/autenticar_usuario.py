@@ -1,9 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
 from src.domain.entities.usuario import Usuario
-from src.domain.repositories.usuario_repository import UsuarioRepository
+from src.domain.exceptions.business import (
+    CredenciaisInvalidasException,
+    TenantNaoEncontradoException,
+)
 from src.domain.repositories.tenant_repository import TenantRepository
-from src.domain.exceptions.business import CredenciaisInvalidasException, TenantNaoEncontradoException
+from src.domain.repositories.usuario_repository import UsuarioRepository
+
 
 class ServicoCriptografia(ABC):
     """
@@ -14,14 +19,12 @@ class ServicoCriptografia(ABC):
         """
         Retorna True se a senha plana coincidir com o hash, senão False.
         """
-        pass
 
     @abstractmethod
     def gerar_hash(self, senha_plana: str) -> str:
         """
         Gera um hash seguro a partir de uma senha em texto plano.
         """
-        pass
 
 
 @dataclass(frozen=True)

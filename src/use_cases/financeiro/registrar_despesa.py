@@ -1,11 +1,14 @@
 from dataclasses import dataclass
-from uuid import UUID
-from typing import Optional
 from datetime import datetime
+from uuid import UUID
+
 from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
-from src.domain.repositories.financeiro_lancamento_repository import FinanceiroLancamentoRepository
-from src.domain.repositories.loja_repository import LojaRepository
 from src.domain.exceptions.business import LojaNaoEncontradaException
+from src.domain.repositories.financeiro_lancamento_repository import (
+    FinanceiroLancamentoRepository,
+)
+from src.domain.repositories.loja_repository import LojaRepository
+
 
 @dataclass(frozen=True)
 class RegistrarDespesaInput:
@@ -14,7 +17,7 @@ class RegistrarDespesaInput:
     categoria: str
     status_pagamento: str  # "PENDENTE" ou "PAGO"
     tenant_id: UUID
-    data_pagamento: Optional[datetime] = None
+    data_pagamento: datetime | None = None
 
 @dataclass(frozen=True)
 class RegistrarDespesaOutput:

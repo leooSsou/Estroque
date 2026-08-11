@@ -1,6 +1,7 @@
-import pytest
 from fastapi.testclient import TestClient
+
 from src.infrastructure.web.limiter import limiter
+
 
 def test_rate_limiting_login_endpoint(client: TestClient):
     """

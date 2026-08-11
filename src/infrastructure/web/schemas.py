@@ -1,8 +1,7 @@
-from typing import Optional, List
-
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class RegisterRequest(BaseModel):
@@ -96,8 +95,8 @@ class ProdutoCreateRequest(BaseModel):
     preco_custo: float = Field(..., ge=0.0, description="Preço de custo.")
     preco_venda: float = Field(..., ge=0.0, description="Preço de venda.")
     markup: float = Field(..., description="Markup do produto.")
-    codigo_barras: Optional[str] = Field(None, max_length=50, description="Código de barras do produto.")
-    fornecedor_id: Optional[UUID] = Field(None, description="ID do fornecedor associado.")
+    codigo_barras: str | None = Field(None, max_length=50, description="Código de barras do produto.")
+    fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
 
 
 class ProdutoUpdateRequest(BaseModel):
@@ -108,8 +107,8 @@ class ProdutoUpdateRequest(BaseModel):
     preco_custo: float = Field(..., ge=0.0, description="Preço de custo.")
     preco_venda: float = Field(..., ge=0.0, description="Preço de venda.")
     markup: float = Field(..., description="Markup do produto.")
-    codigo_barras: Optional[str] = Field(None, max_length=50, description="Código de barras do produto.")
-    fornecedor_id: Optional[UUID] = Field(None, description="ID do fornecedor associado.")
+    codigo_barras: str | None = Field(None, max_length=50, description="Código de barras do produto.")
+    fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
     ativo: bool = Field(..., description="Status de atividade do produto.")
 
 
@@ -124,8 +123,8 @@ class ProdutoResponse(BaseModel):
     preco_venda: float
     markup: float
     tenant_id: UUID
-    codigo_barras: Optional[str] = None
-    fornecedor_id: Optional[UUID] = None
+    codigo_barras: str | None = None
+    fornecedor_id: UUID | None = None
     ativo: bool
 
     model_config = ConfigDict(from_attributes=True)
@@ -268,7 +267,7 @@ class ImportarNFeResponse(BaseModel):
     Schema para resposta consolidada da importação de NF-e.
     """
     fornecedor: FornecedorResponse
-    itens_processados: List[ItemImportadoNFeResponse]
+    itens_processados: list[ItemImportadoNFeResponse]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -288,7 +287,7 @@ class TransferenciaEstoqueReceberRequest(BaseModel):
     Schema para confirmação de recebimento de transferência de estoque.
     """
     quantidade_recebida: int = Field(..., ge=0, le=1000000, description="Quantidade física recebida.")
-    justificativa: Optional[str] = Field(None, max_length=255, description="Justificativa obrigatória em caso de divergência.")
+    justificativa: str | None = Field(None, max_length=255, description="Justificativa obrigatória em caso de divergência.")
 
 
 class TransferenciaEstoqueResponse(BaseModel):
@@ -303,8 +302,8 @@ class TransferenciaEstoqueResponse(BaseModel):
     quantidade: int
     status: str
     solicitado_por_id: UUID
-    aprovado_por_id: Optional[UUID] = None
-    justificativa: Optional[str] = None
+    aprovado_por_id: UUID | None = None
+    justificativa: str | None = None
     criado_em: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -317,7 +316,7 @@ class ItemAuditoriaRequest(BaseModel):
 
 class AuditarEstoqueRequest(BaseModel):
     loja_id: UUID = Field(..., description="ID da loja onde a auditoria ocorreu.")
-    itens: List[ItemAuditoriaRequest] = Field(..., min_length=1, description="Lista de itens contados.")
+    itens: list[ItemAuditoriaRequest] = Field(..., min_length=1, description="Lista de itens contados.")
 
 
 class AuditoriaFisicaItemResponse(BaseModel):
@@ -333,15 +332,15 @@ class AuditoriaFisicaResponse(BaseModel):
     id: UUID
     loja_id: UUID
     tenant_id: UUID
-    data_auditoria: Optional[datetime] = None
-    itens: List[AuditoriaFisicaItemResponse]
+    data_auditoria: datetime | None = None
+    itens: list[AuditoriaFisicaItemResponse]
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class AuditarEstoqueResponse(BaseModel):
     auditoria: AuditoriaFisicaResponse
-    movimentacoes_geradas: List[MovimentacaoEstoqueResponse]
+    movimentacoes_geradas: list[MovimentacaoEstoqueResponse]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -353,10 +352,10 @@ class ItemVendaRequest(BaseModel):
 
 class RegistrarVendaRequest(BaseModel):
     loja_id: UUID = Field(..., description="ID da loja de origem da venda.")
-    cliente_id: Optional[UUID] = Field(None, description="ID do cliente (obrigatório se forma_pagamento for CREDIARIO).")
+    cliente_id: UUID | None = Field(None, description="ID do cliente (obrigatório se forma_pagamento for CREDIARIO).")
     forma_pagamento: str = Field(..., description="Forma de pagamento (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO).")
     desconto: float = Field(default=0.0, ge=0.0, description="Valor do desconto aplicado.")
-    itens: List[ItemVendaRequest] = Field(..., min_length=1, description="Lista de produtos e quantidades.")
+    itens: list[ItemVendaRequest] = Field(..., min_length=1, description="Lista de produtos e quantidades.")
 
 
 class ItemVendaResponse(BaseModel):
@@ -372,15 +371,15 @@ class ItemVendaResponse(BaseModel):
 class VendaResponse(BaseModel):
     id: UUID
     loja_id: UUID
-    cliente_id: Optional[UUID] = None
+    cliente_id: UUID | None = None
     usuario_id: UUID
     status: str
     forma_pagamento: str
     valor_total: float
     desconto: float
-    data_venda: Optional[datetime] = None
+    data_venda: datetime | None = None
     tenant_id: UUID
-    itens: List[ItemVendaResponse]
+    itens: list[ItemVendaResponse]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -390,7 +389,7 @@ class RegistrarDespesaRequest(BaseModel):
     valor: float = Field(..., gt=0, description="Valor da despesa.")
     categoria: str = Field(..., min_length=1, max_length=50, description="Categoria da despesa.")
     status_pagamento: str = Field(..., description="Status do pagamento (PENDENTE ou PAGO).")
-    data_pagamento: Optional[datetime] = Field(None, description="Data de efetivação do pagamento.")
+    data_pagamento: datetime | None = Field(None, description="Data de efetivação do pagamento.")
 
 
 class FinanceiroLancamentoResponse(BaseModel):
@@ -401,7 +400,7 @@ class FinanceiroLancamentoResponse(BaseModel):
     categoria: str
     status_pagamento: str
     data_lancamento: datetime
-    data_pagamento: Optional[datetime] = None
+    data_pagamento: datetime | None = None
     tenant_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
