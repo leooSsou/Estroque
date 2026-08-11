@@ -1,48 +1,58 @@
-from typing import Optional, List
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
+
 from sqlalchemy.orm import Session
-from src.domain.repositories.tenant_repository import TenantRepository
-from src.domain.repositories.usuario_repository import UsuarioRepository
-from src.domain.repositories.loja_repository import LojaRepository
-from src.domain.repositories.produto_repository import ProdutoRepository
-from src.domain.repositories.cliente_repository import ClienteRepository
-from src.domain.repositories.fornecedor_repository import FornecedorRepository
-from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
-from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
-from src.domain.repositories.transferencia_estoque_repository import TransferenciaEstoqueRepository
-from src.domain.repositories.venda_repository import VendaRepository
-from src.domain.repositories.financeiro_lancamento_repository import FinanceiroLancamentoRepository
-from src.domain.repositories.auditoria_fisica_repository import AuditoriaFisicaRepository
-from src.domain.entities.tenant import Tenant
-from src.domain.entities.usuario import Usuario
+
+from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
+from src.domain.entities.cliente import Cliente
+from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
+from src.domain.entities.estoque_saldo import EstoqueSaldo
+from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
+from src.domain.entities.fornecedor import Fornecedor
+from src.domain.entities.item_venda import ItemVenda
 from src.domain.entities.loja import Loja
 from src.domain.entities.produto import Produto
-from src.domain.entities.cliente import Cliente
-from src.domain.entities.fornecedor import Fornecedor
-from src.domain.entities.estoque_saldo import EstoqueSaldo
-from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
+from src.domain.entities.tenant import Tenant
 from src.domain.entities.transferencia_estoque import TransferenciaEstoque
-from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
+from src.domain.entities.usuario import Usuario
 from src.domain.entities.venda import Venda
-from src.domain.entities.item_venda import ItemVenda
-from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
+from src.domain.repositories.auditoria_fisica_repository import (
+    AuditoriaFisicaRepository,
+)
+from src.domain.repositories.cliente_repository import ClienteRepository
+from src.domain.repositories.estoque_movimentacao_repository import (
+    EstoqueMovimentacaoRepository,
+)
+from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
+from src.domain.repositories.financeiro_lancamento_repository import (
+    FinanceiroLancamentoRepository,
+)
+from src.domain.repositories.fornecedor_repository import FornecedorRepository
+from src.domain.repositories.loja_repository import LojaRepository
+from src.domain.repositories.produto_repository import ProdutoRepository
+from src.domain.repositories.tenant_repository import TenantRepository
+from src.domain.repositories.transferencia_estoque_repository import (
+    TransferenciaEstoqueRepository,
+)
+from src.domain.repositories.usuario_repository import UsuarioRepository
+from src.domain.repositories.venda_repository import VendaRepository
 from src.infrastructure.database.models import (
-    TenantModel,
-    UsuarioModel,
+    AuditoriaFisicaItemModel,
+    AuditoriaFisicaModel,
+    ClienteModel,
+    EstoqueMovimentacaoModel,
+    EstoqueSaldoModel,
+    FinanceiroLancamentoModel,
+    FornecedorModel,
+    ItemVendaModel,
     LojaModel,
     ProdutoModel,
-    ClienteModel,
-    FornecedorModel,
-    EstoqueSaldoModel,
-    EstoqueMovimentacaoModel,
+    TenantModel,
     TransferenciaEstoqueModel,
-    AuditoriaFisicaModel,
-    AuditoriaFisicaItemModel,
+    UsuarioModel,
     VendaModel,
-    ItemVendaModel,
-    FinanceiroLancamentoModel,
 )
+
 
 class RepositorioTenantSQLAlchemy(TenantRepository):
     """
@@ -80,7 +90,7 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
             data_cadastro=model.data_cadastro
         )
 
-    def obter_por_cnpj(self, cnpj: str) -> Optional[Tenant]:
+    def obter_por_cnpj(self, cnpj: str) -> Tenant | None:
         model = self.db.query(TenantModel).filter(TenantModel.cnpj == cnpj).first()
         if not model:
             return None
@@ -92,7 +102,7 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
             data_cadastro=model.data_cadastro
         )
 
-    def obter_por_id(self, id: UUID) -> Optional[Tenant]:
+    def obter_por_id(self, id: UUID) -> Tenant | None:
         model = self.db.query(TenantModel).filter(TenantModel.id == id).first()
         if not model:
             return None
@@ -145,7 +155,7 @@ class RepositorioUsuarioSQLAlchemy(UsuarioRepository):
             loja_atribuida_id=model.loja_atribuida_id
         )
 
-    def obter_por_email(self, email: str) -> Optional[Usuario]:
+    def obter_por_email(self, email: str) -> Usuario | None:
         model = self.db.query(UsuarioModel).filter(UsuarioModel.email == email).first()
         if not model:
             return None
@@ -159,7 +169,7 @@ class RepositorioUsuarioSQLAlchemy(UsuarioRepository):
             loja_atribuida_id=model.loja_atribuida_id
         )
 
-    def obter_por_id(self, id: UUID) -> Optional[Usuario]:
+    def obter_por_id(self, id: UUID) -> Usuario | None:
         model = self.db.query(UsuarioModel).filter(UsuarioModel.id == id).first()
         if not model:
             return None
@@ -212,7 +222,7 @@ class RepositorioLojaSQLAlchemy(LojaRepository):
             ativo=model.ativo
         )
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Loja]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Loja | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(LojaModel).filter(LojaModel.id == id).first()
         if not model:
@@ -226,7 +236,7 @@ class RepositorioLojaSQLAlchemy(LojaRepository):
             ativo=model.ativo
         )
 
-    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Optional[Loja]:
+    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Loja | None:
         self.db.info["tenant_id"] = tenant_id
         cnpj_limpo = "".join(filter(str.isdigit, cnpj))
         model = self.db.query(LojaModel).filter(LojaModel.cnpj == cnpj_limpo).first()
@@ -241,7 +251,7 @@ class RepositorioLojaSQLAlchemy(LojaRepository):
             ativo=model.ativo
         )
 
-    def listar_todas(self, tenant_id: UUID) -> List[Loja]:
+    def listar_todas(self, tenant_id: UUID) -> list[Loja]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(LojaModel).all()
         return [
@@ -307,7 +317,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             ativo=model.ativo
         )
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Produto]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Produto | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ProdutoModel).filter(ProdutoModel.id == id).first()
         if not model:
@@ -325,7 +335,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             ativo=model.ativo
         )
 
-    def obter_por_sku(self, sku: str, tenant_id: UUID) -> Optional[Produto]:
+    def obter_por_sku(self, sku: str, tenant_id: UUID) -> Produto | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ProdutoModel).filter(ProdutoModel.sku == sku).first()
         if not model:
@@ -343,7 +353,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             ativo=model.ativo
         )
 
-    def obter_por_codigo_barras(self, codigo_barras: str, tenant_id: UUID) -> Optional[Produto]:
+    def obter_por_codigo_barras(self, codigo_barras: str, tenant_id: UUID) -> Produto | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ProdutoModel).filter(ProdutoModel.codigo_barras == codigo_barras.strip()).first()
         if not model:
@@ -361,7 +371,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             ativo=model.ativo
         )
 
-    def listar_todos(self, tenant_id: UUID) -> List[Produto]:
+    def listar_todos(self, tenant_id: UUID) -> list[Produto]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(ProdutoModel).all()
         return [
@@ -426,7 +436,7 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             saldo_devedor_crediario=model.saldo_devedor_crediario
         )
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Cliente]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Cliente | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ClienteModel).filter(ClienteModel.id == id).first()
         if not model:
@@ -442,7 +452,7 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             saldo_devedor_crediario=model.saldo_devedor_crediario
         )
 
-    def obter_por_documento(self, documento: str, tenant_id: UUID) -> Optional[Cliente]:
+    def obter_por_documento(self, documento: str, tenant_id: UUID) -> Cliente | None:
         self.db.info["tenant_id"] = tenant_id
         doc_limpo = "".join(filter(str.isdigit, documento))
         model = self.db.query(ClienteModel).filter(ClienteModel.documento == doc_limpo).first()
@@ -459,7 +469,7 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             saldo_devedor_crediario=model.saldo_devedor_crediario
         )
 
-    def listar_todos(self, tenant_id: UUID) -> List[Cliente]:
+    def listar_todos(self, tenant_id: UUID) -> list[Cliente]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(ClienteModel).all()
         return [
@@ -515,7 +525,7 @@ class RepositorioFornecedorSQLAlchemy(FornecedorRepository):
             ativo=model.ativo
         )
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Fornecedor]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Fornecedor | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(FornecedorModel).filter(FornecedorModel.id == id).first()
         if not model:
@@ -529,7 +539,7 @@ class RepositorioFornecedorSQLAlchemy(FornecedorRepository):
             ativo=model.ativo
         )
 
-    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Optional[Fornecedor]:
+    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Fornecedor | None:
         self.db.info["tenant_id"] = tenant_id
         cnpj_limpo = "".join(filter(str.isdigit, cnpj))
         model = self.db.query(FornecedorModel).filter(FornecedorModel.cnpj == cnpj_limpo).first()
@@ -544,7 +554,7 @@ class RepositorioFornecedorSQLAlchemy(FornecedorRepository):
             ativo=model.ativo
         )
 
-    def listar_todos(self, tenant_id: UUID) -> List[Fornecedor]:
+    def listar_todos(self, tenant_id: UUID) -> list[Fornecedor]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(FornecedorModel).all()
         return [
@@ -598,7 +608,7 @@ class RepositorioEstoqueSaldoSQLAlchemy(EstoqueSaldoRepository):
 
     def obter_por_loja_e_produto(
         self, loja_id: UUID, produto_id: UUID, tenant_id: UUID
-    ) -> Optional[EstoqueSaldo]:
+    ) -> EstoqueSaldo | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(EstoqueSaldoModel).filter(
             EstoqueSaldoModel.loja_id == loja_id,
@@ -616,7 +626,7 @@ class RepositorioEstoqueSaldoSQLAlchemy(EstoqueSaldoRepository):
 
     def obter_por_loja_e_produto_com_lock(
         self, loja_id: UUID, produto_id: UUID, tenant_id: UUID
-    ) -> Optional[EstoqueSaldo]:
+    ) -> EstoqueSaldo | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(EstoqueSaldoModel).filter(
             EstoqueSaldoModel.loja_id == loja_id,
@@ -632,7 +642,7 @@ class RepositorioEstoqueSaldoSQLAlchemy(EstoqueSaldoRepository):
             tenant_id=model.tenant_id
         )
 
-    def listar_todos(self, tenant_id: UUID) -> List[EstoqueSaldo]:
+    def listar_todos(self, tenant_id: UUID) -> list[EstoqueSaldo]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(EstoqueSaldoModel).all()
         return [
@@ -680,7 +690,7 @@ class RepositorioEstoqueMovimentacaoSQLAlchemy(EstoqueMovimentacaoRepository):
 
     def listar_por_loja_e_produto(
         self, loja_id: UUID, produto_id: UUID, tenant_id: UUID
-    ) -> List[EstoqueMovimentacao]:
+    ) -> list[EstoqueMovimentacao]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(EstoqueMovimentacaoModel).filter(
             EstoqueMovimentacaoModel.loja_id == loja_id,
@@ -700,7 +710,7 @@ class RepositorioEstoqueMovimentacaoSQLAlchemy(EstoqueMovimentacaoRepository):
             for m in models
         ]
 
-    def listar_todas(self, tenant_id: UUID) -> List[EstoqueMovimentacao]:
+    def listar_todas(self, tenant_id: UUID) -> list[EstoqueMovimentacao]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(EstoqueMovimentacaoModel).order_by(EstoqueMovimentacaoModel.data_movimentacao.desc()).all()
         return [
@@ -768,7 +778,7 @@ class RepositorioTransferenciaEstoqueSQLAlchemy(TransferenciaEstoqueRepository):
         self.db.flush()
         return self._to_entity(model)
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[TransferenciaEstoque]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> TransferenciaEstoque | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(TransferenciaEstoqueModel).filter(
             TransferenciaEstoqueModel.id == id
@@ -777,21 +787,32 @@ class RepositorioTransferenciaEstoqueSQLAlchemy(TransferenciaEstoqueRepository):
             return None
         return self._to_entity(model)
 
-    def listar_por_loja_origem(self, loja_origem_id: UUID, tenant_id: UUID) -> List[TransferenciaEstoque]:
+    def obter_por_id_com_lock(
+        self, id: UUID, tenant_id: UUID
+    ) -> TransferenciaEstoque | None:
+        self.db.info["tenant_id"] = tenant_id
+        model = self.db.query(TransferenciaEstoqueModel).filter(
+            TransferenciaEstoqueModel.id == id
+        ).with_for_update().first()
+        if not model:
+            return None
+        return self._to_entity(model)
+
+    def listar_por_loja_origem(self, loja_origem_id: UUID, tenant_id: UUID) -> list[TransferenciaEstoque]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(TransferenciaEstoqueModel).filter(
             TransferenciaEstoqueModel.loja_origem_id == loja_origem_id
         ).order_by(TransferenciaEstoqueModel.criado_em.desc()).all()
         return [self._to_entity(m) for m in models]
 
-    def listar_por_loja_destino(self, loja_destino_id: UUID, tenant_id: UUID) -> List[TransferenciaEstoque]:
+    def listar_por_loja_destino(self, loja_destino_id: UUID, tenant_id: UUID) -> list[TransferenciaEstoque]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(TransferenciaEstoqueModel).filter(
             TransferenciaEstoqueModel.loja_destino_id == loja_destino_id
         ).order_by(TransferenciaEstoqueModel.criado_em.desc()).all()
         return [self._to_entity(m) for m in models]
 
-    def listar_todas(self, tenant_id: UUID) -> List[TransferenciaEstoque]:
+    def listar_todas(self, tenant_id: UUID) -> list[TransferenciaEstoque]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(TransferenciaEstoqueModel).order_by(
             TransferenciaEstoqueModel.criado_em.desc()
@@ -853,7 +874,7 @@ class RepositorioAuditoriaFisicaSQLAlchemy(AuditoriaFisicaRepository):
         self.db.flush()
         return self._to_entity(model)
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[AuditoriaFisica]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> AuditoriaFisica | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(AuditoriaFisicaModel).filter(
             AuditoriaFisicaModel.id == id
@@ -934,14 +955,14 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
         self.db.flush()
         return self._to_entity(model)
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Venda]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Venda | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(VendaModel).filter(VendaModel.id == id).first()
         if not model:
             return None
         return self._to_entity(model)
 
-    def listar_todas(self, tenant_id: UUID, loja_id: Optional[UUID] = None) -> List[Venda]:
+    def listar_todas(self, tenant_id: UUID, loja_id: UUID | None = None) -> list[Venda]:
         self.db.info["tenant_id"] = tenant_id
         query = self.db.query(VendaModel)
         if loja_id:
@@ -999,7 +1020,7 @@ class RepositorioFinanceiroLancamentoSQLAlchemy(FinanceiroLancamentoRepository):
         self.db.flush()
         return self._to_entity(model)
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[FinanceiroLancamento]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> FinanceiroLancamento | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(FinanceiroLancamentoModel).filter(
             FinanceiroLancamentoModel.id == id
@@ -1011,11 +1032,11 @@ class RepositorioFinanceiroLancamentoSQLAlchemy(FinanceiroLancamentoRepository):
     def listar_por_filtros(
         self,
         tenant_id: UUID,
-        loja_id: Optional[UUID] = None,
-        tipo: Optional[str] = None,
-        data_inicio: Optional[datetime] = None,
-        data_fim: Optional[datetime] = None
-    ) -> List[FinanceiroLancamento]:
+        loja_id: UUID | None = None,
+        tipo: str | None = None,
+        data_inicio: datetime | None = None,
+        data_fim: datetime | None = None
+    ) -> list[FinanceiroLancamento]:
         self.db.info["tenant_id"] = tenant_id
         query = self.db.query(FinanceiroLancamentoModel)
         if loja_id:
