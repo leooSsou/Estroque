@@ -203,6 +203,7 @@ gantt
   - [x] **KPIs do Dashboard**: Criar o endpoint `GET /analytics/dashboard` retornando faturamento, ticket médio, quantidade de produtos em Estoque Crítico (abaixo do mínimo) e Rupturas (estoque zerado).
   - [x] **Algoritmo de Curva ABC**: Desenvolver o endpoint `GET /analytics/curva-abc` que calcula a representatividade acumulada de faturamento de cada produto e os classifica em classes A (80%), B (15%) e C (5%) baseando-se no Princípio de Pareto.
   - [x] **Testes de BI**: Escrever testes automatizados validando a exatidão matemática das métricas e o isolamento multi-tenant dos relatórios.
+* **⚠️ Status de Integração**: Código pronto (PR #10) mas **aguardando validação conjunta com a Frente 2** antes do merge em `develop`. Após a validação, promover `develop` → `main` (PR #9).
 
 ##### Frente 2: Processamento Assíncrono e Relatórios (Celery & Redis) -> **RESPONSÁVEL: Leonardo**
 *Objetivo: Implementar a infraestrutura de background tasks para fechamentos automatizados de caixa e notificações.*
@@ -212,6 +213,7 @@ gantt
   - [ ] **Scheduler (Celery Beat)**: Criar a rotina agendada que roda automaticamente toda noite compilando as receitas, despesas e vendas do dia de cada Tenant.
   - [ ] **Envio SMTP**: Desenvolver a integração SMTP para disparo de e-mails para o proprietário (`DONO`) do tenant, com tratamento de filas e re-tentativas em caso de falha.
   - [ ] **Testes Assíncronos**: Escrever testes para validar o comportamento dos workers do Celery e certificar que as tarefas consolidam os dados sem vazamentos.
+* **⚠️ Bloqueia o merge da Frente 1 (PR #10) e a promoção `develop` → `main` (PR #9)**: a Onda 6 só entra por completo após validação conjunta das duas frentes.
 
 ---
 
