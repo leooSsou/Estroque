@@ -57,6 +57,14 @@ jobs:
             echo "Serviço 'backend' não encontrado. Banco de testes deve ser criado manualmente."
           fi
 
+      - name: Validar migrações Alembic
+        run: |
+          if docker compose config --services | grep -q "^backend$"; then
+            docker compose exec -T backend alembic upgrade head
+          else
+            PYTHONPATH=. alembic upgrade head
+          fi
+
       - name: Executar suite de testes via Pytest
         run: |
           if docker compose config --services | grep -q "^backend$"; then
