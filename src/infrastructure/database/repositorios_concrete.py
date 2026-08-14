@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
@@ -16,6 +17,7 @@ from src.domain.entities.tenant import Tenant
 from src.domain.entities.transferencia_estoque import TransferenciaEstoque
 from src.domain.entities.usuario import Usuario
 from src.domain.entities.venda import Venda
+from src.domain.repositories.analytics_repository import AnalyticsRepository
 from src.domain.repositories.auditoria_fisica_repository import (
     AuditoriaFisicaRepository,
 )
@@ -286,6 +288,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
                 preco_custo=produto.preco_custo,
                 preco_venda=produto.preco_venda,
                 markup=produto.markup,
+                estoque_minimo=produto.estoque_minimo,
                 codigo_barras=produto.codigo_barras,
                 fornecedor_id=produto.fornecedor_id,
                 tenant_id=produto.tenant_id,
@@ -298,6 +301,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             model.preco_custo = produto.preco_custo
             model.preco_venda = produto.preco_venda
             model.markup = produto.markup
+            model.estoque_minimo = produto.estoque_minimo
             model.codigo_barras = produto.codigo_barras
             model.fornecedor_id = produto.fornecedor_id
             model.ativo = produto.ativo
@@ -312,6 +316,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             preco_venda=model.preco_venda,
             markup=model.markup,
             tenant_id=model.tenant_id,
+            estoque_minimo=model.estoque_minimo,
             codigo_barras=model.codigo_barras,
             fornecedor_id=model.fornecedor_id,
             ativo=model.ativo
@@ -330,6 +335,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             preco_venda=model.preco_venda,
             markup=model.markup,
             tenant_id=model.tenant_id,
+            estoque_minimo=model.estoque_minimo,
             codigo_barras=model.codigo_barras,
             fornecedor_id=model.fornecedor_id,
             ativo=model.ativo
@@ -348,6 +354,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             preco_venda=model.preco_venda,
             markup=model.markup,
             tenant_id=model.tenant_id,
+            estoque_minimo=model.estoque_minimo,
             codigo_barras=model.codigo_barras,
             fornecedor_id=model.fornecedor_id,
             ativo=model.ativo
@@ -383,6 +390,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
                 preco_venda=m.preco_venda,
                 markup=m.markup,
                 tenant_id=m.tenant_id,
+                estoque_minimo=m.estoque_minimo,
                 codigo_barras=m.codigo_barras,
                 fornecedor_id=m.fornecedor_id,
                 ativo=m.ativo
@@ -1050,5 +1058,115 @@ class RepositorioFinanceiroLancamentoSQLAlchemy(FinanceiroLancamentoRepository):
         
         models = query.all()
         return [self._to_entity(m) for m in models]
+
+
+class RepositorioAnalyticsSQLAlchemy(AnalyticsRepository):
+    """
+    Implementação concreta do repositório de analytics usando SQLAlchemy.
+    As consultas agregadas dependem do filtro global de tenant aplicado na sessão.
+    """
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def _filtrar_periodo(self, query, campo, data_inicio: datetime | None, data_fim: datetime | None):
+        if data_inicio:
+            query = query.filter(campo >= data_inicio)
+        if data_fim:
+            query = query.filter(campo <= data_fim)
+        return query
+
+    def obter_resumo_vendas(
+        self,
+        tenant_id: UUID,
+        loja_id: UUID | None = None,
+        data_inicio: datetime | None = None,
+        data_fim: datetime | None = None,
+    ) -> tuple[float, int, float]:
+        self.db.info["tenant_id"] = tenant_id
+
+        vendas_query = self.db.query(VendaModel).filter(VendaModel.status != "CANCELADO")
+        if loja_id:
+            vendas_query = vendas_query.filter(VendaModel.loja_id == loja_id)
+        vendas_query = self._filtrar_periodo(vendas_query, VendaModel.data_venda, data_inicio, data_fim)
+
+        vendas = vendas_query.all()
+        faturamento_bruto = round(sum(v.valor_total for v in vendas), 2)
+        numero_vendas = len(vendas)
+
+        if numero_vendas == 0:
+            return faturamento_bruto, 0, 0.0
+
+        ids_vendas = [v.id for v in vendas]
+
+        itens = (
+            self.db.query(ItemVendaModel, ProdutoModel)
+            .join(ProdutoModel, ProdutoModel.id == ItemVendaModel.produto_id)
+            .filter(ItemVendaModel.venda_id.in_(ids_vendas))
+            .all()
+        )
+        cmv = round(sum(item_model.quantidade * produto_model.preco_custo for item_model, produto_model in itens), 2)
+
+        return faturamento_bruto, numero_vendas, cmv
+
+    def obter_estoque_critico_e_rupturas(
+        self,
+        tenant_id: UUID,
+        loja_id: UUID | None = None,
+    ) -> tuple[int, int]:
+        self.db.info["tenant_id"] = tenant_id
+
+        query = self.db.query(EstoqueSaldoModel, ProdutoModel).join(
+            ProdutoModel, ProdutoModel.id == EstoqueSaldoModel.produto_id
+        )
+        if loja_id:
+            query = query.filter(EstoqueSaldoModel.loja_id == loja_id)
+
+        pares = query.all()
+
+        estoque_critico = 0
+        rupturas = 0
+        for saldo, produto in pares:
+            if saldo.quantidade == 0:
+                rupturas += 1
+            elif saldo.quantidade <= produto.estoque_minimo:
+                estoque_critico += 1
+
+        return estoque_critico, rupturas
+
+    def obter_faturamento_por_produto(
+        self,
+        tenant_id: UUID,
+        loja_id: UUID | None = None,
+        data_inicio: datetime | None = None,
+        data_fim: datetime | None = None,
+    ) -> list[tuple[UUID, str, str, float]]:
+        self.db.info["tenant_id"] = tenant_id
+
+        vendas_query = self.db.query(VendaModel.id).filter(VendaModel.status != "CANCELADO")
+        if loja_id:
+            vendas_query = vendas_query.filter(VendaModel.loja_id == loja_id)
+        vendas_query = self._filtrar_periodo(vendas_query, VendaModel.data_venda, data_inicio, data_fim)
+        ids_vendas = [v[0] for v in vendas_query.all()]
+
+        if not ids_vendas:
+            return []
+
+        linhas = (
+            self.db.query(
+                ProdutoModel.id,
+                ProdutoModel.nome,
+                ProdutoModel.sku,
+                func.coalesce(func.sum(ItemVendaModel.quantidade * ItemVendaModel.preco_unitario), 0.0),
+            )
+            .join(ItemVendaModel, ItemVendaModel.produto_id == ProdutoModel.id)
+            .filter(ItemVendaModel.venda_id.in_(ids_vendas))
+            .group_by(ProdutoModel.id, ProdutoModel.nome, ProdutoModel.sku)
+            .all()
+        )
+
+        return [
+            (produto_id, nome, sku, round(float(faturamento), 2))
+            for produto_id, nome, sku, faturamento in linhas
+        ]
 
 

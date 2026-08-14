@@ -95,6 +95,7 @@ class ProdutoCreateRequest(BaseModel):
     preco_custo: float = Field(..., ge=0.0, description="Preço de custo.")
     preco_venda: float = Field(..., ge=0.0, description="Preço de venda.")
     markup: float = Field(..., description="Markup do produto.")
+    estoque_minimo: int = Field(default=0, ge=0, description="Quantidade mínima para alerta de reposição.")
     codigo_barras: str | None = Field(None, max_length=50, description="Código de barras do produto.")
     fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
 
@@ -107,6 +108,7 @@ class ProdutoUpdateRequest(BaseModel):
     preco_custo: float = Field(..., ge=0.0, description="Preço de custo.")
     preco_venda: float = Field(..., ge=0.0, description="Preço de venda.")
     markup: float = Field(..., description="Markup do produto.")
+    estoque_minimo: int | None = Field(None, ge=0, description="Quantidade mínima para alerta de reposição.")
     codigo_barras: str | None = Field(None, max_length=50, description="Código de barras do produto.")
     fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
     ativo: bool = Field(..., description="Status de atividade do produto.")
@@ -123,6 +125,7 @@ class ProdutoResponse(BaseModel):
     preco_venda: float
     markup: float
     tenant_id: UUID
+    estoque_minimo: int
     codigo_barras: str | None = None
     fornecedor_id: UUID | None = None
     ativo: bool
@@ -402,6 +405,35 @@ class FinanceiroLancamentoResponse(BaseModel):
     data_lancamento: datetime
     data_pagamento: datetime | None = None
     tenant_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DashboardResponse(BaseModel):
+    """
+    Schema de resposta dos KPIs consolidados do painel analítico.
+    """
+    faturamento_bruto: float
+    numero_vendas: int
+    ticket_medio: float
+    cmv: float
+    margem_lucro: float
+    estoque_critico: int
+    rupturas: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CurvaABCItemResponse(BaseModel):
+    """
+    Schema de resposta de um produto na Curva ABC.
+    """
+    produto_id: UUID
+    nome: str
+    sku: str
+    faturamento: float
+    percentual_acumulado: float
+    classe: str
 
     model_config = ConfigDict(from_attributes=True)
 

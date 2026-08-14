@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from src.infrastructure.web.analytics import router as analytics_router
 from src.infrastructure.web.auth import router as auth_router
 from src.infrastructure.web.clientes import router as clientes_router
 from src.infrastructure.web.estoque import router as estoque_router
@@ -39,6 +40,7 @@ app.include_router(transferencias_router)
 app.include_router(auditoria_router)
 app.include_router(vendas_router)
 app.include_router(financeiro_router)
+app.include_router(analytics_router)
 
 
 import os

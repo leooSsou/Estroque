@@ -17,6 +17,7 @@ class CriarProdutoInput:
     preco_venda: float
     markup: float
     tenant_id: UUID
+    estoque_minimo: int = 0
     codigo_barras: str | None = None
     fornecedor_id: UUID | None = None
 
@@ -47,6 +48,7 @@ class CriarProduto:
             preco_venda=input_data.preco_venda,
             markup=input_data.markup,
             tenant_id=input_data.tenant_id,
+            estoque_minimo=input_data.estoque_minimo,
             codigo_barras=input_data.codigo_barras,
             fornecedor_id=input_data.fornecedor_id
         )
@@ -103,6 +105,7 @@ class AtualizarProdutoInput:
     markup: float
     ativo: bool
     tenant_id: UUID
+    estoque_minimo: int | None = None
     codigo_barras: str | None = None
     fornecedor_id: UUID | None = None
 
@@ -133,6 +136,7 @@ class AtualizarProduto:
             preco_venda=input_data.preco_venda,
             markup=input_data.markup,
             tenant_id=produto.tenant_id,
+            estoque_minimo=input_data.estoque_minimo if input_data.estoque_minimo is not None else produto.estoque_minimo,
             codigo_barras=input_data.codigo_barras if input_data.codigo_barras is not None else produto.codigo_barras,
             fornecedor_id=input_data.fornecedor_id if input_data.fornecedor_id is not None else produto.fornecedor_id,
             id=produto.id,

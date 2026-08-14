@@ -13,6 +13,7 @@ class Produto:
     preco_venda: float
     markup: float
     tenant_id: UUID
+    estoque_minimo: int = 0
     codigo_barras: str | None = None
     fornecedor_id: UUID | None = None
     id: UUID = field(default_factory=uuid4)
@@ -38,6 +39,9 @@ class Produto:
 
         if not isinstance(self.tenant_id, UUID):
             raise ValueError("O tenant_id deve ser um UUID válido.")
+
+        if not isinstance(self.estoque_minimo, int) or self.estoque_minimo < 0:
+            raise ValueError("O estoque mínimo deve ser um número inteiro maior ou igual a zero.")
 
         if self.codigo_barras is not None:
             if not isinstance(self.codigo_barras, str):

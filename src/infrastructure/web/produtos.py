@@ -48,6 +48,7 @@ def criar_produto(
         preco_venda=request.preco_venda,
         markup=request.markup,
         tenant_id=current_user.tenant_id,
+        estoque_minimo=request.estoque_minimo,
         codigo_barras=request.codigo_barras,
         fornecedor_id=request.fornecedor_id
     )
@@ -124,6 +125,7 @@ def atualizar_produto(
         preco_custo=request.preco_custo,
         preco_venda=request.preco_venda,
         markup=request.markup,
+        estoque_minimo=request.estoque_minimo,
         codigo_barras=request.codigo_barras,
         fornecedor_id=request.fornecedor_id,
         ativo=request.ativo,
