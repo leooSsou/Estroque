@@ -1,4 +1,4 @@
-# 🚀 Documento de Contexto Geral e Handoff do Projeto (Gerenciador de Lojas SaaS)
+# 🚀 Documento de Contexto Geral e Handoff do Projeto (Estroque)
 
 > **Atenção para qualquer IA ou Desenvolvedor resumindo este projeto:**  
 > Este documento contém **todo o contexto arquitetural, estado atual do código, testes, governança Git e o plano da próxima etapa (Onda 6)**. Leia este documento com atenção antes de tomar qualquer ação no código.
@@ -7,7 +7,7 @@
 
 ## 📌 1. Visão Geral do Projeto & Tech Stack
 
-O **Gerenciador de Lojas SaaS** é uma plataforma web de retaguarda e controle financeiro/estoque multiloja com isolamento lógico multi-tenant (*Shared Database, Shared Schema*).
+O **Estroque** é uma plataforma web de retaguarda e controle financeiro/estoque multiloja com isolamento lógico multi-tenant (*Shared Database, Shared Schema*).
 
 ### 🛠️ Tecnologias Utilizadas:
 * **Backend**: Python 3.12+ com **FastAPI**.
