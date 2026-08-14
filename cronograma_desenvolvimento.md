@@ -1,4 +1,4 @@
-# Cronograma de Desenvolvimento: Gerenciador de Lojas SaaS (Fase 1)
+# Cronograma de Desenvolvimento: Estroque (Fase 1)
 
 Este documento registra o planejamento técnico macro, as ondas de entrega e o progresso das tarefas concluídas e pendentes para a construção da Fase 1 da plataforma.
 

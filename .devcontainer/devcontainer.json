@@ -1,5 +1,5 @@
 {
-  "name": "Gerenciador de Lojas SaaS - Dev Container",
+  "name": "Estroque - Dev Container",
   // Aponta para o arquivo docker-compose.yml existente na raiz do projeto
   "dockerComposeFile": [
     "../docker-compose.yml"

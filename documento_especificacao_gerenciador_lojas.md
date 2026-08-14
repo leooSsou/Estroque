@@ -1,10 +1,10 @@
-# Especificação Técnica e Funcional: Gerenciador de Lojas SaaS (Fase 1)
+# Especificação Técnica e Funcional: Estroque (Fase 1)
 
 ---
 
 ## Resumo Executivo
 
-Este documento apresenta a especificação técnica e funcional consolidada para a construção da primeira fase do **Gerenciador de Lojas SaaS**, uma plataforma web multi-tenant sob a filosofia de Clean Architecture voltada para o gerenciamento multilojas e de retaguarda. 
+Este documento apresenta a especificação técnica e funcional consolidada para a construção da primeira fase do **Estroque**, uma plataforma web multi-tenant sob a filosofia de Clean Architecture voltada para o gerenciamento multilojas e de retaguarda. 
 
 O sistema foi projetado para operar sob o modelo de **Software como Serviço (SaaS)** com isolamento lógico rígido de dados (**Multi-tenancy**), permitindo que múltiplos lojistas e franquias gerenciem seus catálogos de produtos, controlem estoques por filial através de importação de Notas Fiscais (XML de NF-e), realizem transferências internas de mercadorias entre filiais, efetuem vendas administrativas com faturamento direto na retaguarda, controlem contas a pagar/receber e analisem relatórios de desempenho e saúde financeira do negócio.
 
