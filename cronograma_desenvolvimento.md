@@ -202,7 +202,7 @@ gantt
   - [x] **Consolidação de Margens**: Desenvolver a lógica de cálculo de Ticket Médio, Faturamento Bruto vs Custo de Mercadorias Vendidas (CMV) para gerar a margem de lucro real.
   - [x] **KPIs do Dashboard**: Criar o endpoint `GET /analytics/dashboard` retornando faturamento, ticket médio, quantidade de produtos em Estoque Crítico (abaixo do mínimo) e Rupturas (estoque zerado).
   - [x] **Algoritmo de Curva ABC**: Desenvolver o endpoint `GET /analytics/curva-abc` que calcula a representatividade acumulada de faturamento de cada produto e os classifica em classes A (80%), B (15%) e C (5%) baseando-se no Princípio de Pareto.
-* **Status de Integração**: Onda 6 concluída e validada em conjunto (Frente 1 + Frente 2).
+* **Status de Integração**: Onda 6 100% concluída e validada em conjunto (Frente 1 + Frente 2).
 
 ##### Frente 2: Processamento Assíncrono e Relatórios (Celery & Redis) -> **RESPONSÁVEL: Leonardo**
 *Objetivo: Implementar a infraestrutura de background tasks para fechamentos automatizados de caixa e notificações.*

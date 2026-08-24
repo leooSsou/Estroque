@@ -64,7 +64,6 @@ jobs:
           else
             PYTHONPATH=. alembic upgrade head
           fi
-
       - name: Executar suite de testes via Pytest
         run: |
           if docker compose config --services | grep -q "^backend$"; then

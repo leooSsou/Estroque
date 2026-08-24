@@ -148,7 +148,7 @@ docker compose ps
 ```bash
 docker compose exec backend pytest
 ```
-*(Espera-se que todos os 121 testes passem com 100% de sucesso).*
+*(Espera-se que todos os testes passem com 100% de sucesso).*
 
 ### 4. Executar Migrações do Alembic (se necessário):
 ```bash
@@ -167,7 +167,6 @@ docker compose exec backend pytest --cov=src --cov-fail-under=75
 
 > **Para a IA que assumir o atendimento neste novo ambiente:**
 > 1. Diga ao usuário que você leu este documento (`DOCUMENTO_CONTEXTO_IA.md`).
-> 2. Confirme que entende o estado do projeto (Ondas 1 a 5 100% concluídas com 121 testes passando, CI verde).
-> 3. Informe que estamos prontos para iniciar a **Frente 1 da Onda 6** (Analytics, Dashboards e Curva ABC).
-> 4. Siga rigorosamente a Clean Architecture e os padrões de teste descritos neste documento.
-> 5. Siga o fluxo de integração do `AGENTS.md`: branch própria a partir de `develop`, PR com CI verde, nunca push direto.
+> 2. Confirme que entende o estado do projeto (Ondas 1 a 6 100% concluídas com testes passando e CI verde).
+> 3. Siga rigorosamente a Clean Architecture e os padrões de teste descritos neste documento.
+> 4. Siga o fluxo de integração do `AGENTS.md`: branch própria a partir de `develop`, PR com CI verde, nunca push direto.
