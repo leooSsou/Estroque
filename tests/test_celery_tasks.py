@@ -1,10 +1,12 @@
-import pytest
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from src.infrastructure.tasks.fechamento_diario import enviar_fechamento_diario_todos_tenants
+
 from src.infrastructure.services.email_service import ConsoleEmailService
-from tests.test_api_analytics import registrar_e_autenticar, gerar_cnpj_valido
-from uuid import uuid4
+from src.infrastructure.tasks.fechamento_diario import enviar_fechamento_diario_todos_tenants
+from tests.test_api_analytics import gerar_cnpj_valido, registrar_e_autenticar
+
 
 def test_celery_task_fechamento_diario(client: TestClient, db_session: Session) -> None:
     # 1. Limpa os e-mails enviados
