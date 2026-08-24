@@ -1,10 +1,11 @@
-import pytest
+from uuid import UUID, uuid4
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from uuid import UUID, uuid4
-from src.infrastructure.database.models import UsuarioModel, LojaModel, ProdutoModel
+
+from src.infrastructure.database.models import UsuarioModel
 from src.infrastructure.security.jwt_handler import criar_token_acesso
-from tests.test_api_analytics import registrar_e_autenticar, gerar_cnpj_valido
+from tests.test_api_analytics import gerar_cnpj_valido, registrar_e_autenticar
 
 def test_vendas_e_financeiro_auth_bypass(client: TestClient) -> None:
     """Verifica que as novas rotas de Vendas, Financeiro e Analytics requerem autenticação."""
