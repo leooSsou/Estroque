@@ -40,6 +40,36 @@ services:
       - postgres
       - redis
 
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saas_celery_worker
+    command: celery -A src.infrastructure.tasks.celery_app worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas"
+      DATABASE_TEST_URL: "sqlite:///:memory:"
+    depends_on:
+      - postgres
+      - redis
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saas_celery_beat
+    command: celery -A src.infrastructure.tasks.celery_app beat --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas"
+      DATABASE_TEST_URL: "sqlite:///:memory:"
+    depends_on:
+      - postgres
+      - redis
+
 volumes:
   postgres_data:
   redis_data:

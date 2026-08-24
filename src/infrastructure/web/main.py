@@ -15,6 +15,7 @@ from src.infrastructure.web.transferencias import router as transferencias_route
 from src.infrastructure.web.estoque_auditoria import router as auditoria_router
 from src.infrastructure.web.vendas import router as vendas_router
 from src.infrastructure.web.financeiro import router as financeiro_router
+from src.infrastructure.web.analytics import router as analytics_router
 
 app = FastAPI(
     title="Gerenciador de Lojas SaaS - API",
@@ -39,6 +40,7 @@ app.include_router(transferencias_router)
 app.include_router(auditoria_router)
 app.include_router(vendas_router)
 app.include_router(financeiro_router)
+app.include_router(analytics_router)
 
 
 import os

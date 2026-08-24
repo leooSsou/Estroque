@@ -543,6 +543,47 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Analytics & BI",
+			"item": [
+				{
+					"name": "Obter Dashboard KPIs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"analytics",
+								"dashboard"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter Curva ABC de Produtos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/analytics/curva-abc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"analytics",
+								"curva-abc"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"auth": {
