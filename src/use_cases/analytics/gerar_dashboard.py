@@ -1,10 +1,18 @@
 from dataclasses import dataclass
-from uuid import UUID
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+from uuid import UUID
+
 from sqlalchemy.orm import Session
-from sqlalchemy import func
-from src.infrastructure.database.models import VendaModel, ItemVendaModel, ProdutoModel, EstoqueSaldoModel, FinanceiroLancamentoModel
+
+from src.infrastructure.database.models import (
+    EstoqueSaldoModel,
+    FinanceiroLancamentoModel,
+    ItemVendaModel,
+    ProdutoModel,
+    VendaModel,
+)
+
 
 @dataclass(frozen=True)
 class DashboardAnalyticsInput:

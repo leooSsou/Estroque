@@ -1,9 +1,12 @@
 from dataclasses import dataclass
-from uuid import UUID
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+from uuid import UUID
+
 from sqlalchemy.orm import Session
-from src.infrastructure.database.models import VendaModel, ItemVendaModel, ProdutoModel
+
+from src.infrastructure.database.models import ItemVendaModel, ProdutoModel, VendaModel
+
 
 @dataclass(frozen=True)
 class CurvaABCInput:
