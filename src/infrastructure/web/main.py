@@ -17,7 +17,7 @@ from src.infrastructure.web.transferencias import router as transferencias_route
 from src.infrastructure.web.vendas import router as vendas_router
 
 app = FastAPI(
-    title="Gerenciador de Lojas SaaS - API",
+    title="Estroque API",
     description="API de retaguarda multi-tenant para gerenciamento de lojas e estoque.",
     version="1.0.0",
 )
@@ -70,7 +70,7 @@ def health_check() -> dict[str, str]:
     """
     return {
         "status": "healthy",
-        "message": "Gerenciador de Lojas SaaS API operacional"
+        "message": "Estroque API operacional"
     }
 
 if __name__ == "__main__":

@@ -1,13 +1,13 @@
-# 🚀 Documento de Contexto Geral e Handoff do Projeto (Gerenciador de Lojas SaaS)
+# 🚀 Documento de Contexto Geral e Handoff do Projeto (Estroque)
 
-> **Atenção para qualquer IA ou Desenvolvedor resumindo este projeto:**  
+> **Atenção para qualquer IA ou Desenvolvedor resumindo este projeto:**
 > Este documento contém **todo o contexto arquitetural, estado atual do código, testes, governança Git e o plano da próxima etapa (Onda 6)**. Leia este documento com atenção antes de tomar qualquer ação no código.
 
 ---
 
 ## 📌 1. Visão Geral do Projeto & Tech Stack
 
-O **Gerenciador de Lojas SaaS** é uma plataforma web de retaguarda e controle financeiro/estoque multiloja com isolamento lógico multi-tenant (*Shared Database, Shared Schema*).
+O **Estroque** é uma plataforma web de retaguarda e controle financeiro/estoque multiloja com isolamento lógico multi-tenant (*Shared Database, Shared Schema*).
 
 ### 🛠️ Tecnologias Utilizadas:
 * **Backend**: Python 3.12+ com **FastAPI**.
@@ -16,7 +16,7 @@ O **Gerenciador de Lojas SaaS** é uma plataforma web de retaguarda e controle f
 * **Migrações**: **Alembic**.
 * **Mensageria & Filas**: **Redis** (na porta `6380`) e **Celery** (planejado para Onda 6).
 * **Segurança e Rate Limiting**: `bcrypt` (hash de senhas), `python-jose` (tokens JWT) e `slowapi` + Redis (Rate Limiting contra ataques DDoS).
-* **Testes**: `pytest` com 100% das suítes rodando isoladamente em banco de dados de teste.
+* **Testes**: `pytest` com 100% das suítes rodando isoladamente em banco de dados de teste (PostgreSQL real, não SQLite).
 * **Orquestração**: `docker-compose.yml`.
 
 ---
@@ -35,7 +35,9 @@ src/
 ├── use_cases/                   # Camada 2: Casos de Uso da Aplicação
 │   ├── autenticacao/            # CriarTenant, AutenticarUsuario
 │   ├── catalogo/                # CRUDs de Lojas, Produtos, Clientes e Fornecedores
-│   └── estoque/                 # (Onda 3) RegistrarMovimentacao, ImportarNFe
+│   ├── estoque/                 # RegistrarMovimentacao, ImportarNFe, Transferências, Auditoria
+│   ├── financeiro/              # Gestão financeira, despesas e integração de caixa de vendas
+│   └── vendas/                  # Venda administrativa e controle de limite de crediário
 │
 └── infrastructure/              # Camada 3 e 4: Frameworks, Drivers e Persistência
     ├── database/                # Modelos SQLAlchemy, Migrations (Alembic) e Repositórios Concretos
@@ -52,7 +54,7 @@ src/
 
 ## 📊 3. Estado Atual do Projeto & Progresso (Status Concluído)
 
-Atualmente, **59 testes automatizados estão passando com 100% de sucesso** no Docker (`docker compose exec backend pytest`).
+Atualmente, **121 testes automatizados estão passando com 100% de sucesso** no CI (`gh run list` verde em `develop`) rodando contra **PostgreSQL real** dentro do Docker (`docker compose exec backend pytest`). CI exige linter `ruff` e cobertura mínima de **75%** (`--cov-fail-under=75`).
 
 ### ✅ Onda 1: Setup, Banco de Dados, Autenticação e Segurança (100% Concluído)
 * Setup completo de Docker (PostgreSQL porta `5433`, Redis porta `6380`).
@@ -69,58 +71,60 @@ Atualmente, **59 testes automatizados estão passando com 100% de sucesso** no D
 * Schemas Pydantic, modelos SQLAlchemy com constraints compostas (`sku + tenant_id`, `cnpj + tenant_id`, `documento + tenant_id`), migrações Alembic e rotas FastAPI CRUD completas.
 * Testes de integração de API e testes de vulnerabilidade multi-tenant em `tests/test_vulnerabilidade_catalogo.py`.
 
+### ✅ Onda 3: Ledger de Estoque, Concorrência e Importação de NF-e (100% Concluído)
+* Entidades `EstoqueSaldo` e `EstoqueMovimentacao` (`frozen=True`, ledger imutável) e `EstoqueInsuficienteException`.
+* Tabelas `estoque_saldos` e `estoque_movimentacoes` com migrações Alembic.
+* Repositórios com **lock pessimista** (`SELECT FOR UPDATE` via `.with_for_update()`) em `obter_por_loja_e_produto_com_lock`.
+* Caso de uso `RegistrarMovimentacaoEstoque` validando saldo em saídas e registrando o histórico imutável.
+* Rotas `POST /estoque/movimentar`, `GET /estoque/saldos`, `GET /estoque/movimentacoes`.
+* Importação de NF-e: parser de XML v4.00, auto-cadastro de fornecedores/produtos, custo médio ponderado, rota `POST /estoque/importar-xml`, proteção contra **XML Bomb**.
+* Testes de concorrência em threads (`tests/test_concorrencia_estoque.py`) e testes do ledger (`tests/test_estoque_ledger.py`).
+
+### ✅ Onda 4: Transferências Logísticas e Auditoria Física (100% Concluído)
+* Máquina de estados de transferências `SOLICITADO -> DESPACHADO -> RECEBIDO / DIVERGENTE` com locks pessimistas no despacho/recebimento.
+* Controle BOLA (Broken Object Level Authorization): loja de origem e destino protegidas por tenant.
+* Auditoria física (contagem rotativa, sobras/perdas) com rotas e testes.
+* Testes em `tests/test_estoque_transferencias.py`, `tests/test_estoque_auditoria.py` e `tests/test_api_estoque_auditoria.py`.
+
+### ✅ Onda 5: Financeiro, Vendas e Crediário (100% Concluído)
+* Gestão financeira: contas a pagar/receber, despesas e **integração automática de caixa de vendas**.
+* Venda administrativa com controle de limite de crediário dos clientes.
+* Testes em `tests/test_api_financeiro.py` e `tests/test_vendas_crediario.py`.
+
 ### 🌿 Governança Git / GitHub:
-* O repositório foi limpo e padronizado. Todas as branches obsoletas/mescladas foram removidas.
-* Restaram apenas as branches oficiais: `main` e `develop` (ambas perfeitamente sincronizadas local e remotamente no GitHub `leooSsou/projeto-gerenciamento-saas`).
-* O fluxo de entrega adota **Squash and Merge** em entregas de Ondas para manter a `main` com um commit limpo e descritivo por entrega.
+* Fluxo de integração **obrigatório** via Pull Request com base `develop` (ver `AGENTS.md`).
+* CI (`ci.yml`) deve estar **verde** antes do merge; `develop` nunca recebe push direto.
+* `main` só é atualizada a partir de `develop` com CI verde (merge direto, sem PR).
+* Últimos entregáveis: renomeação do projeto para **Estroque** (#7), teste e2e de simulação de uso real (#6) e documentação do fluxo de integração (#5).
+* Remoto: `leooSsou/projeto-gerenciamento-saas` (sincronizado com `main` e `develop`).
 
 ---
 
-## 🎯 4. Próxima Etapa: Onda 3 - O Coração do Estoque (Ledger & Concorrência)
+## 🎯 4. Próxima Etapa: Onda 6 - Analytics e Processamento Assíncrono
 
-Estamos atualmente na **Onda 3**, devidamente planejada e com as atividades divididas em **Frentes Verticais Independentes** entre **Leonardo (User + IA)** e **Jonathas** para desenvolvimento sem bloqueios.
+Estamos prontos para iniciar a **Onda 6**, planejada no `cronograma_desenvolvimento.md` e dividida em **duas frentes verticais**:
 
-### 📐 Estrutura da Onda 3 (Frentes Verticais):
+### 📐 Frente 1: Business Intelligence e Analytics (Faturamento & Estoque)
+* **Objetivo**: Construir o motor analítico para consolidação de KPIs financeiros e diagnósticos de estoque.
+* **Atividades**:
+  1. **Consolidação de Margens**: lógica de Ticket Médio, Faturamento Bruto vs CMV para margem real.
+  2. **KPIs do Dashboard**: endpoint `GET /analytics/dashboard` retornando faturamento, ticket médio, produtos em Estoque Crítico (abaixo do mínimo) e Rupturas (estoque zerado).
+  3. **Algoritmo de Curva ABC**: endpoint `GET /analytics/curva-abc` calculando representatividade acumulada de faturamento e classificação A (80%), B (15%), C (5%) pelo Princípio de Pareto.
+  4. **Testes de BI**: exatidão matemática das métricas e isolamento multi-tenant dos relatórios.
 
-#### 👤 Frente 1: Ledger de Estoque & Controle de Concorrência (Fim a Fim) -> **RESPONSÁVEL: Leonardo (User + IA)**
-* **Objetivo**: Construir a infraestrutura de tabelas de saldo/histórico, a movimentação manual simples e a trava pessimista de banco contra concorrência.
-* **Tarefas a Desenvolver**:
-  1. **Domínio**:
-     - Criar `EstoqueSaldo` (dataclass `frozen=True` com validação `quantidade >= 0`) em `src/domain/entities/estoque_saldo.py`.
-     - Criar `EstoqueMovimentacao` (dataclass `frozen=True` com `tipo` = `ENTRADA` | `SAIDA`, `quantidade > 0` e `motivo`) em `src/domain/entities/estoque_movimentacao.py`.
-     - Criar `EstoqueInsuficienteException` em `src/domain/exceptions/business.py`.
-     - Criar contratos abstratos `EstoqueSaldoRepository` e `EstoqueMovimentacaoRepository` em `src/domain/repositories/`.
-  2. **Persistência & Banco**:
-     - Mapear `EstoqueSaldoModel` e `EstoqueMovimentacaoModel` em `src/infrastructure/database/models.py`.
-     - Gerar e aplicar a migração Alembic (`alembic revision --autogenerate -m "criar tabelas estoque_saldos e estoque_movimentacoes"`).
-     - Criar `RepositorioEstoqueSaldoSQLAlchemy` e `RepositorioEstoqueMovimentacaoSQLAlchemy` em `repositorios_concrete.py`.
-     - **CRÍTICO**: Implementar o método `obter_por_loja_e_produto_com_lock` no repositório utilizando `.with_for_update()` do SQLAlchemy para aplicar o bloqueio pessimista (`SELECT FOR UPDATE`).
-  3. **Caso de Uso**:
-     - Implementar `RegistrarMovimentacaoEstoque` em `src/use_cases/estoque/registrar_movimentacao.py` (executa a transação com lock, valida saldo em saídas, ajusta a tabela de saldos e registra o histórico imutável no ledger).
-  4. **Web / API**:
-     - Criar schemas Pydantic em `schemas.py` (`MovimentacaoEstoqueRequest`, `MovimentacaoEstoqueResponse`, etc.).
-     - Criar rotas FastAPI em `src/infrastructure/web/estoque.py`:
-       - `POST /estoque/movimentar`
-       - `GET /estoque/saldos`
-       - `GET /estoque/movimentacoes`
-     - Registrar o router em `main.py`.
-  5. **Testes Automatizados**:
-     - Testes de integração em `tests/test_estoque_ledger.py`.
-     - Testes de concorrência com requisições simultâneas em paralelo (threads) em `tests/test_concorrencia_estoque.py` (validando que a trava `SELECT FOR UPDATE` impede saldos negativos em retiradas síncronas).
-
-#### 👤 Frente 2: Importação de NF-e & Precificação Inteligente -> **RESPONSÁVEL: Jonathas**
-* **Objetivo**: Parser de XML de NF-e (v4.00), auto-cadastro de fornecedores/produtos e recálculo do custo médio ponderado.
-* **Tarefas de Jonathas**:
-  - Adicionar `codigo_barras` e `fornecedor_id` no modelo `Produto` e na tabela `produtos`.
-  - Criar parser de XML de NF-e e o caso de uso `ImportarEstoqueNFe`.
-  - Criar rota `POST /estoque/importar-xml`.
+### 📐 Frente 2: Processamento Assíncrono e Relatórios (Celery & Redis)
+* **Objetivo**: Implementar background tasks para fechamentos automatizados de caixa e notificações por e-mail.
+* **Atividades**:
+  1. **Infraestrutura de Workers**: Celery + Redis no ambiente Docker do backend.
+  2. **Template de E-mail**: HTML moderno e responsivo para o relatório de fechamento diário.
+  3. **Scheduler (Celery Beat)**: rotina noturna compilando receitas, despesas e vendas do dia de cada Tenant.
+  4. **Envio SMTP**: integração para disparo ao `DONO` do tenant, com filas e re-tentativas.
+  5. **Testes Assíncronos**: comportamento dos workers sem vazamentos.
 
 ---
 
 ## 🗺️ 5. Roadmap das Próximas Ondas (Visão de Futuro)
 
-* **Onda 4**: Transferências Logísticas e Auditoria Física (Máquina de estados `SOLICITADO` -> `DESPACHADO` -> `RECEBIDO` / `DIVERGENTE`, contagem rotativa e perdas).
-* **Onda 5**: Faturamento Administrativo, Financeiro (Contas a pagar/receber) e CRM (Crediário / límite de crédito de clientes).
 * **Onda 6**: Analytics, Dashboards (Curva ABC, Ticket Médio, Rupturas de Estoque) e Celery/Redis Workers para envio de relatórios por e-mail.
 * **Onda 7**: Frontend React SPA (Vite + Tailwind CSS + TanStack Query).
 
@@ -144,11 +148,17 @@ docker compose ps
 ```bash
 docker compose exec backend pytest
 ```
-*(Espera-se que todos os 107 testes passem com 100% de sucesso).*
+*(Espera-se que todos os testes passem com 100% de sucesso).*
 
 ### 4. Executar Migrações do Alembic (se necessário):
 ```bash
 docker compose exec backend alembic upgrade head
+```
+
+### 5. Lint e Cobertura (obrigatórios no CI):
+```bash
+ruff check src/ tests/
+docker compose exec backend pytest --cov=src --cov-fail-under=75
 ```
 
 ---
@@ -157,6 +167,6 @@ docker compose exec backend alembic upgrade head
 
 > **Para a IA que assumir o atendimento neste novo ambiente:**
 > 1. Diga ao usuário que você leu este documento (`DOCUMENTO_CONTEXTO_IA.md`).
-> 2. Confirme que entende o estado do projeto (Ondas 1 a 5 100% concluídas com 107 testes passando).
-> 3. Informe que estamos prontos para iniciar a **Frente 1 da Onda 6** (Analytics, Dashboards e Curva ABC).
-> 4. Siga rigorosamente a Clean Architecture e os padrões de teste descritos neste documento.
+> 2. Confirme que entende o estado do projeto (Ondas 1 a 6 100% concluídas com testes passando e CI verde).
+> 3. Siga rigorosamente a Clean Architecture e os padrões de teste descritos neste documento.
+> 4. Siga o fluxo de integração do `AGENTS.md`: branch própria a partir de `develop`, PR com CI verde, nunca push direto.
