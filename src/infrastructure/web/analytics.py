@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+from uuid import UUID
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
+
 from src.domain.entities.usuario import Usuario
-from src.infrastructure.web.schemas import DashboardAnalyticsResponse, CurvaABCOResponse
-from src.use_cases.analytics.gerar_dashboard import GerarDashboardAnalytics, DashboardAnalyticsInput
-from src.use_cases.analytics.gerar_curva_abc import GerarCurvaABC, CurvaABCInput
+from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import exigir_acesso_loja
+from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.schemas import CurvaABCOResponse, DashboardAnalyticsResponse
+from src.use_cases.analytics.gerar_curva_abc import CurvaABCInput, GerarCurvaABC
+from src.use_cases.analytics.gerar_dashboard import DashboardAnalyticsInput, GerarDashboardAnalytics
 
 router = APIRouter(prefix="/analytics", tags=["Business Intelligence & Analytics"])
 

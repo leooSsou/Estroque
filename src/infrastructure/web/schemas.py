@@ -433,7 +433,7 @@ class CurvaABCItemResponse(BaseModel):
 
 
 class CurvaABCOResponse(BaseModel):
-    itens: List[CurvaABCItemResponse]
+    itens: list[CurvaABCItemResponse]
 
     model_config = ConfigDict(from_attributes=True)
 

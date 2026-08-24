@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from src.infrastructure.web.analytics import router as analytics_router
 from src.infrastructure.web.auth import router as auth_router
 from src.infrastructure.web.clientes import router as clientes_router
 from src.infrastructure.web.estoque import router as estoque_router
@@ -14,7 +15,7 @@ from src.infrastructure.web.limiter import limiter
 from src.infrastructure.web.lojas import router as lojas_router
 from src.infrastructure.web.produtos import router as produtos_router
 from src.infrastructure.web.transferencias import router as transferencias_router
-from src.infrastructure.web.analytics import router as analytics_router
+from src.infrastructure.web.vendas import router as vendas_router
 
 app = FastAPI(
     title="Estroque API",
