@@ -1,10 +1,12 @@
-import pytest
 import random
+from uuid import UUID, uuid4
+
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from uuid import UUID, uuid4
-from src.infrastructure.database.models import TenantModel, LojaModel, UsuarioModel
+
+from src.infrastructure.database.models import UsuarioModel
 from src.infrastructure.security.jwt_handler import criar_token_acesso
+
 
 def gerar_cnpj_valido() -> str:
     """Gera um CNPJ matematicamente válido."""
