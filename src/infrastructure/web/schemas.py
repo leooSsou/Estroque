@@ -405,3 +405,35 @@ class FinanceiroLancamentoResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class DashboardAnalyticsResponse(BaseModel):
+    ticket_medio: float
+    faturamento_bruto: float
+    faturamento_liquido: float
+    desconto_total: float
+    cmv: float
+    lucro_liquido: float
+    margem_lucro: float
+    estoque_critico_count: int
+    ruptura_count: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CurvaABCItemResponse(BaseModel):
+    produto_id: UUID
+    nome: str
+    sku: str
+    faturamento: float
+    percentual: float
+    percentual_acumulado: float
+    classe: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CurvaABCOResponse(BaseModel):
+    itens: list[CurvaABCItemResponse]
+
+    model_config = ConfigDict(from_attributes=True)
+
