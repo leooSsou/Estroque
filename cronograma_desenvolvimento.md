@@ -199,19 +199,19 @@ gantt
 ##### Frente 1: Business Intelligence e Analytics (Faturamento & Estoque)
 *Objetivo: Construir o motor analítico da aplicação para consolidação de KPIs financeiros e diagnósticos de estoque.*
 * **Atividades**:
-  - [ ] **Consolidação de Margens**: Desenvolver a lógica de cálculo de Ticket Médio, Faturamento Bruto vs Custo de Mercadorias Vendidas (CMV) para gerar a margem de lucro real.
-  - [ ] **KPIs do Dashboard**: Criar o endpoint `GET /analytics/dashboard` retornando faturamento, ticket médio, quantidade de produtos em Estoque Crítico (abaixo do mínimo) e Rupturas (estoque zerado).
-  - [ ] **Algoritmo de Curva ABC**: Desenvolver o endpoint `GET /analytics/curva-abc` que calcula a representatividade acumulada de faturamento de cada produto e os classifica em classes A (80%), B (15%) e C (5%) baseando-se no Princípio de Pareto.
-  - [ ] **Testes de BI**: Escrever testes automatizados validando a exatidão matemática das métricas e o isolamento multi-tenant dos relatórios.
+  - [x] **Consolidação de Margens**: Desenvolver a lógica de cálculo de Ticket Médio, Faturamento Bruto vs Custo de Mercadorias Vendidas (CMV) para gerar a margem de lucro real.
+  - [x] **KPIs do Dashboard**: Criar o endpoint `GET /analytics/dashboard` retornando faturamento, ticket médio, quantidade de produtos em Estoque Crítico (abaixo do mínimo) e Rupturas (estoque zerado).
+  - [x] **Algoritmo de Curva ABC**: Desenvolver o endpoint `GET /analytics/curva-abc` que calcula a representatividade acumulada de faturamento de cada produto e os classifica em classes A (80%), B (15%) e C (5%) baseando-se no Princípio de Pareto.
+  - [x] **Testes de BI**: Escrever testes automatizados validando a exatidão matemática das métricas e o isolamento multi-tenant dos relatórios.
 
 ##### Frente 2: Processamento Assíncrono e Relatórios (Celery & Redis)
 *Objetivo: Implementar a infraestrutura de background tasks para fechamentos automatizados de caixa e notificações.*
 * **Atividades**:
-  - [ ] **Infraestrutura de Workers**: Configurar o Celery e o Redis no ambiente Docker do backend.
-  - [ ] **Template de E-mail**: Construir um template HTML moderno e responsivo para o relatório de fechamento diário do inquilino.
-  - [ ] **Scheduler (Celery Beat)**: Criar a rotina agendada que roda automaticamente toda noite compilando as receitas, despesas e vendas do dia de cada Tenant.
-  - [ ] **Envio SMTP**: Desenvolver a integração SMTP para disparo de e-mails para o proprietário (`DONO`) do tenant, com tratamento de filas e re-tentativas em caso de falha.
-  - [ ] **Testes Assíncronos**: Escrever testes para validar o comportamento dos workers do Celery e certificar que as tarefas consolidam os dados sem vazamentos.
+  - [x] **Infraestrutura de Workers**: Configurar o Celery e o Redis no ambiente Docker do backend.
+  - [x] **Template de E-mail**: Construir um template HTML moderno e responsivo para o relatório de fechamento diário do inquilino.
+  - [x] **Scheduler (Celery Beat)**: Criar a rotina agendada que roda automaticamente toda noite compilando as receitas, despesas e vendas do dia de cada Tenant.
+  - [x] **Envio SMTP**: Desenvolver a integração SMTP para disparo de e-mails para o proprietário (`DONO`) do tenant, com tratamento de filas e re-tentativas em caso de falha.
+  - [x] **Testes Assíncronos**: Escrever testes para validar o comportamento dos workers do Celery e certificar que as tarefas consolidam os dados sem vazamentos.
 
 ---
 
