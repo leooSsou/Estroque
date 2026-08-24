@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
-from src.infrastructure.tasks.celery_app import celery_app
-from src.infrastructure.database.session import SessionLocal
-from src.infrastructure.database.models import TenantModel, UsuarioModel
-from src.use_cases.analytics.gerar_dashboard import GerarDashboardAnalytics, DashboardAnalyticsInput
-from src.infrastructure.services.email_service import ConsoleEmailService
-
-from src.infrastructure.services.email_service import ConsoleEmailService
-from sqlalchemy.orm import Session
 from typing import Optional
+
+from sqlalchemy.orm import Session
+
+from src.infrastructure.database.models import TenantModel, UsuarioModel
+from src.infrastructure.database.session import SessionLocal
+from src.infrastructure.services.email_service import ConsoleEmailService
+from src.infrastructure.tasks.celery_app import celery_app
+from src.use_cases.analytics.gerar_dashboard import DashboardAnalyticsInput, GerarDashboardAnalytics
+
 
 @celery_app.task
 def enviar_fechamento_diario_todos_tenants(db: Optional[Session] = None) -> str:
