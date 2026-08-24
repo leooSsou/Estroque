@@ -1,24 +1,26 @@
 from dataclasses import dataclass
 from uuid import UUID
-from typing import List, Optional
 
+from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.fornecedor import Fornecedor
 from src.domain.entities.produto import Produto
-from src.domain.entities.estoque_saldo import EstoqueSaldo
-from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
-from src.domain.repositories.fornecedor_repository import FornecedorRepository
-from src.domain.repositories.produto_repository import ProdutoRepository
-from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
-from src.domain.repositories.loja_repository import LojaRepository
-from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
-from src.domain.services.nfe_parser import NFeParserService, NFeDados, ItemNFe
 from src.domain.exceptions.business import LojaNaoEncontradaException
+from src.domain.repositories.estoque_movimentacao_repository import (
+    EstoqueMovimentacaoRepository,
+)
+from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
+from src.domain.repositories.fornecedor_repository import FornecedorRepository
+from src.domain.repositories.loja_repository import LojaRepository
+from src.domain.repositories.produto_repository import ProdutoRepository
+from src.domain.services.nfe_parser import NFeDados, NFeParserService
+
 
 @dataclass(frozen=True)
 class ImportarNFeInput:
     xml_content: bytes | str
     tenant_id: UUID
-    loja_id: Optional[UUID] = None
+    loja_id: UUID | None = None
     markup_padrao: float = 0.5  # 50% de markup por padrão para novos produtos
 
 
@@ -33,7 +35,7 @@ class ItemImportadoOutput:
 @dataclass(frozen=True)
 class ImportarNFeOutput:
     fornecedor: Fornecedor
-    itens_processados: List[ItemImportadoOutput]
+    itens_processados: list[ItemImportadoOutput]
 
 
 class ImportarEstoqueNFe:
@@ -81,10 +83,10 @@ class ImportarEstoqueNFe:
             fornecedor = self.fornecedor_repo.salvar(novo_fornecedor)
 
         # 3. Processa cada item da NF-e
-        itens_output: List[ItemImportadoOutput] = []
+        itens_output: list[ItemImportadoOutput] = []
 
         for item in nfe_dados.itens:
-            produto_existente: Optional[Produto] = None
+            produto_existente: Produto | None = None
 
             # Tenta encontrar produto existente por código de barras primeiro
             if item.codigo_barras:

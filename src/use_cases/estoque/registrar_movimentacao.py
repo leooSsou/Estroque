@@ -1,17 +1,20 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
-from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
-from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
-from src.domain.repositories.loja_repository import LojaRepository
-from src.domain.repositories.produto_repository import ProdutoRepository
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.exceptions.business import (
+    EstoqueInsuficienteException,
     LojaNaoEncontradaException,
     ProdutoNaoEncontradoException,
-    EstoqueInsuficienteException,
 )
+from src.domain.repositories.estoque_movimentacao_repository import (
+    EstoqueMovimentacaoRepository,
+)
+from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
+from src.domain.repositories.loja_repository import LojaRepository
+from src.domain.repositories.produto_repository import ProdutoRepository
+
 
 @dataclass(frozen=True)
 class RegistrarMovimentacaoEstoqueInput:

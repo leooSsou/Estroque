@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from uuid import UUID, uuid4
 from datetime import datetime
-from typing import Optional
+from uuid import UUID, uuid4
+
 
 @dataclass(frozen=True)
 class FinanceiroLancamento:
@@ -16,7 +16,7 @@ class FinanceiroLancamento:
     tenant_id: UUID
     id: UUID = field(default_factory=uuid4)
     data_lancamento: datetime = field(default_factory=datetime.utcnow)
-    data_pagamento: Optional[datetime] = None
+    data_pagamento: datetime | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.loja_id, UUID):

@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
-from uuid import UUID, uuid4
 from datetime import datetime
-from typing import Optional, List
+from uuid import UUID, uuid4
+
 from src.domain.entities.item_venda import ItemVenda
+
 
 @dataclass(frozen=True)
 class Venda:
@@ -16,10 +17,10 @@ class Venda:
     valor_total: float
     desconto: float
     tenant_id: UUID
-    itens: List[ItemVenda]
-    cliente_id: Optional[UUID] = None
+    itens: list[ItemVenda]
+    cliente_id: UUID | None = None
     id: UUID = field(default_factory=uuid4)
-    data_venda: Optional[datetime] = None
+    data_venda: datetime | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.loja_id, UUID):

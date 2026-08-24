@@ -1,7 +1,15 @@
-from typing import Optional
-from uuid import UUID, uuid4
 from datetime import datetime
-from sqlalchemy import String, DateTime, text, Float, Boolean, UniqueConstraint, ForeignKey
+from uuid import UUID, uuid4
+
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from src.infrastructure.database.mixins import HasTenant
@@ -11,7 +19,6 @@ class Base(DeclarativeBase):
     """
     Classe base declarativa do SQLAlchemy 2.0.
     """
-    pass
 
 class TenantModel(Base):
     """
@@ -70,8 +77,8 @@ class ProdutoModel(HasTenant, Base):
     preco_custo: Mapped[float] = mapped_column(Float, nullable=False)
     preco_venda: Mapped[float] = mapped_column(Float, nullable=False)
     markup: Mapped[float] = mapped_column(Float, nullable=False)
-    codigo_barras: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    fornecedor_id: Mapped[Optional[UUID]] = mapped_column(ForeignKey("fornecedores.id"), nullable=True)
+    codigo_barras: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    fornecedor_id: Mapped[UUID | None] = mapped_column(ForeignKey("fornecedores.id"), nullable=True)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     __table_args__ = (
@@ -260,7 +267,7 @@ class FinanceiroLancamentoModel(HasTenant, Base):
         server_default=text("CURRENT_TIMESTAMP"),
         nullable=False
     )
-    data_pagamento: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    data_pagamento: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     loja = relationship("LojaModel")
 

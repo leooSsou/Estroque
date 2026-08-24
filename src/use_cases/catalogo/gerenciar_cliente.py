@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
-from typing import List
 
 from src.domain.entities.cliente import Cliente
-from src.domain.repositories.cliente_repository import ClienteRepository
 from src.domain.exceptions.business import (
     ClienteNaoEncontradoException,
     DocumentoClienteEmUsoException,
 )
+from src.domain.repositories.cliente_repository import ClienteRepository
+
 
 @dataclass(frozen=True)
 class CriarClienteInput:
@@ -73,7 +73,7 @@ class ObterCliente:
 
 @dataclass(frozen=True)
 class ListarClientesOutput:
-    clientes: List[Cliente]
+    clientes: list[Cliente]
 
 
 class ListarClientes:

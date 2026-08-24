@@ -1,34 +1,34 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List, Optional
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
 from src.domain.entities.usuario import Usuario
+from src.domain.exceptions.business import (
+    ClienteNaoEncontradoException,
+    EstoqueInsuficienteException,
+    LimiteCreditoExcedidoException,
+    LojaNaoEncontradaException,
+    ProdutoNaoEncontradoException,
+)
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioClienteSQLAlchemy,
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
+    RepositorioFinanceiroLancamentoSQLAlchemy,
+    RepositorioLojaSQLAlchemy,
+    RepositorioProdutoSQLAlchemy,
+    RepositorioVendaSQLAlchemy,
+)
+from src.infrastructure.database.session import get_db
+from src.infrastructure.web.authorization import exigir_acesso_loja
+from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import RegistrarVendaRequest, VendaResponse
 from src.use_cases.estoque.registrar_venda import (
     RegistrarVendaAdministrativa,
     RegistrarVendaAdministrativaInput,
     RegistrarVendaItemInput,
 )
-from src.infrastructure.database.repositorios_concrete import (
-    RepositorioVendaSQLAlchemy,
-    RepositorioLojaSQLAlchemy,
-    RepositorioClienteSQLAlchemy,
-    RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioEstoqueMovimentacaoSQLAlchemy,
-    RepositorioFinanceiroLancamentoSQLAlchemy,
-)
-from src.domain.exceptions.business import (
-    LojaNaoEncontradaException,
-    ClienteNaoEncontradoException,
-    ProdutoNaoEncontradoException,
-    EstoqueInsuficienteException,
-    LimiteCreditoExcedidoException,
-)
-from src.infrastructure.web.authorization import exigir_acesso_loja
 
 router = APIRouter(
     prefix="/vendas",
@@ -114,12 +114,12 @@ def obter_venda_por_id(
     return VendaResponse.model_validate(venda)
 
 
-@router.get("", response_model=List[VendaResponse], status_code=status.HTTP_200_OK)
+@router.get("", response_model=list[VendaResponse], status_code=status.HTTP_200_OK)
 def listar_vendas(
-    loja_id: Optional[UUID] = None,
+    loja_id: UUID | None = None,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> List[VendaResponse]:
+) -> list[VendaResponse]:
     """
     Lista as vendas do tenant, com filtros opcionais de loja.
     """

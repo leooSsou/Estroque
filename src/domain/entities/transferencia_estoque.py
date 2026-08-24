@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from uuid import UUID, uuid4
 from datetime import datetime
-from typing import Optional
+from uuid import UUID, uuid4
+
 
 @dataclass(frozen=True)
 class TransferenciaEstoque:
@@ -14,11 +14,11 @@ class TransferenciaEstoque:
     quantidade: int
     solicitado_por_id: UUID
     id: UUID = field(default_factory=uuid4)
-    tenant_id: Optional[UUID] = None
+    tenant_id: UUID | None = None
     status: str = "SOLICITADO"
-    aprovado_por_id: Optional[UUID] = None
-    justificativa: Optional[str] = None
-    criado_em: Optional[datetime] = None
+    aprovado_por_id: UUID | None = None
+    justificativa: str | None = None
+    criado_em: datetime | None = None
 
     def __post_init__(self):
         if self.quantidade <= 0:
@@ -51,7 +51,7 @@ class TransferenciaEstoque:
             criado_em=self.criado_em
         )
 
-    def receber(self, aprovado_por_id: UUID, quantidade_recebida: int, justificativa: Optional[str] = None) -> "TransferenciaEstoque":
+    def receber(self, aprovado_por_id: UUID, quantidade_recebida: int, justificativa: str | None = None) -> "TransferenciaEstoque":
         """
         Retorna uma nova instância no estado RECEBIDO ou DIVERGENTE com base na contagem recebida.
         """

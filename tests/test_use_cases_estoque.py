@@ -1,29 +1,29 @@
-import pytest
 from uuid import uuid4
-from datetime import datetime
+
+import pytest
 from sqlalchemy.orm import Session
 
-from src.domain.entities.tenant import Tenant
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.loja import Loja
 from src.domain.entities.produto import Produto
-from src.domain.entities.estoque_saldo import EstoqueSaldo
-from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
+from src.domain.entities.tenant import Tenant
 from src.domain.exceptions.business import (
+    EstoqueInsuficienteException,
     LojaNaoEncontradaException,
     ProdutoNaoEncontradoException,
-    EstoqueInsuficienteException,
+)
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
+    RepositorioLojaSQLAlchemy,
+    RepositorioProdutoSQLAlchemy,
+    RepositorioTenantSQLAlchemy,
 )
 from src.use_cases.estoque.registrar_movimentacao import (
     RegistrarMovimentacaoEstoque,
     RegistrarMovimentacaoEstoqueInput,
 )
-from src.infrastructure.database.repositorios_concrete import (
-    RepositorioTenantSQLAlchemy,
-    RepositorioLojaSQLAlchemy,
-    RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioEstoqueMovimentacaoSQLAlchemy,
-)
+
 
 @pytest.fixture
 def setup_dados_uc(db_session: Session):

@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from uuid import UUID, uuid4
 from datetime import datetime
-from typing import Optional, List
+from uuid import UUID, uuid4
+
 
 @dataclass(frozen=True)
 class AuditoriaFisicaItem:
@@ -32,9 +32,9 @@ class AuditoriaFisica:
     """
     loja_id: UUID
     tenant_id: UUID
-    itens: List[AuditoriaFisicaItem]
+    itens: list[AuditoriaFisicaItem]
     id: UUID = field(default_factory=uuid4)
-    data_auditoria: Optional[datetime] = None
+    data_auditoria: datetime | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.loja_id, UUID):

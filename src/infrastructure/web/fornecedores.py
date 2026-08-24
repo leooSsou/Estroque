@@ -1,28 +1,30 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
 
+from src.domain.entities.usuario import Usuario
+from src.domain.exceptions.business import (
+    CnpjFornecedorEmUsoException,
+    FornecedorNaoEncontradoException,
+)
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioFornecedorSQLAlchemy,
+)
 from src.infrastructure.database.session import get_db
 from src.infrastructure.web.dependencies import get_current_user
-from src.domain.entities.usuario import Usuario
-from src.infrastructure.database.repositorios_concrete import RepositorioFornecedorSQLAlchemy
-from src.use_cases.catalogo.gerenciar_fornecedor import (
-    CriarFornecedor,
-    CriarFornecedorInput,
-    ObterFornecedor,
-    ListarFornecedores,
-    AtualizarFornecedor,
-    AtualizarFornecedorInput,
-)
 from src.infrastructure.web.schemas import (
     FornecedorCreateRequest,
-    FornecedorUpdateRequest,
     FornecedorResponse,
+    FornecedorUpdateRequest,
 )
-from src.domain.exceptions.business import (
-    FornecedorNaoEncontradoException,
-    CnpjFornecedorEmUsoException,
+from src.use_cases.catalogo.gerenciar_fornecedor import (
+    AtualizarFornecedor,
+    AtualizarFornecedorInput,
+    CriarFornecedor,
+    CriarFornecedorInput,
+    ListarFornecedores,
+    ObterFornecedor,
 )
 
 router = APIRouter(prefix="/fornecedores", tags=["Fornecedores"])
@@ -61,11 +63,11 @@ def criar_fornecedor(
         )
 
 
-@router.get("/", response_model=List[FornecedorResponse])
+@router.get("/", response_model=list[FornecedorResponse])
 def listar_fornecedores(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> List[FornecedorResponse]:
+) -> list[FornecedorResponse]:
     """
     Retorna a lista de fornecedores cadastrados para o Tenant ativo.
     """

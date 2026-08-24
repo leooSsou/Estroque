@@ -1,8 +1,14 @@
-import pytest
 from fastapi.testclient import TestClient
-from datetime import timedelta
-from src.infrastructure.database.models import TenantModel, UsuarioModel, LojaModel, ProdutoModel, EstoqueSaldoModel
+
+from src.infrastructure.database.models import (
+    EstoqueSaldoModel,
+    LojaModel,
+    ProdutoModel,
+    TenantModel,
+    UsuarioModel,
+)
 from src.infrastructure.security.jwt_handler import criar_token_acesso
+
 
 def setup_dados_gerentes(db):
     db.info["ignore_tenant_filter"] = True

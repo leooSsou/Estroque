@@ -1,28 +1,28 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
-from sqlalchemy.orm import Session
-from uuid import UUID, uuid4
-from typing import Optional
+from uuid import UUID
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from sqlalchemy.orm import Session
+
 from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import LojaNaoEncontradaException
 from src.infrastructure.database.repositorios_concrete import (
-    RepositorioFornecedorSQLAlchemy,
-    RepositorioProdutoSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioLojaSQLAlchemy,
     RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
+    RepositorioFornecedorSQLAlchemy,
+    RepositorioLojaSQLAlchemy,
+    RepositorioProdutoSQLAlchemy,
 )
-from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeInput
+from src.infrastructure.database.session import get_db
+from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import ImportarNFeResponse
+from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeInput
 
 router = APIRouter(prefix="/estoque", tags=["Estoque & NF-e"])
 
 @router.post("/importar-xml", response_model=ImportarNFeResponse, status_code=status.HTTP_200_OK)
 def importar_xml_nfe(
     file: UploadFile = File(..., description="Arquivo XML da Nota Fiscal Eletrônica (NF-e v4.00)"),
-    loja_id: Optional[UUID] = Query(None, description="ID da loja física para registrar as entradas físicas de estoque"),
+    loja_id: UUID | None = Query(None, description="ID da loja física para registrar as entradas físicas de estoque"),
     markup_padrao: float = Query(0.5, ge=0.0, description="Markup padrão para cálculo de preço de novos produtos"),
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
@@ -42,7 +42,7 @@ def importar_xml_nfe(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Erro ao ler o arquivo enviado: {str(e)}"
+            detail=f"Erro ao ler o arquivo enviado: {e!s}"
         )
 
     fornecedor_repo = RepositorioFornecedorSQLAlchemy(db)

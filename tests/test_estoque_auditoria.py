@@ -1,17 +1,20 @@
-import pytest
-from uuid import uuid4
 from unittest.mock import Mock
+from uuid import uuid4
 
-from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
+import pytest
+
 from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.loja import Loja
 from src.domain.entities.produto import Produto
-from src.use_cases.estoque.auditar_estoque import (
-    AuditarEstoqueLoja,
-    AuditarEstoqueInput,
-    ItemAuditoriaInput
+from src.domain.exceptions.business import (
+    LojaNaoEncontradaException,
 )
-from src.domain.exceptions.business import LojaNaoEncontradaException, ProdutoNaoEncontradoException
+from src.use_cases.estoque.auditar_estoque import (
+    AuditarEstoqueInput,
+    AuditarEstoqueLoja,
+    ItemAuditoriaInput,
+)
+
 
 def test_auditar_estoque_sobra_e_perda():
     loja_id = uuid4()

@@ -1,34 +1,40 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import List
 
-from src.infrastructure.database.session import get_db
-from src.infrastructure.web.dependencies import get_current_user
 from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
+    EstoqueInsuficienteException,
     LojaNaoEncontradaException,
     ProdutoNaoEncontradoException,
-    EstoqueInsuficienteException,
     TransferenciaNaoEncontradaException,
 )
-
 from src.infrastructure.database.repositorios_concrete import (
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
+    RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioLojaSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
     RepositorioTransferenciaEstoqueSQLAlchemy,
-    RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioEstoqueMovimentacaoSQLAlchemy,
 )
-
-from src.use_cases.estoque.solicitar_transferencia import SolicitarTransferencia, SolicitarTransferenciaInput
-from src.use_cases.estoque.despachar_transferencia import DespacharTransferencia, DespacharTransferenciaInput
-from src.use_cases.estoque.confirmar_recebimento import ConfirmarRecebimento, ConfirmarRecebimentoInput
-
+from src.infrastructure.database.session import get_db
+from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
-    TransferenciaEstoqueSolicitarRequest,
     TransferenciaEstoqueReceberRequest,
     TransferenciaEstoqueResponse,
+    TransferenciaEstoqueSolicitarRequest,
+)
+from src.use_cases.estoque.confirmar_recebimento import (
+    ConfirmarRecebimento,
+    ConfirmarRecebimentoInput,
+)
+from src.use_cases.estoque.despachar_transferencia import (
+    DespacharTransferencia,
+    DespacharTransferenciaInput,
+)
+from src.use_cases.estoque.solicitar_transferencia import (
+    SolicitarTransferencia,
+    SolicitarTransferenciaInput,
 )
 
 router = APIRouter(prefix="/estoque/transferencias", tags=["Transferências de Estoque"])
@@ -143,11 +149,11 @@ def confirmar_recebimento(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
-@router.get("", response_model=List[TransferenciaEstoqueResponse], status_code=status.HTTP_200_OK)
+@router.get("", response_model=list[TransferenciaEstoqueResponse], status_code=status.HTTP_200_OK)
 def listar_todas(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
-) -> List[TransferenciaEstoqueResponse]:
+) -> list[TransferenciaEstoqueResponse]:
     """
     Lista todas as transferências de estoque do tenant logado.
     """

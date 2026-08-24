@@ -1,12 +1,12 @@
+import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from typing import List, Optional
-import re
+
 
 @dataclass(frozen=True)
 class ItemNFe:
     codigo_produto: str
-    codigo_barras: Optional[str]
+    codigo_barras: str | None
     nome: str
     quantidade: float
     valor_unitario: float
@@ -16,13 +16,13 @@ class ItemNFe:
 class EmitenteNFe:
     cnpj: str
     razao_social: str
-    nome_fantasia: Optional[str] = None
+    nome_fantasia: str | None = None
 
 
 @dataclass(frozen=True)
 class NFeDados:
     emitente: EmitenteNFe
-    itens: List[ItemNFe]
+    itens: list[ItemNFe]
 
 
 class NFeParserService:
@@ -44,7 +44,7 @@ class NFeParserService:
         try:
             root = ET.fromstring(xml_content)
         except ET.ParseError as e:
-            raise ValueError(f"XML inválido ou corrompido: {str(e)}")
+            raise ValueError(f"XML inválido ou corrompido: {e!s}")
 
         # Trata namespaces do XML da NF-e
         # O namespace padrão costuma ser http://www.portalfiscal.inf.br/nfe
@@ -89,7 +89,7 @@ class NFeParserService:
         if not det_list:
             raise ValueError("Nenhum item/produto foi encontrado na NF-e.")
 
-        itens: List[ItemNFe] = []
+        itens: list[ItemNFe] = []
         for idx, det in enumerate(det_list, start=1):
             prod = det.find(f"{ns}prod") if det.find(f"{ns}prod") is not None else det.find("prod")
             if prod is None:

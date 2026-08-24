@@ -1,13 +1,18 @@
 from dataclasses import dataclass
 from uuid import UUID
-from typing import Optional
-from src.domain.entities.transferencia_estoque import TransferenciaEstoque
-from src.domain.entities.estoque_saldo import EstoqueSaldo
+
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
-from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
-from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
-from src.domain.repositories.transferencia_estoque_repository import TransferenciaEstoqueRepository
+from src.domain.entities.estoque_saldo import EstoqueSaldo
+from src.domain.entities.transferencia_estoque import TransferenciaEstoque
 from src.domain.exceptions.business import TransferenciaNaoEncontradaException
+from src.domain.repositories.estoque_movimentacao_repository import (
+    EstoqueMovimentacaoRepository,
+)
+from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
+from src.domain.repositories.transferencia_estoque_repository import (
+    TransferenciaEstoqueRepository,
+)
+
 
 @dataclass(frozen=True)
 class ConfirmarRecebimentoInput:
@@ -15,7 +20,7 @@ class ConfirmarRecebimentoInput:
     aprovado_por_id: UUID
     quantidade_recebida: int
     tenant_id: UUID
-    justificativa: Optional[str] = None
+    justificativa: str | None = None
 
 class ConfirmarRecebimento:
     """
@@ -34,8 +39,8 @@ class ConfirmarRecebimento:
         self.movimentacao_repo = movimentacao_repo
 
     def executar(self, input_data: ConfirmarRecebimentoInput) -> TransferenciaEstoque:
-        # 1. Recupera a transferência e valida BOLA
-        transferencia = self.transferencia_repo.obter_por_id(
+        # 1. Recupera a transferência com lock pessimista e valida BOLA
+        transferencia = self.transferencia_repo.obter_por_id_com_lock(
             input_data.transferencia_id, input_data.tenant_id
         )
         if not transferencia:

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 from uuid import UUID
+
 from src.domain.entities.tenant import Tenant
+
 
 class TenantRepository(ABC):
     """
@@ -14,18 +15,15 @@ class TenantRepository(ABC):
         Salva ou atualiza um Tenant na persistência.
         Retorna a entidade salva (com ID e timestamps se aplicável).
         """
-        pass
 
     @abstractmethod
-    def obter_por_cnpj(self, cnpj: str) -> Optional[Tenant]:
+    def obter_por_cnpj(self, cnpj: str) -> Tenant | None:
         """
         Busca um Tenant cadastrado pelo CNPJ.
         """
-        pass
 
     @abstractmethod
-    def obter_por_id(self, id: UUID) -> Optional[Tenant]:
+    def obter_por_id(self, id: UUID) -> Tenant | None:
         """
         Busca um Tenant cadastrado pelo ID.
         """
-        pass

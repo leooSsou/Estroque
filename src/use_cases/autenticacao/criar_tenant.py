@@ -1,11 +1,13 @@
 import re
 from dataclasses import dataclass
+
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.usuario import Usuario
+from src.domain.exceptions.business import CnpjEmUsoException, EmailEmUsoException
 from src.domain.repositories.tenant_repository import TenantRepository
 from src.domain.repositories.usuario_repository import UsuarioRepository
-from src.domain.exceptions.business import CnpjEmUsoException, EmailEmUsoException
 from src.use_cases.autenticacao.autenticar_usuario import ServicoCriptografia
+
 
 @dataclass(frozen=True)
 class CriarTenantInput:

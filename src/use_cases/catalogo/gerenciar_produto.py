@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from uuid import UUID
-from typing import List, Optional
 
 from src.domain.entities.produto import Produto
-from src.domain.repositories.produto_repository import ProdutoRepository
 from src.domain.exceptions.business import (
     ProdutoNaoEncontradoException,
     SkuProdutoEmUsoException,
 )
+from src.domain.repositories.produto_repository import ProdutoRepository
+
 
 @dataclass(frozen=True)
 class CriarProdutoInput:
@@ -17,8 +17,8 @@ class CriarProdutoInput:
     preco_venda: float
     markup: float
     tenant_id: UUID
-    codigo_barras: Optional[str] = None
-    fornecedor_id: Optional[UUID] = None
+    codigo_barras: str | None = None
+    fornecedor_id: UUID | None = None
 
 
 @dataclass(frozen=True)
@@ -79,7 +79,7 @@ class ObterProduto:
 
 @dataclass(frozen=True)
 class ListarProdutosOutput:
-    produtos: List[Produto]
+    produtos: list[Produto]
 
 
 class ListarProdutos:
@@ -103,8 +103,8 @@ class AtualizarProdutoInput:
     markup: float
     ativo: bool
     tenant_id: UUID
-    codigo_barras: Optional[str] = None
-    fornecedor_id: Optional[UUID] = None
+    codigo_barras: str | None = None
+    fornecedor_id: UUID | None = None
 
 
 @dataclass(frozen=True)

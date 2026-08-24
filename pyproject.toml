@@ -1,0 +1,16 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+# Regras focadas em erros reais de código e manutenção, sem pedância de estilo:
+# E4/E7/E9 = erros de lógica, sintaxe e tipagem
+# F = pyflakes (imports não usados, variáveis indefinidas, etc.)
+# I = ordenação de imports
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# imports no topo são intencionalmente ignorados nesses arquivos:
+# migrations/env.py e web/main.py usam imports após código por necessidade
+"src/infrastructure/database/migrations/*" = ["E402"]
+"src/infrastructure/web/main.py" = ["E402"]

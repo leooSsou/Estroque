@@ -2,7 +2,9 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
+
 from src.domain.utils.validation import validar_cnpj
+
 
 @dataclass(frozen=True)
 class Tenant:

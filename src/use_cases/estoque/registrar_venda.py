@@ -1,26 +1,31 @@
 from dataclasses import dataclass
 from uuid import UUID
-from typing import Optional, List
-from src.domain.entities.venda import Venda
-from src.domain.entities.item_venda import ItemVenda
+
 from src.domain.entities.cliente import Cliente
-from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
-from src.domain.repositories.venda_repository import VendaRepository
-from src.domain.repositories.financeiro_lancamento_repository import FinanceiroLancamentoRepository
-from src.domain.repositories.loja_repository import LojaRepository
-from src.domain.repositories.cliente_repository import ClienteRepository
-from src.domain.repositories.produto_repository import ProdutoRepository
-from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
-from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
+from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
+from src.domain.entities.item_venda import ItemVenda
+from src.domain.entities.venda import Venda
 from src.domain.exceptions.business import (
-    LojaNaoEncontradaException,
     ClienteNaoEncontradoException,
-    ProdutoNaoEncontradoException,
     EstoqueInsuficienteException,
     LimiteCreditoExcedidoException,
+    LojaNaoEncontradaException,
+    ProdutoNaoEncontradoException,
 )
+from src.domain.repositories.cliente_repository import ClienteRepository
+from src.domain.repositories.estoque_movimentacao_repository import (
+    EstoqueMovimentacaoRepository,
+)
+from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
+from src.domain.repositories.financeiro_lancamento_repository import (
+    FinanceiroLancamentoRepository,
+)
+from src.domain.repositories.loja_repository import LojaRepository
+from src.domain.repositories.produto_repository import ProdutoRepository
+from src.domain.repositories.venda_repository import VendaRepository
+
 
 @dataclass(frozen=True)
 class RegistrarVendaItemInput:
@@ -31,10 +36,10 @@ class RegistrarVendaItemInput:
 class RegistrarVendaAdministrativaInput:
     loja_id: UUID
     usuario_id: UUID
-    cliente_id: Optional[UUID]
+    cliente_id: UUID | None
     forma_pagamento: str
     desconto: float
-    itens: List[RegistrarVendaItemInput]
+    itens: list[RegistrarVendaItemInput]
     tenant_id: UUID
 
 @dataclass(frozen=True)
@@ -168,7 +173,7 @@ class RegistrarVendaAdministrativa:
                 produto_id=item_input.produto_id,
                 tipo="SAIDA",
                 quantidade=item_input.quantidade,
-                motivo=f"Venda administrativa",
+                motivo="Venda administrativa",
                 tenant_id=input_data.tenant_id
             )
             self.movimentacao_repo.salvar(mov)

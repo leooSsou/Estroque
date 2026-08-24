@@ -23,11 +23,18 @@ jobs:
       - name: Criar arquivo .env temporário para CI
         run: |
           echo "DATABASE_URL=postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas" > .env
-          echo "DATABASE_TEST_URL=sqlite:///:memory:" >> .env
+          echo "DATABASE_TEST_URL=postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas_test" >> .env
           echo "REDIS_URL=redis://redis:6379/0" >> .env
           echo "JWT_SECRET=ci-secret-key-for-testing-1234567890!" >> .env
           echo "JWT_ALGORITHM=HS256" >> .env
           echo "ACCESS_TOKEN_EXPIRE_MINUTES=1440" >> .env
+          echo "CELERY_TASK_ALWAYS_EAGER=True" >> .env
+
+      - name: Executar Linter (ruff)
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+          ruff check src/ tests/
 
       - name: Construir e iniciar os containers do Docker
         run: docker compose up -d --build
@@ -42,17 +49,33 @@ jobs:
             docker compose exec -T postgres sh -c "until pg_isready -h localhost -p 5432 -U postgres; do echo 'Aguardando banco...'; sleep 1; done"
           fi
 
+      - name: Criar banco de testes no PostgreSQL
+        run: |
+          if docker compose config --services | grep -q "^backend$"; then
+            docker compose exec -T postgres psql -U postgres -c "CREATE DATABASE gerenciador_saas_test;" || echo "Banco de testes já existe."
+          else
+            echo "Serviço 'backend' não encontrado. Banco de testes deve ser criado manualmente."
+          fi
+
+      - name: Validar migrações Alembic
+        run: |
+          if docker compose config --services | grep -q "^backend$"; then
+            docker compose exec -T backend alembic upgrade head
+          else
+            PYTHONPATH=. alembic upgrade head
+          fi
+
       - name: Executar suite de testes via Pytest
         run: |
           if docker compose config --services | grep -q "^backend$"; then
             echo "Rodando testes dentro do container Docker..."
-            docker compose run --rm backend pytest
+            docker compose run --rm -e DATABASE_TEST_URL="postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas_test" backend pytest --cov=src --cov-report=term-missing --cov-fail-under=75
           else
             echo "Rodando testes localmente no host do runner..."
             python -m pip install --upgrade pip
             pip install -r requirements.txt
             # Sobrescreve o host do Postgres para localhost:5433 pois estamos fora do container
             echo "DATABASE_URL=postgresql://postgres:postgres_password@localhost:5433/gerenciador_saas" > .env
-            echo "DATABASE_TEST_URL=sqlite:///:memory:" >> .env
-            PYTHONPATH=. pytest
+            echo "DATABASE_TEST_URL=postgresql://postgres:postgres_password@localhost:5433/gerenciador_saas_test" >> .env
+            PYTHONPATH=. pytest --cov=src --cov-report=term-missing --cov-fail-under=75
           fi

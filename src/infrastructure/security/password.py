@@ -1,5 +1,7 @@
 import bcrypt
+
 from src.use_cases.autenticacao.autenticar_usuario import ServicoCriptografia
+
 
 def gerar_hash_senha(senha_plana: str) -> str:
     """

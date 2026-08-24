@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "9a3e02c0-5417-4576-ba1c-dc1689f6a997",
-		"name": "Gerenciador Lojas SaaS API (Completo)",
-		"description": "Coleção completa para testes de todas as rotas do Gerenciador de Lojas SaaS, incluindo controle de limites de crediário, movimentações físicas de estoque, auditorias e transferências interlojas.",
+		"name": "Estroque API (Completo)",
+		"description": "Coleção completa para testes de todas as rotas do Estroque, incluindo controle de limites de crediário, movimentações físicas de estoque, auditorias e transferências interlojas.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [

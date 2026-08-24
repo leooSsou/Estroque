@@ -1,36 +1,36 @@
-import pytest
 from uuid import UUID, uuid4
-from typing import Optional, Dict, List
 
+import pytest
+
+from src.domain.entities.loja import Loja
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.usuario import Usuario
-from src.domain.entities.loja import Loja
-from src.domain.repositories.tenant_repository import TenantRepository
-from src.domain.repositories.usuario_repository import UsuarioRepository
-from src.domain.repositories.loja_repository import LojaRepository
 from src.domain.exceptions.business import (
     CnpjEmUsoException,
-    EmailEmUsoException,
-    CredenciaisInvalidasException,
-    LojaNaoEncontradaException,
     CnpjLojaEmUsoException,
+    CredenciaisInvalidasException,
+    EmailEmUsoException,
+    LojaNaoEncontradaException,
 )
-from src.use_cases.autenticacao.criar_tenant import (
-    CriarTenant,
-    CriarTenantInput,
-)
+from src.domain.repositories.loja_repository import LojaRepository
+from src.domain.repositories.tenant_repository import TenantRepository
+from src.domain.repositories.usuario_repository import UsuarioRepository
 from src.use_cases.autenticacao.autenticar_usuario import (
     AutenticarUsuario,
     AutenticarUsuarioInput,
     ServicoCriptografia,
 )
+from src.use_cases.autenticacao.criar_tenant import (
+    CriarTenant,
+    CriarTenantInput,
+)
 from src.use_cases.catalogo.gerenciar_loja import (
-    CriarLoja,
-    CriarLojaInput,
-    ObterLoja,
-    ListarLojas,
     AtualizarLoja,
     AtualizarLojaInput,
+    CriarLoja,
+    CriarLojaInput,
+    ListarLojas,
+    ObterLoja,
 )
 
 # -----------------------------------------------------------------------------
@@ -39,13 +39,13 @@ from src.use_cases.catalogo.gerenciar_loja import (
 
 class InMemoryTenantRepository(TenantRepository):
     def __init__(self) -> None:
-        self.tenants: Dict[UUID, Tenant] = {}
+        self.tenants: dict[UUID, Tenant] = {}
 
     def salvar(self, tenant: Tenant) -> Tenant:
         self.tenants[tenant.id] = tenant
         return tenant
 
-    def obter_por_cnpj(self, cnpj: str) -> Optional[Tenant]:
+    def obter_por_cnpj(self, cnpj: str) -> Tenant | None:
         # Normaliza o CNPJ removendo formatação para a busca
         cnpj_limpo = "".join(filter(str.isdigit, cnpj))
         for t in self.tenants.values():
@@ -53,25 +53,25 @@ class InMemoryTenantRepository(TenantRepository):
                 return t
         return None
 
-    def obter_por_id(self, id: UUID) -> Optional[Tenant]:
+    def obter_por_id(self, id: UUID) -> Tenant | None:
         return self.tenants.get(id)
 
 
 class InMemoryUsuarioRepository(UsuarioRepository):
     def __init__(self) -> None:
-        self.usuarios: Dict[UUID, Usuario] = {}
+        self.usuarios: dict[UUID, Usuario] = {}
 
     def salvar(self, usuario: Usuario) -> Usuario:
         self.usuarios[usuario.id] = usuario
         return usuario
 
-    def obter_por_email(self, email: str) -> Optional[Usuario]:
+    def obter_por_email(self, email: str) -> Usuario | None:
         for u in self.usuarios.values():
             if u.email.lower() == email.lower():
                 return u
         return None
 
-    def obter_por_id(self, id: UUID) -> Optional[Usuario]:
+    def obter_por_id(self, id: UUID) -> Usuario | None:
         return self.usuarios.get(id)
 
 
@@ -263,26 +263,26 @@ def test_autenticar_usuario_senha_incorreta() -> None:
 
 class InMemoryLojaRepository(LojaRepository):
     def __init__(self) -> None:
-        self.lojas: Dict[UUID, Loja] = {}
+        self.lojas: dict[UUID, Loja] = {}
 
     def salvar(self, loja: Loja) -> Loja:
         self.lojas[loja.id] = loja
         return loja
 
-    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Optional[Loja]:
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Loja | None:
         loja = self.lojas.get(id)
         if loja and loja.tenant_id == tenant_id:
             return loja
         return None
 
-    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Optional[Loja]:
+    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Loja | None:
         cnpj_limpo = "".join(filter(str.isdigit, cnpj))
         for loja in self.lojas.values():
             if loja.cnpj == cnpj_limpo and loja.tenant_id == tenant_id:
                 return loja
         return None
 
-    def listar_todas(self, tenant_id: UUID) -> List[Loja]:
+    def listar_todas(self, tenant_id: UUID) -> list[Loja]:
         return [loja for loja in self.lojas.values() if loja.tenant_id == tenant_id]
 
 

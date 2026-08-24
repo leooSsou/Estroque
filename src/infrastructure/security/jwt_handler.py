@@ -1,7 +1,8 @@
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
-from jose import jwt, JWTError
+
+from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
 
 # Carrega variáveis de ambiente ou utiliza fallbacks para desenvolvimento
@@ -70,4 +71,4 @@ def decodificar_token_acesso(token: str) -> dict[str, Any]:
     except ExpiredSignatureError:
         raise ValueError("O token de acesso expirou.")
     except JWTError as e:
-        raise ValueError(f"Token inválido: {str(e)}")
+        raise ValueError(f"Token inválido: {e!s}")

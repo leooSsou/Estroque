@@ -1,6 +1,7 @@
 import socket
-import time
 import sys
+import time
+
 
 def aguardar_postgres() -> None:
     """
