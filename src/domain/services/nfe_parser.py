@@ -1,6 +1,7 @@
 import re
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
+
+import defusedxml.ElementTree as ET
 
 
 @dataclass(frozen=True)
@@ -43,7 +44,9 @@ class NFeParserService:
 
         try:
             root = ET.fromstring(xml_content)
-        except ET.ParseError as e:
+        except (ET.DTDForbidden, ET.EntitiesForbidden, ET.ExternalReferenceForbidden) as e:
+            raise ValueError(f"XML inválido por motivos de segurança: {e!s}")
+        except (ET.ParseError, Exception) as e:
             raise ValueError(f"XML inválido ou corrompido: {e!s}")
 
         # Trata namespaces do XML da NF-e

@@ -16,5 +16,6 @@ slowapi>=0.1.9
 redis>=5.0.1
 python-multipart>=0.0.9
 celery>=5.3.6
+defusedxml>=0.7.1
 
 
