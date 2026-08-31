@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Truck, ArrowRight, PackageCheck, PackageSearch } from "lucide-react";
+import { Truck, ArrowRight, PackageCheck, PackageSearch, RefreshCw } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
+import { useTransferenciasData } from "@/hooks/useEstroqueApi";
 
 export const Route = createFileRoute("/transferencias")({
   head: () => ({
@@ -23,31 +24,43 @@ export const Route = createFileRoute("/transferencias")({
   component: TransferenciasPage,
 });
 
-const transfers = [
-  { id: "TR-0093", from: "Loja Matriz", to: "Filial 01", items: 20, status: "Em trânsito", tone: "warn" as const, when: "31/08 11:20" },
-  { id: "TR-0092", from: "Filial 02", to: "Loja Matriz", items: 6, status: "Aguardando envio", tone: "neutral" as const, when: "31/08 09:04" },
-  { id: "TR-0091", from: "Loja Matriz", to: "Filial 02", items: 34, status: "Recebida", tone: "good" as const, when: "30/08 16:30" },
-  { id: "TR-0090", from: "Filial 01", to: "Filial 02", items: 12, status: "Recebida", tone: "good" as const, when: "29/08 14:12" },
-];
-
-const romaneio = [
-  { sku: "SKU-55901", name: "Teclado Mecânico 75%", qty: 12 },
-  { sku: "SKU-77120", name: "Mouse Sem Fio 4000dpi", qty: 6 },
-  { sku: "SKU-10432", name: "Cabo HDMI 2.1 — 2m", qty: 2 },
-];
+function statusTone(s: string) {
+  if (s === "DESPACHADO" || s === "Em trânsito") return "warn" as const;
+  if (s === "RECEBIDO" || s === "Recebida") return "good" as const;
+  if (s === "DIVERGENTE") return "bad" as const;
+  return "neutral" as const;
+}
 
 function TransferenciasPage() {
+  const { transferencias, isLoading, refetch } = useTransferenciasData();
+
+  const emTransito = transferencias.filter((t) => t.status === "DESPACHADO").length;
+  const solicitadas = transferencias.filter((t) => t.status === "SOLICITADO").length;
+  const concluidas = transferencias.filter((t) => t.status === "RECEBIDO").length;
+
   return (
     <AppShell
-      title="Transferências"
-      subtitle="3 romaneios em trânsito · 58 itens movimentados no mês"
-      actions={<PrimaryButton icon={Truck}>Nova transferência</PrimaryButton>}
+      title="Transferências entre Lojas"
+      subtitle={`${transferencias.length} transferências registradas`}
+      actions={
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="rounded-full bg-card p-2.5 shadow-bento"
+            title="Recarregar transferências"
+          >
+            <RefreshCw className={`h-4 w-4 text-foreground ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <PrimaryButton icon={Truck}>Nova transferência</PrimaryButton>
+        </div>
+      }
     >
       <div className="grid gap-5 md:grid-cols-3">
         {[
-          { l: "Em trânsito", v: "3", i: Truck },
-          { l: "Aguardando envio", v: "1", i: PackageSearch },
-          { l: "Recebidas no mês", v: "18", i: PackageCheck },
+          { l: "Em trânsito", v: emTransito.toString(), i: Truck },
+          { l: "Aguardando despacho", v: solicitadas.toString(), i: PackageSearch },
+          { l: "Recebidas", v: concluidas.toString(), i: PackageCheck },
         ].map((k) => (
           <Card key={k.l}>
             <k.i className="h-8 w-8 rounded-xl bg-mint p-2 text-emerald" />
@@ -58,43 +71,35 @@ function TransferenciasPage() {
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-12">
-        <Card className="xl:col-span-7">
-          <CardTitle title="Romaneios" hint="últimos lançamentos" />
+        <Card className="xl:col-span-12">
+          <CardTitle title="Romaneios de Transferência" hint="Fluxo logístico integrado" />
           <ul className="space-y-3">
-            {transfers.map((t) => (
+            {transferencias.map((t) => (
               <li
                 key={t.id}
-                className="flex flex-wrap items-center gap-3 rounded-bento bg-muted/60 p-4"
+                className="flex flex-wrap items-center gap-3 rounded-bento bg-muted/60 p-4 transition-colors hover:bg-muted/90"
               >
-                <span className="font-mono text-xs font-bold text-forest">{t.id}</span>
+                <span className="font-mono text-xs font-bold text-forest">#{t.id.slice(0, 8)}</span>
                 <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  {t.from}
+                  {t.loja_origem_id}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  {t.to}
+                  {t.loja_destino_id}
                 </span>
-                <span className="text-xs text-muted-foreground">{t.items} itens · {t.when}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t.itens?.reduce((acc, i) => acc + (i.quantidade_solicitada || 0), 0) || 1} itens ·{" "}
+                  {new Date(t.data_solicitacao).toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
                 <span className="ml-auto">
-                  <Chip label={t.status} tone={t.tone} />
+                  <Chip label={t.status} tone={statusTone(t.status)} />
                 </span>
               </li>
             ))}
           </ul>
-        </Card>
-
-        <Card className="xl:col-span-5">
-          <CardTitle title="Romaneio TR-0093" hint="Matriz → Filial 01" />
-          <ul className="divide-y divide-border">
-            {romaneio.map((r) => (
-              <li key={r.sku} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{r.name}</p>
-                  <p className="font-mono text-[11px] text-muted-foreground">{r.sku}</p>
-                </div>
-                <span className="font-display text-base font-bold text-forest">{r.qty} un.</span>
-              </li>
-            ))}
-          </ul>
-          <PrimaryButton icon={PackageCheck}>Confirmar recebimento</PrimaryButton>
         </Card>
       </div>
     </AppShell>

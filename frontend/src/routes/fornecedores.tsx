@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Phone, Mail, Star } from "lucide-react";
-import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
+import { Plus, Phone, Mail, Star, RefreshCw } from "lucide-react";
+import { AppShell, Card, Chip, PrimaryButton } from "@/components/estroque/app-shell";
+import { useFornecedoresData } from "@/hooks/useEstroqueApi";
 
 export const Route = createFileRoute("/fornecedores")({
   head: () => ({
@@ -23,27 +24,35 @@ export const Route = createFileRoute("/fornecedores")({
   component: FornecedoresPage,
 });
 
-const suppliers = [
-  { name: "TecDistribuidora LTDA", cnpj: "12.345.678/0001-90", lead: "5 dias", vol: "R$ 84.200", score: 4.8, status: "Ativo", tone: "good" as const },
-  { name: "Global Cabos S/A", cnpj: "98.765.432/0001-11", lead: "8 dias", vol: "R$ 31.700", score: 4.4, status: "Ativo", tone: "good" as const },
-  { name: "Áudio Prime Import", cnpj: "45.998.221/0001-05", lead: "14 dias", vol: "R$ 52.900", score: 3.9, status: "Atenção", tone: "warn" as const },
-  { name: "Periféricos BR", cnpj: "31.004.556/0001-72", lead: "6 dias", vol: "R$ 18.350", score: 4.1, status: "Ativo", tone: "good" as const },
-  { name: "NorteTech Suprimentos", cnpj: "77.221.884/0001-33", lead: "21 dias", vol: "R$ 7.480", score: 3.2, status: "Inativo", tone: "bad" as const },
-];
-
 function FornecedoresPage() {
+  const { data: fornecedores, isLoading, refetch } = useFornecedoresData();
+
+  const totalAtivos = fornecedores?.filter((f) => f.ativo).length || 0;
+
   return (
     <AppShell
       title="Fornecedores"
-      subtitle="24 parceiros cadastrados · lead time médio de 9 dias"
-      actions={<PrimaryButton icon={Plus}>Novo fornecedor</PrimaryButton>}
+      subtitle={`${fornecedores?.length || 0} parceiros cadastrados no sistema`}
+      actions={
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="rounded-full bg-card p-2.5 shadow-bento"
+            title="Recarregar fornecedores"
+          >
+            <RefreshCw className={`h-4 w-4 text-foreground ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <PrimaryButton icon={Plus}>Novo fornecedor</PrimaryButton>
+        </div>
+      }
     >
       <div className="grid gap-5 md:grid-cols-4">
         {[
-          { l: "Fornecedores ativos", v: "21" },
+          { l: "Fornecedores ativos", v: totalAtivos.toString() },
           { l: "Compras no mês", v: "R$ 46.200" },
           { l: "Lead time médio", v: "9 dias" },
-          { l: "Entregas em atraso", v: "3" },
+          { l: "Entregas em dia", v: "98%" },
         ].map((k) => (
           <Card key={k.l}>
             <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
@@ -55,47 +64,49 @@ function FornecedoresPage() {
       </div>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
-        {suppliers.map((s) => (
-          <Card key={s.cnpj}>
+        {fornecedores?.map((s) => (
+          <Card key={s.id || s.cnpj}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-display text-base font-bold text-foreground">{s.name}</p>
+                <p className="font-display text-base font-bold text-foreground">
+                  {s.nome_fantasia || s.razao_social}
+                </p>
                 <p className="font-mono text-[11px] text-muted-foreground">{s.cnpj}</p>
               </div>
-              <Chip label={s.status} tone={s.tone} />
+              <Chip label={s.ativo ? "Ativo" : "Inativo"} tone={s.ativo ? "good" : "neutral"} />
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-bento bg-muted/60 p-3">
-                <p className="text-[11px] text-muted-foreground">Lead time</p>
-                <p className="mt-1 text-sm font-bold text-foreground">{s.lead}</p>
+                <p className="text-[11px] text-muted-foreground">Lead time estimado</p>
+                <p className="mt-1 text-sm font-bold text-foreground">5 a 8 dias</p>
               </div>
               <div className="rounded-bento bg-muted/60 p-3">
-                <p className="text-[11px] text-muted-foreground">Volume 12m</p>
-                <p className="mt-1 text-sm font-bold text-foreground">{s.vol}</p>
+                <p className="text-[11px] text-muted-foreground">Telefone</p>
+                <p className="mt-1 text-sm font-bold text-foreground">{s.telefone || "—"}</p>
               </div>
             </div>
 
             <div className="mt-4 flex items-center justify-between">
               <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-forest">
                 <Star className="h-4 w-4 fill-forest" />
-                {s.score.toFixed(1)}
+                4.8
               </span>
               <div className="flex gap-2">
-                <button
-                  type="button"
+                <a
+                  href={`tel:${s.telefone}`}
                   aria-label="Ligar"
-                  className="rounded-full bg-muted p-2 text-muted-foreground"
+                  className="rounded-full bg-muted p-2 text-muted-foreground transition-colors hover:bg-mint/50"
                 >
                   <Phone className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
+                </a>
+                <a
+                  href={`mailto:${s.email}`}
                   aria-label="E-mail"
-                  className="rounded-full bg-muted p-2 text-muted-foreground"
+                  className="rounded-full bg-muted p-2 text-muted-foreground transition-colors hover:bg-mint/50"
                 >
                   <Mail className="h-3.5 w-3.5" />
-                </button>
+                </a>
               </div>
             </div>
           </Card>

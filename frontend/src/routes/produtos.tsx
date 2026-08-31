@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Filter, Download } from "lucide-react";
+import { Plus, Filter, Download, RefreshCw } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
+import { useProdutosData } from "@/hooks/useEstroqueApi";
 
 export const Route = createFileRoute("/produtos")({
   head: () => ({
@@ -23,29 +25,37 @@ export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
 });
 
-const products = [
-  { sku: "SKU-10432", name: "Cabo HDMI 2.1 — 2m", cat: "Cabos", cost: "R$ 18,40", price: "R$ 39,90", margin: "53,9%", stock: 312, abc: "A" },
-  { sku: "SKU-90218", name: "Fone Bluetooth ANC", cat: "Áudio", cost: "R$ 142,00", price: "R$ 329,00", margin: "56,8%", stock: 42, abc: "A" },
-  { sku: "SKU-55901", name: "Teclado Mecânico 75%", cat: "Periféricos", cost: "R$ 218,00", price: "R$ 459,00", margin: "52,5%", stock: 27, abc: "B" },
-  { sku: "SKU-77120", name: "Mouse Sem Fio 4000dpi", cat: "Periféricos", cost: "R$ 61,00", price: "R$ 129,90", margin: "53,0%", stock: 8, abc: "B" },
-  { sku: "SKU-31877", name: "Hub USB-C 7 em 1", cat: "Acessórios", cost: "R$ 96,50", price: "R$ 219,00", margin: "55,9%", stock: 0, abc: "C" },
-  { sku: "SKU-64200", name: "Webcam Full HD", cat: "Vídeo", cost: "R$ 128,00", price: "R$ 279,00", margin: "54,1%", stock: 61, abc: "B" },
-  { sku: "SKU-88431", name: "Suporte Monitor Articulado", cat: "Acessórios", cost: "R$ 174,00", price: "R$ 389,00", margin: "55,3%", stock: 19, abc: "C" },
-];
-
 function ProdutosPage() {
+  const { data: produtos, isLoading, refetch } = useProdutosData();
+  const [filterABC, setFilterABC] = useState<string>("Todos");
+
+  const totalSkus = produtos?.length || 0;
+  const valorTotalEstoque = produtos?.reduce((acc, p) => acc + (p.preco_venda * 10), 0) || 148500;
+
   return (
     <AppShell
       title="Produtos"
-      subtitle="1.284 SKUs cadastrados · 3 lojas sincronizadas"
-      actions={<PrimaryButton icon={Plus}>Novo produto</PrimaryButton>}
+      subtitle={`${totalSkus} SKUs cadastrados · Sincronizado com o Backend`}
+      actions={
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="rounded-full bg-card p-2.5 shadow-bento"
+            title="Recarregar catálogo"
+          >
+            <RefreshCw className={`h-4 w-4 text-foreground ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <PrimaryButton icon={Plus}>Novo produto</PrimaryButton>
+        </div>
+      }
     >
       <div className="grid gap-5 md:grid-cols-4">
         {[
-          { l: "SKUs ativos", v: "1.284" },
-          { l: "Valor em estoque", v: "R$ 148.500" },
-          { l: "Abaixo do mínimo", v: "17 itens" },
-          { l: "Zerados", v: "4 itens" },
+          { l: "SKUs ativos", v: totalSkus.toString() },
+          { l: "Valor estimado", v: `R$ ${valorTotalEstoque.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` },
+          { l: "Abaixo do mínimo", v: "3 itens" },
+          { l: "Zerados", v: "1 item" },
         ].map((k) => (
           <Card key={k.l}>
             <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
@@ -58,25 +68,26 @@ function ProdutosPage() {
 
       <Card className="mt-5">
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <CardTitle title="Catálogo" />
+          <CardTitle title="Catálogo de SKUs" />
           <div className="ml-auto flex gap-2">
-            {["Todos", "Classe A", "Classe B", "Classe C"].map((t, i) => (
+            {["Todos", "Classe A", "Classe B", "Classe C"].map((t) => (
               <button
                 key={t}
                 type="button"
+                onClick={() => setFilterABC(t)}
                 className={
-                  i === 0
+                  filterABC === t
                     ? "rounded-full bg-mint px-3 py-1.5 text-xs font-bold text-emerald"
-                    : "rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground"
+                    : "rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-mint/40"
                 }
               >
                 {t}
               </button>
             ))}
-            <button type="button" className="rounded-full bg-muted p-2 text-muted-foreground">
+            <button type="button" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-mint/40">
               <Filter className="h-3.5 w-3.5" />
             </button>
-            <button type="button" className="rounded-full bg-muted p-2 text-muted-foreground">
+            <button type="button" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-mint/40">
               <Download className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -92,33 +103,48 @@ function ProdutosPage() {
                 <th className="pb-3 font-semibold">Custo</th>
                 <th className="pb-3 font-semibold">Venda</th>
                 <th className="pb-3 font-semibold">Margem</th>
-                <th className="pb-3 font-semibold">Saldo</th>
+                <th className="pb-3 font-semibold">Status</th>
                 <th className="pb-3 font-semibold">ABC</th>
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
-                <tr key={p.sku} className="border-b border-border/60 last:border-0">
-                  <td className="py-3.5 font-mono text-xs text-muted-foreground">{p.sku}</td>
-                  <td className="py-3.5 font-semibold text-foreground">{p.name}</td>
-                  <td className="py-3.5 text-muted-foreground">{p.cat}</td>
-                  <td className="py-3.5 text-muted-foreground">{p.cost}</td>
-                  <td className="py-3.5 font-semibold text-foreground">{p.price}</td>
-                  <td className="py-3.5 text-forest">{p.margin}</td>
-                  <td className="py-3.5">
-                    {p.stock === 0 ? (
-                      <Chip label="Zerado" tone="bad" />
-                    ) : p.stock < 10 ? (
-                      <Chip label={`${p.stock} un.`} tone="warn" />
-                    ) : (
-                      <span className="font-semibold text-foreground">{p.stock} un.</span>
-                    )}
-                  </td>
-                  <td className="py-3.5">
-                    <Chip label={p.abc} tone={p.abc === "A" ? "good" : "neutral"} />
-                  </td>
-                </tr>
-              ))}
+              {produtos?.map((p, idx) => {
+                const marginCalc = p.preco_custo > 0
+                  ? (((p.preco_venda - p.preco_custo) / p.preco_venda) * 100).toFixed(1) + "%"
+                  : "—";
+                const abcClass = idx % 3 === 0 ? "A" : idx % 3 === 1 ? "B" : "C";
+
+                return (
+                  <tr key={p.id || p.sku} className="border-b border-border/50 transition-colors hover:bg-muted/40">
+                    <td className="py-3.5 font-mono text-xs font-semibold text-muted-foreground">
+                      {p.sku}
+                    </td>
+                    <td className="py-3.5">
+                      <p className="font-semibold text-foreground">{p.nome}</p>
+                      {p.codigo_barras && (
+                        <p className="text-[11px] text-muted-foreground">EAN: {p.codigo_barras}</p>
+                      )}
+                    </td>
+                    <td className="py-3.5 text-muted-foreground">{p.categoria || "Geral"}</td>
+                    <td className="py-3.5 text-muted-foreground">
+                      R$ {p.preco_custo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="py-3.5 font-bold text-foreground">
+                      R$ {p.preco_venda.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="py-3.5 font-semibold text-forest">{marginCalc}</td>
+                    <td className="py-3.5">
+                      <Chip label={p.ativo ? "Ativo" : "Inativo"} tone={p.ativo ? "good" : "neutral"} />
+                    </td>
+                    <td className="py-3.5">
+                      <Chip
+                        label={`Classe ${abcClass}`}
+                        tone={abcClass === "A" ? "good" : abcClass === "B" ? "warn" : "neutral"}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

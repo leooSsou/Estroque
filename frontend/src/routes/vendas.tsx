@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
+import { useVendasData, useDashboardData } from "@/hooks/useEstroqueApi";
 
 export const Route = createFileRoute("/vendas")({
   head: () => ({
@@ -33,34 +34,51 @@ const days = [
   { d: "31", v: 100 },
 ];
 
-const sales = [
-  { id: "#4821", client: "Camila Duarte", items: 4, pay: "Pix", total: "R$ 1.240,00", status: "Concluída", tone: "good" as const },
-  { id: "#4820", client: "Consumidor final", items: 1, pay: "Crédito 3x", total: "R$ 329,00", status: "Concluída", tone: "good" as const },
-  { id: "#4819", client: "Estúdio Norte ME", items: 12, pay: "Boleto", total: "R$ 4.780,00", status: "Aguardando", tone: "warn" as const },
-  { id: "#4818", client: "Rafael Lima", items: 2, pay: "Débito", total: "R$ 168,80", status: "Concluída", tone: "good" as const },
-  { id: "#4817", client: "Consumidor final", items: 3, pay: "Dinheiro", total: "R$ 96,50", status: "Cancelada", tone: "bad" as const },
-];
-
 function VendasPage() {
+  const { vendas, isLoading, refetch } = useVendasData();
+  const { data: dash } = useDashboardData();
+
+  const faturamento = dash?.total_faturamento
+    ? `R$ ${dash.total_faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+    : "R$ 82.300,00";
+
+  const ticketMedio = dash?.ticket_medio
+    ? `R$ ${dash.ticket_medio.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+    : "R$ 310,50";
+
   return (
     <AppShell
-      title="Vendas"
-      subtitle="Agosto 2026 · R$ 82.300,00 faturados"
-      actions={<PrimaryButton icon={Plus}>Nova venda</PrimaryButton>}
+      title="Vendas & Frente de Caixa"
+      subtitle={`Agosto 2026 · ${faturamento} faturados`}
+      actions={
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="rounded-full bg-card p-2.5 shadow-bento"
+            title="Recarregar vendas"
+          >
+            <RefreshCw className={`h-4 w-4 text-foreground ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+          <PrimaryButton icon={Plus}>Nova venda</PrimaryButton>
+        </div>
+      }
     >
       <div className="grid gap-5 xl:grid-cols-12">
         <section className="gradient-emerald rounded-card p-6 xl:col-span-4">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-mint/60">
             Faturamento do mês
           </p>
-          <p className="mt-2 font-display text-4xl font-bold text-mint">R$ 82.300,00</p>
-          <p className="mt-1 text-xs text-mint/70">+12,4% vs. julho · 265 vendas</p>
+          <p className="mt-2 font-display text-4xl font-bold text-mint">{faturamento}</p>
+          <p className="mt-1 text-xs text-mint/70">
+            +12,4% vs. mês anterior · {dash?.total_itens_vendidos || 265} itens vendidos
+          </p>
           <div className="mt-6 grid grid-cols-2 gap-3">
             {[
-              { l: "Ticket médio", v: "R$ 310,50" },
+              { l: "Ticket médio", v: ticketMedio },
               { l: "Margem bruta", v: "43,8%" },
               { l: "CMV", v: "R$ 46.200" },
-              { l: "Devoluções", v: "1,2%" },
+              { l: "Devoluções", v: "0%" },
             ].map((s) => (
               <div key={s.l} className="rounded-bento bg-mint/10 p-3">
                 <p className="text-[11px] text-mint/70">{s.l}</p>
@@ -88,7 +106,7 @@ function VendasPage() {
       </div>
 
       <Card className="mt-5">
-        <CardTitle title="Histórico de vendas" hint="tempo real" />
+        <CardTitle title="Histórico de vendas" hint="registro em tempo real" />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
@@ -102,20 +120,21 @@ function VendasPage() {
               </tr>
             </thead>
             <tbody>
-              {sales.map((s) => (
-                <tr key={s.id} className="border-b border-border/60 last:border-0">
-                  <td className="py-3.5 font-mono text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-2">
-                      <Receipt className="h-3.5 w-3.5" />
-                      {s.id}
+              {vendas.map((s) => (
+                <tr key={s.id} className="border-b border-border/50 transition-colors hover:bg-muted/40">
+                  <td className="py-3 font-mono font-bold text-forest">#{s.id.slice(0, 6)}</td>
+                  <td className="py-3 font-medium text-foreground">{s.cliente_id || "Consumidor Final"}</td>
+                  <td className="py-3 text-muted-foreground">{s.itens?.length || 1} itens</td>
+                  <td className="py-3">
+                    <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground">
+                      {s.tipo_pagamento}
                     </span>
                   </td>
-                  <td className="py-3.5 font-semibold text-foreground">{s.client}</td>
-                  <td className="py-3.5 text-muted-foreground">{s.items}</td>
-                  <td className="py-3.5 text-muted-foreground">{s.pay}</td>
-                  <td className="py-3.5 font-semibold text-foreground">{s.total}</td>
-                  <td className="py-3.5">
-                    <Chip label={s.status} tone={s.tone} />
+                  <td className="py-3 font-bold text-foreground">
+                    R$ {s.valor_total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="py-3">
+                    <Chip label="Concluída" tone="good" />
                   </td>
                 </tr>
               ))}

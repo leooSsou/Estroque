@@ -1,6 +1,8 @@
+import { useState, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { UploadCloud, FileCode2, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { UploadCloud, FileCode2, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
+import { estroqueApi } from "@/services/estroqueApi";
 
 export const Route = createFileRoute("/nfe")({
   head: () => ({
@@ -37,29 +39,76 @@ const mapping = [
 ];
 
 function NfePage() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadStatus(null);
+    try {
+      const xmlText = await file.text();
+      const res = await estroqueApi.importarXmlNfe(xmlText);
+      setUploadStatus(`Sucesso: ${res.mensagem || "NF-e importada e processada no estoque!"}`);
+    } catch (err: any) {
+      setUploadStatus(`Aviso: ${err.message || "XML carregado no analisador."}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <AppShell
       title="Importar NF-e"
-      subtitle="Entrada de estoque automatizada por XML"
-      actions={<PrimaryButton icon={UploadCloud}>Enviar XML</PrimaryButton>}
+      subtitle="Entrada de estoque automatizada por XML v4.00"
+      actions={
+        <div onClick={() => fileInputRef.current?.click()}>
+          <PrimaryButton icon={UploadCloud}>
+            {isUploading ? "Enviando..." : "Enviar XML"}
+          </PrimaryButton>
+        </div>
+      }
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xml"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
       <div className="grid gap-5 xl:grid-cols-12">
         <Card className="xl:col-span-7">
-          <CardTitle title="Upload de arquivos" hint="XML ou lote .zip" />
-          <div className="flex flex-col items-center justify-center rounded-bento border-2 border-dashed border-border px-6 py-12 text-center">
-            <UploadCloud className="h-12 w-12 rounded-2xl bg-mint p-3 text-emerald" />
+          <CardTitle title="Upload de arquivos" hint="XML padrão SEFAZ" />
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="flex cursor-pointer flex-col items-center justify-center rounded-bento border-2 border-dashed border-border px-6 py-12 text-center transition-colors hover:border-forest hover:bg-mint/10"
+          >
+            {isUploading ? (
+              <Loader2 className="h-12 w-12 animate-spin rounded-2xl bg-mint p-3 text-emerald" />
+            ) : (
+              <UploadCloud className="h-12 w-12 rounded-2xl bg-mint p-3 text-emerald" />
+            )}
             <p className="mt-4 font-display text-lg font-bold text-foreground">
-              Arraste os XMLs de NF-e aqui
+              Arraste os XMLs de NF-e aqui ou clique para selecionar
             </p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              O Estroque lê os itens, sugere o de-para de SKUs e recalcula o custo médio de cada produto.
+              O Estroque lê os itens, cadastra produtos novos, sugere o de-para de SKUs e atualiza o custo médio ponderado.
             </p>
-            <PrimaryButton icon={FileCode2}>Selecionar arquivos</PrimaryButton>
+
+            {uploadStatus && (
+              <div className="mt-4 rounded-xl bg-mint/80 px-4 py-2 text-xs font-semibold text-emerald">
+                {uploadStatus}
+              </div>
+            )}
           </div>
         </Card>
 
         <Card className="xl:col-span-5">
-          <CardTitle title="De-para sugerido" hint="NF-e 000.146" />
+          <CardTitle title="De-para sugerido" hint="NF-e em conciliação" />
           <ul className="space-y-3">
             {mapping.map((m) => (
               <li key={m.desc} className="rounded-bento bg-muted/60 p-3.5">
@@ -74,7 +123,9 @@ function NfePage() {
               </li>
             ))}
           </ul>
-          <PrimaryButton icon={CheckCircle2}>Confirmar entrada</PrimaryButton>
+          <div className="mt-4">
+            <PrimaryButton icon={CheckCircle2}>Confirmar entrada</PrimaryButton>
+          </div>
         </Card>
       </div>
 
@@ -99,10 +150,7 @@ function NfePage() {
                   <td className="py-3.5 text-muted-foreground">{im.items}</td>
                   <td className="py-3.5 font-semibold text-foreground">{im.value}</td>
                   <td className="py-3.5">
-                    <span className="inline-flex items-center gap-2">
-                      <im.icon className="h-4 w-4 text-muted-foreground" />
-                      <Chip label={im.status} tone={im.tone} />
-                    </span>
+                    <Chip label={im.status} tone={im.tone} />
                   </td>
                 </tr>
               ))}
