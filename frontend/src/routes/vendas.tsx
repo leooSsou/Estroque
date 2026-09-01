@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, RefreshCw } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
@@ -35,30 +36,38 @@ const days = [
 ];
 
 function VendasPage() {
-  const { vendas, isLoading, refetch } = useVendasData();
+  const { vendas, isLoading, isFetching, refetch } = useVendasData();
   const { data: dash } = useDashboardData();
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
-  const faturamento = dash?.total_faturamento
-    ? `R$ ${dash.total_faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-    : "R$ 82.300,00";
+  const handleRefresh = async () => {
+    setIsManualRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setTimeout(() => setIsManualRefreshing(false), 600);
+    }
+  };
 
-  const ticketMedio = dash?.ticket_medio
-    ? `R$ ${dash.ticket_medio.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-    : "R$ 310,50";
+  const faturamento = `R$ ${(dash?.total_faturamento ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  const ticketMedio = `R$ ${(dash?.ticket_medio ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   return (
     <AppShell
       title="Vendas & Frente de Caixa"
-      subtitle={`Agosto 2026 · ${faturamento} faturados`}
+      subtitle={`${faturamento} faturados no período`}
       actions={
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => refetch()}
-            className="rounded-full bg-card p-2.5 shadow-bento"
+            onClick={handleRefresh}
+            disabled={isFetching || isManualRefreshing}
+            className="rounded-full bg-card p-2.5 shadow-bento transition-all hover:bg-muted active:scale-95"
             title="Recarregar vendas"
           >
-            <RefreshCw className={`h-4 w-4 text-foreground ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+            />
           </button>
           <PrimaryButton icon={Plus}>Nova venda</PrimaryButton>
         </div>
@@ -71,13 +80,13 @@ function VendasPage() {
           </p>
           <p className="mt-2 font-display text-4xl font-bold text-mint">{faturamento}</p>
           <p className="mt-1 text-xs text-mint/70">
-            +12,4% vs. mês anterior · {dash?.total_itens_vendidos || 265} itens vendidos
+            {dash?.total_itens_vendidos || 0} itens vendidos
           </p>
           <div className="mt-6 grid grid-cols-2 gap-3">
             {[
               { l: "Ticket médio", v: ticketMedio },
-              { l: "Margem bruta", v: "43,8%" },
-              { l: "CMV", v: "R$ 46.200" },
+              { l: "Vendas", v: `${vendas.length} reg.` },
+              { l: "Itens vendidos", v: `${dash?.total_itens_vendidos || 0}` },
               { l: "Devoluções", v: "0%" },
             ].map((s) => (
               <div key={s.l} className="rounded-bento bg-mint/10 p-3">
@@ -120,24 +129,32 @@ function VendasPage() {
               </tr>
             </thead>
             <tbody>
-              {vendas.map((s) => (
-                <tr key={s.id} className="border-b border-border/50 transition-colors hover:bg-muted/40">
-                  <td className="py-3 font-mono font-bold text-forest">#{s.id.slice(0, 6)}</td>
-                  <td className="py-3 font-medium text-foreground">{s.cliente_id || "Consumidor Final"}</td>
-                  <td className="py-3 text-muted-foreground">{s.itens?.length || 1} itens</td>
-                  <td className="py-3">
-                    <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground">
-                      {s.tipo_pagamento}
-                    </span>
-                  </td>
-                  <td className="py-3 font-bold text-foreground">
-                    R$ {s.valor_total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="py-3">
-                    <Chip label="Concluída" tone="good" />
+              {vendas.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-10 text-center text-xs text-muted-foreground">
+                    Nenhuma venda registrada no sistema.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                vendas.map((s) => (
+                  <tr key={s.id} className="border-b border-border/50 transition-colors hover:bg-muted/40">
+                    <td className="py-3 font-mono font-bold text-forest">#{s.id.slice(0, 6)}</td>
+                    <td className="py-3 font-medium text-foreground">{s.cliente_id || "Consumidor Final"}</td>
+                    <td className="py-3 text-muted-foreground">{s.itens?.length || 1} itens</td>
+                    <td className="py-3">
+                      <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground">
+                        {s.tipo_pagamento}
+                      </span>
+                    </td>
+                    <td className="py-3 font-bold text-foreground">
+                      R$ {s.valor_total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="py-3">
+                      <Chip label="Concluída" tone="good" />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

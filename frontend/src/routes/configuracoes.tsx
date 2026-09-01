@@ -23,13 +23,6 @@ export const Route = createFileRoute("/configuracoes")({
   component: ConfiguracoesPage,
 });
 
-const team = [
-  { name: "Jonathas Girardi", role: "Administrador", email: "jonathas@estroque.app", tone: "good" as const },
-  { name: "Camila Duarte", role: "Vendedora", email: "camila@estroque.app", tone: "neutral" as const },
-  { name: "Rafael Lima", role: "Estoquista", email: "rafael@estroque.app", tone: "neutral" as const },
-  { name: "Marina Alves", role: "Financeiro", email: "marina@estroque.app", tone: "neutral" as const },
-];
-
 const toggles = [
   { l: "Alertar ruptura prevista", d: "Notifica quando a cobertura cai abaixo de 7 dias", on: true },
   { l: "Bloquear venda sem saldo", d: "Impede saída maior que o saldo disponível", on: true },
@@ -50,17 +43,17 @@ function ConfiguracoesPage() {
           <Building2 className="h-9 w-9 rounded-xl bg-mint p-2 text-emerald" />
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {[
-              { l: "Razão social", v: "Estroque Comércio LTDA" },
-              { l: "CNPJ", v: "10.482.771/0001-45" },
-              { l: "Regime tributário", v: "Simples Nacional" },
-              { l: "Cidade / UF", v: "Salvador / BA" },
+              { l: "Razão social", p: "Nome da empresa / Fantasia" },
+              { l: "CNPJ", p: "00.000.000/0000-00" },
+              { l: "Regime tributário", p: "Simples Nacional / Lucro Presumido" },
+              { l: "Cidade / UF", p: "Cidade - UF" },
             ].map((f) => (
               <label key={f.l} className="block">
                 <span className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
                   {f.l}
                 </span>
                 <input
-                  defaultValue={f.v}
+                  placeholder={f.p}
                   className="mt-1.5 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-forest"
                 />
               </label>
@@ -102,25 +95,11 @@ function ConfiguracoesPage() {
         </Card>
 
         <Card className="xl:col-span-7">
-          <CardTitle title="Equipe e permissões" hint="4 usuários" />
+          <CardTitle title="Equipe e permissões" hint="Usuários do tenant" />
           <Users className="h-9 w-9 rounded-xl bg-mint p-2 text-emerald" />
-          <ul className="mt-4 divide-y divide-border">
-            {team.map((u) => (
-              <li key={u.email} className="flex items-center gap-3 py-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald text-xs font-bold text-mint">
-                  {u.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground">{u.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{u.email}</p>
-                </div>
-                <Chip label={u.role} tone={u.tone} />
-              </li>
-            ))}
-          </ul>
+          <div className="mt-4 flex flex-col items-center justify-center py-8 text-center text-xs text-muted-foreground">
+            Acesse o gerenciamento de usuários para convidar novos membros para a equipe.
+          </div>
         </Card>
 
         <Card className="xl:col-span-5">
@@ -128,16 +107,16 @@ function ConfiguracoesPage() {
           <ShieldCheck className="h-9 w-9 rounded-xl bg-mint p-2 text-emerald" />
           <ul className="mt-4 space-y-3">
             {[
-              { l: "Certificado digital A1", v: "Válido até 04/2027", tone: "good" as const },
-              { l: "SEFAZ — consulta NF-e", v: "Conectado", tone: "good" as const },
-              { l: "Emissor de NFC-e", v: "Não configurado", tone: "warn" as const },
+              { l: "Certificado digital A1", v: "Não configurado", tone: "neutral" as const },
+              { l: "SEFAZ — consulta NF-e", v: "Pronto para XML manual", tone: "good" as const },
+              { l: "Emissor de NFC-e", v: "Não configurado", tone: "neutral" as const },
             ].map((i) => (
               <li key={i.l} className="flex items-center justify-between gap-3 rounded-bento bg-muted/60 p-3.5">
                 <div>
                   <p className="text-sm font-semibold text-foreground">{i.l}</p>
                   <p className="text-xs text-muted-foreground">{i.v}</p>
                 </div>
-                <Chip label={i.tone === "good" ? "OK" : "Pendente"} tone={i.tone} />
+                <Chip label={i.tone === "good" ? "Disponível" : "Pendente"} tone={i.tone} />
               </li>
             ))}
           </ul>

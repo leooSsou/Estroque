@@ -109,22 +109,12 @@ function NfePage() {
 
         <Card className="xl:col-span-5">
           <CardTitle title="De-para sugerido" hint="NF-e em conciliação" />
-          <ul className="space-y-3">
-            {mapping.map((m) => (
-              <li key={m.desc} className="rounded-bento bg-muted/60 p-3.5">
-                <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                  Descrição do fornecedor
-                </p>
-                <p className="mt-1 text-sm font-semibold text-foreground">{m.desc}</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="font-mono text-xs text-forest">{m.sku}</span>
-                  <Chip label={`match ${m.conf}`} tone={m.conf.startsWith("6") ? "warn" : "good"} />
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4">
-            <PrimaryButton icon={CheckCircle2}>Confirmar entrada</PrimaryButton>
+          <div className="flex flex-col items-center justify-center rounded-bento bg-muted/40 p-8 text-center">
+            <FileCode2 className="h-10 w-10 text-muted-foreground/60" />
+            <p className="mt-3 text-sm font-semibold text-foreground">Aguardando arquivo XML</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Faça o upload ao lado para processar os itens e fornecedor automaticamente.
+            </p>
           </div>
         </Card>
       </div>
@@ -143,17 +133,11 @@ function NfePage() {
               </tr>
             </thead>
             <tbody>
-              {imports.map((im) => (
-                <tr key={im.nf} className="border-b border-border/60 last:border-0">
-                  <td className="py-3.5 font-mono text-xs text-muted-foreground">{im.nf}</td>
-                  <td className="py-3.5 font-semibold text-foreground">{im.sup}</td>
-                  <td className="py-3.5 text-muted-foreground">{im.items}</td>
-                  <td className="py-3.5 font-semibold text-foreground">{im.value}</td>
-                  <td className="py-3.5">
-                    <Chip label={im.status} tone={im.tone} />
-                  </td>
-                </tr>
-              ))}
+              <tr>
+                <td colSpan={5} className="py-10 text-center text-xs text-muted-foreground">
+                  Nenhuma importação de NF-e realizada recentemente.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

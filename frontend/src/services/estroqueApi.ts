@@ -109,7 +109,8 @@ export const estroqueApi = {
   getCurvaABC: () => apiRequest<CurvaABCResponse>("/analytics/curva-abc"),
 
   // 📦 Produtos & Catálogo
-  getProdutos: () => apiRequest<Produto[]>("/produtos/"),
+  getProdutos: (busca?: string) =>
+    apiRequest<Produto[]>(busca && busca.trim() ? `/produtos/?busca=${encodeURIComponent(busca.trim())}` : "/produtos/"),
   criarProduto: (data: Partial<Produto>) =>
     apiRequest<Produto>("/produtos/", {
       method: "POST",
@@ -123,6 +124,17 @@ export const estroqueApi = {
     apiRequest<EstoqueMovimentacao[]>(
       lojaId ? `/estoque/movimentacoes?loja_id=${lojaId}` : "/estoque/movimentacoes"
     ),
+  movimentarEstoque: (data: {
+    loja_id: string;
+    produto_id: string;
+    tipo: "ENTRADA" | "SAIDA";
+    quantidade: number;
+    motivo: string;
+  }) =>
+    apiRequest<{ saldo: EstoqueSaldo; movimentacao: EstoqueMovimentacao }>("/estoque/movimentar", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
   importarXmlNfe: (xmlContent: string) => {
     const formData = new FormData();
     const blob = new Blob([xmlContent], { type: "application/xml" });
@@ -160,7 +172,17 @@ export const estroqueApi = {
 
   // 🏢 Lojas
   getLojas: () => apiRequest<Loja[]>("/lojas/"),
+  criarLoja: (data: Partial<Loja>) =>
+    apiRequest<Loja>("/lojas/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   // 🤝 Fornecedores
   getFornecedores: () => apiRequest<Fornecedor[]>("/fornecedores/"),
+  criarFornecedor: (data: Partial<Fornecedor>) =>
+    apiRequest<Fornecedor>("/fornecedores/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 };

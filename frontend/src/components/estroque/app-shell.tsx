@@ -7,9 +7,20 @@ interface AppShellProps {
   subtitle: string;
   actions?: ReactNode;
   children: ReactNode;
+  searchValue?: string;
+  onSearchChange?: (val: string) => void;
+  searchPlaceholder?: string;
 }
 
-export function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+export function AppShell({
+  title,
+  subtitle,
+  actions,
+  children,
+  searchValue,
+  onSearchChange,
+  searchPlaceholder,
+}: AppShellProps) {
   return (
     <div className="flex min-h-screen bg-background">
       <EstroqueSidebar />
@@ -32,8 +43,10 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
           <div className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
-              placeholder="Buscar produto, SKU, NF-e…"
-              className="w-56 rounded-xl border border-border bg-card py-2 pl-9 pr-16 text-sm outline-none focus:border-forest"
+              placeholder={searchPlaceholder || "Buscar produto, SKU, NF-e…"}
+              value={searchValue ?? ""}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+              className="w-56 rounded-xl border border-border bg-card py-2 pl-9 pr-16 text-sm text-foreground outline-none transition-colors focus:border-forest"
             />
             <span className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
               ⌘K

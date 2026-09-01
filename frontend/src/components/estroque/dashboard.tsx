@@ -117,25 +117,21 @@ export function EstroqueDashboard() {
   const [showLojaDropdown, setShowLojaDropdown] = useState(false);
 
   // Calcula totais dos KPIs
-  const faturamentoFormatado = dash?.total_faturamento
-    ? `R$ ${dash.total_faturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-    : "R$ 82.300,00";
+  const faturamentoFormatado = `R$ ${(dash?.total_faturamento ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  const ticketMedioFormatado = `R$ ${(dash?.ticket_medio ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
-  const ticketMedioFormatado = dash?.ticket_medio
-    ? `R$ ${dash.ticket_medio.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-    : "R$ 310,50";
-
-  const rupturas = dash?.produtos_ruptura ?? 4;
-  const criticos = dash?.produtos_estoque_critico ?? 3;
+  const rupturas = dash?.produtos_ruptura ?? 0;
+  const criticos = dash?.produtos_estoque_critico ?? 0;
 
   // Curva ABC percentuais
-  const countA = curva?.produtos.filter((p) => p.classe === "A").length || 1;
-  const countB = curva?.produtos.filter((p) => p.classe === "B").length || 1;
-  const countC = curva?.produtos.filter((p) => p.classe === "C").length || 1;
+  const produtosCurva = curva?.produtos || [];
+  const countA = produtosCurva.filter((p) => p.classe === "A").length;
+  const countB = produtosCurva.filter((p) => p.classe === "B").length;
+  const countC = produtosCurva.filter((p) => p.classe === "C").length;
   const totalProdutos = countA + countB + countC;
-  const pctA = Math.round((countA / totalProdutos) * 100) || 80;
-  const pctB = Math.round((countB / totalProdutos) * 100) || 15;
-  const pctC = Math.max(0, 100 - pctA - pctB) || 5;
+  const pctA = totalProdutos > 0 ? Math.round((countA / totalProdutos) * 100) : 0;
+  const pctB = totalProdutos > 0 ? Math.round((countB / totalProdutos) * 100) : 0;
+  const pctC = totalProdutos > 0 ? Math.max(0, 100 - pctA - pctB) : 0;
 
   return (
     <div className="min-h-screen flex-1 px-5 py-6 lg:px-8">
@@ -233,11 +229,11 @@ export function EstroqueDashboard() {
         {/* Featured action card */}
         <section className="gradient-emerald rounded-card p-6 xl:col-span-4">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-mint/60">
-            Saldo consolidado
+            Faturamento consolidado
           </p>
-          <p className="mt-2 font-display text-4xl font-bold text-mint">R$ 148.500,00</p>
+          <p className="mt-2 font-display text-4xl font-bold text-mint">{faturamentoFormatado}</p>
           <p className="mt-1 text-xs text-mint/70">
-            {lojas?.length ?? 3} lojas sincronizadas · {dash ? "API online" : "modo offline"}
+            {lojas?.length ?? 0} {lojas?.length === 1 ? "loja cadastrada" : "lojas cadastradas"} · {dash ? "API online" : "carregando..."}
           </p>
 
           <div className="mt-6 grid grid-cols-2 gap-2.5">
@@ -414,28 +410,36 @@ export function EstroqueDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {movimentacoes.slice(0, 5).map((m) => (
-                  <tr key={m.id} className="border-t border-border">
-                    <td className="py-3">
-                      <p className="font-medium text-foreground">{m.observacao || "Movimentação"}</p>
-                      <p className="text-xs text-muted-foreground">Ref: {m.produto_id.slice(0, 8)}</p>
-                    </td>
-                    <td className="py-3 text-muted-foreground">{m.loja_id}</td>
-                    <td className="py-3">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${typeStyles[m.tipo_movimentacao] || "bg-muted text-muted-foreground"}`}
-                      >
-                        {m.tipo_movimentacao}
-                      </span>
-                    </td>
-                    <td className={`py-3 text-right font-semibold ${m.quantidade >= 0 ? "text-emerald" : "text-destructive"}`}>
-                      {m.quantidade >= 0 ? `+${m.quantidade}` : m.quantidade}
-                    </td>
-                    <td className="py-3 text-right text-xs text-muted-foreground">
-                      {new Date(m.data_movimentacao).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                {movimentacoes.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-xs text-muted-foreground">
+                      Nenhuma movimentação registrada no estoque.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  movimentacoes.slice(0, 5).map((m) => (
+                    <tr key={m.id} className="border-t border-border">
+                      <td className="py-3">
+                        <p className="font-medium text-foreground">{m.observacao || "Movimentação"}</p>
+                        <p className="text-xs text-muted-foreground">Ref: {m.produto_id.slice(0, 8)}</p>
+                      </td>
+                      <td className="py-3 text-muted-foreground">{m.loja_id}</td>
+                      <td className="py-3">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${typeStyles[m.tipo_movimentacao] || "bg-muted text-muted-foreground"}`}
+                        >
+                          {m.tipo_movimentacao}
+                        </span>
+                      </td>
+                      <td className={`py-3 text-right font-semibold ${m.quantidade >= 0 ? "text-emerald" : "text-destructive"}`}>
+                        {m.quantidade >= 0 ? `+${m.quantidade}` : m.quantidade}
+                      </td>
+                      <td className="py-3 text-right text-xs text-muted-foreground">
+                        {new Date(m.data_movimentacao).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -444,24 +448,29 @@ export function EstroqueDashboard() {
         {/* Activity */}
         <section className="bento-card p-6 xl:col-span-4">
           <h2 className="text-base font-bold text-foreground">Atividades Recentes</h2>
-          <ul className="mt-5 space-y-5">
-            {activity.map((a) => (
-              <li key={a.who} className="flex gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mint text-[11px] font-bold text-emerald">
-                  {a.who
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </span>
-                <div>
-                  <p className="text-sm leading-snug text-foreground">
-                    <span className="font-semibold">{a.who}</span> {a.what}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{a.when}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {movimentacoes.length === 0 ? (
+            <div className="mt-8 flex flex-col items-center justify-center py-6 text-center">
+              <p className="text-xs text-muted-foreground">Nenhuma atividade recente registrada.</p>
+            </div>
+          ) : (
+            <ul className="mt-5 space-y-5">
+              {movimentacoes.slice(0, 4).map((m) => (
+                <li key={m.id} className="flex gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mint text-[11px] font-bold text-emerald">
+                    {m.tipo_movimentacao.slice(0, 2)}
+                  </span>
+                  <div>
+                    <p className="text-sm leading-snug text-foreground">
+                      <span className="font-semibold">{m.tipo_movimentacao}</span> · {m.observacao || "Movimentação"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {new Date(m.data_movimentacao).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
 

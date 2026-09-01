@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Truck, ArrowRight, PackageCheck, PackageSearch, RefreshCw } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
@@ -32,7 +33,17 @@ function statusTone(s: string) {
 }
 
 function TransferenciasPage() {
-  const { transferencias, isLoading, refetch } = useTransferenciasData();
+  const { transferencias, isLoading, isFetching, refetch } = useTransferenciasData();
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsManualRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setTimeout(() => setIsManualRefreshing(false), 600);
+    }
+  };
 
   const emTransito = transferencias.filter((t) => t.status === "DESPACHADO").length;
   const solicitadas = transferencias.filter((t) => t.status === "SOLICITADO").length;
@@ -46,11 +57,14 @@ function TransferenciasPage() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => refetch()}
-            className="rounded-full bg-card p-2.5 shadow-bento"
+            onClick={handleRefresh}
+            disabled={isFetching || isManualRefreshing}
+            className="rounded-full bg-card p-2.5 shadow-bento transition-all hover:bg-muted active:scale-95"
             title="Recarregar transferências"
           >
-            <RefreshCw className={`h-4 w-4 text-foreground ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+            />
           </button>
           <PrimaryButton icon={Truck}>Nova transferência</PrimaryButton>
         </div>
@@ -74,31 +88,37 @@ function TransferenciasPage() {
         <Card className="xl:col-span-12">
           <CardTitle title="Romaneios de Transferência" hint="Fluxo logístico integrado" />
           <ul className="space-y-3">
-            {transferencias.map((t) => (
-              <li
-                key={t.id}
-                className="flex flex-wrap items-center gap-3 rounded-bento bg-muted/60 p-4 transition-colors hover:bg-muted/90"
-              >
-                <span className="font-mono text-xs font-bold text-forest">#{t.id.slice(0, 8)}</span>
-                <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  {t.loja_origem_id}
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-                  {t.loja_destino_id}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {t.itens?.reduce((acc, i) => acc + (i.quantidade_solicitada || 0), 0) || 1} itens ·{" "}
-                  {new Date(t.data_solicitacao).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-                <span className="ml-auto">
-                  <Chip label={t.status} tone={statusTone(t.status)} />
-                </span>
+            {transferencias.length === 0 ? (
+              <li className="py-10 text-center text-xs text-muted-foreground">
+                Nenhuma transferência solicitada ou em trânsito.
               </li>
-            ))}
+            ) : (
+              transferencias.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex flex-wrap items-center gap-3 rounded-bento bg-muted/60 p-4 transition-colors hover:bg-muted/90"
+                >
+                  <span className="font-mono text-xs font-bold text-forest">#{t.id.slice(0, 8)}</span>
+                  <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    {t.loja_origem_id}
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    {t.loja_destino_id}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {t.itens?.reduce((acc, i) => acc + (i.quantidade_solicitada || 0), 0) || 1} itens ·{" "}
+                    {new Date(t.data_solicitacao).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span className="ml-auto">
+                    <Chip label={t.status} tone={statusTone(t.status)} />
+                  </span>
+                </li>
+              ))
+            )}
           </ul>
         </Card>
       </div>
