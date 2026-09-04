@@ -10,6 +10,9 @@ import {
   Venda,
   Loja,
   Fornecedor,
+  FinanceiroLancamento,
+  Cliente,
+  ClienteCreateInput,
 } from "@/services/estroqueApi";
 
 // 📊 Dashboard Hook
@@ -43,6 +46,7 @@ export function useCurvaABCData() {
       } catch {
         return {
           total_faturamento_periodo: 0,
+          itens: [],
           produtos: [],
         };
       }
@@ -106,11 +110,21 @@ export function useEstoqueData(lojaId?: string) {
     },
   });
 
+  const auditarMutation = useMutation({
+    mutationFn: estroqueApi.auditarEstoque,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["estoque"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    },
+  });
+
   return {
     saldos: saldosQuery.data || [],
     movimentacoes: movimentacoesQuery.data || [],
     isLoading: saldosQuery.isLoading || movimentacoesQuery.isLoading,
     isFetching: saldosQuery.isFetching || movimentacoesQuery.isFetching,
+    auditarEstoque: auditarMutation.mutateAsync,
+    isAuditing: auditarMutation.isPending,
     refetch: () => {
       saldosQuery.refetch();
       movimentacoesQuery.refetch();
@@ -133,23 +147,41 @@ export function useTransferenciasData() {
     },
   });
 
+  const createMutation = useMutation({
+    mutationFn: estroqueApi.criarTransferencia,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transferencias"] });
+      queryClient.invalidateQueries({ queryKey: ["estoque"] });
+    },
+  });
+
   const despacharMutation = useMutation({
     mutationFn: estroqueApi.despacharTransferencia,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["transferencias"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transferencias"] });
+      queryClient.invalidateQueries({ queryKey: ["estoque"] });
+    },
   });
 
   const receberMutation = useMutation({
-    mutationFn: ({ id, itens }: { id: string; itens: Array<{ produto_id: string; quantidade: number }> }) =>
-      estroqueApi.receberTransferencia(id, itens),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["transferencias"] }),
+    mutationFn: ({ id, data }: { id: string; data: { quantidade_recebida: number; justificativa?: string | null } }) =>
+      estroqueApi.receberTransferencia(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transferencias"] });
+      queryClient.invalidateQueries({ queryKey: ["estoque"] });
+    },
   });
 
   return {
     transferencias: query.data || [],
     isLoading: query.isLoading,
     isFetching: query.isFetching,
+    criarTransferencia: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
     despachar: despacharMutation.mutateAsync,
+    isDespachando: despacharMutation.isPending,
     receber: receberMutation.mutateAsync,
+    isRecebendo: receberMutation.isPending,
     refetch: query.refetch,
   };
 }
@@ -171,7 +203,11 @@ export function useVendasData() {
 
   const createMutation = useMutation({
     mutationFn: estroqueApi.criarVenda,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vendas"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendas"] });
+      queryClient.invalidateQueries({ queryKey: ["estoque"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    },
   });
 
   return {
@@ -179,13 +215,16 @@ export function useVendasData() {
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     criarVenda: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
     refetch: query.refetch,
   };
 }
 
 // 🏢 Lojas Hook
 export function useLojasData() {
-  return useQuery<Loja[]>({
+  const queryClient = useQueryClient();
+
+  const query = useQuery<Loja[]>({
     queryKey: ["lojas"],
     queryFn: async () => {
       try {
@@ -195,6 +234,18 @@ export function useLojasData() {
       }
     },
   });
+
+  const createMutation = useMutation({
+    mutationFn: estroqueApi.criarLoja,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["lojas"] }),
+  });
+
+  return {
+    ...query,
+    lojas: query.data || [],
+    criarLoja: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+  };
 }
 
 // 🤝 Fornecedores Hook
@@ -221,6 +272,87 @@ export function useFornecedoresData() {
     ...query,
     fornecedores: query.data || [],
     criarFornecedor: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+  };
+}
+
+// 👤 Usuário Logado Hook
+export function useUserData() {
+  return useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: async () => {
+      try {
+        return await estroqueApi.getMe();
+      } catch {
+        return null;
+      }
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+// 💰 Financeiro & Lançamentos Hook
+export function useFinanceiroData(filters?: {
+  loja_id?: string;
+  tipo?: string;
+  data_inicio?: string;
+  data_fim?: string;
+}) {
+  const queryClient = useQueryClient();
+
+  const query = useQuery<FinanceiroLancamento[]>({
+    queryKey: ["financeiro", "lancamentos", filters],
+    queryFn: async () => {
+      try {
+        return await estroqueApi.getLancamentosFinanceiros(filters);
+      } catch {
+        return [];
+      }
+    },
+  });
+
+  const registrarDespesaMutation = useMutation({
+    mutationFn: estroqueApi.registrarDespesa,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["financeiro"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    },
+  });
+
+  return {
+    ...query,
+    lancamentos: query.data || [],
+    registrarDespesa: registrarDespesaMutation.mutateAsync,
+    isRegistering: registrarDespesaMutation.isPending,
+  };
+}
+
+// 👥 Clientes & Crediário Hook
+export function useClientesData() {
+  const queryClient = useQueryClient();
+
+  const query = useQuery<Cliente[]>({
+    queryKey: ["clientes"],
+    queryFn: async () => {
+      try {
+        return await estroqueApi.getClientes();
+      } catch {
+        return [];
+      }
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: estroqueApi.criarCliente,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
+    },
+  });
+
+  return {
+    ...query,
+    clientes: query.data || [],
+    criarCliente: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
   };
 }

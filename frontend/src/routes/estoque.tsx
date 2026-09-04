@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ClipboardList, AlertTriangle, Warehouse, RefreshCw } from "lucide-react";
+import { ClipboardList, AlertTriangle, Warehouse, RefreshCw, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
-import { useEstoqueData, useLojasData } from "@/hooks/useEstroqueApi";
+import { useEstoqueData, useLojasData, useProdutosData } from "@/hooks/useEstroqueApi";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/estoque")({
   head: () => ({
@@ -39,10 +46,27 @@ function typeTone(t: string) {
 }
 
 function EstoquePage() {
-  const { saldos, movimentacoes, isLoading, isFetching, refetch } = useEstoqueData();
+  const { saldos, movimentacoes, isFetching, refetch, auditarEstoque, isAuditing } = useEstoqueData();
   const { data: lojas } = useLojasData();
+  const { data: produtos } = useProdutosData();
 
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Form State
+  const [lojaId, setLojaId] = useState("");
+  const [produtoId, setProdutoId] = useState("");
+  const [quantidadeFisica, setQuantidadeFisica] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const activeLojaId = lojaId || lojas?.[0]?.id || "";
+  const activeProdutoId = produtoId || produtos?.[0]?.id || "";
+
+  const saldoAtual =
+    saldos.find((s) => s.loja_id === activeLojaId && s.produto_id === activeProdutoId)?.quantidade || 0;
+  const contagemNum = parseInt(quantidadeFisica, 10);
+  const temContagem = !isNaN(contagemNum) && quantidadeFisica.trim() !== "";
+  const divergencia = temContagem ? contagemNum - saldoAtual : 0;
 
   const handleRefresh = async () => {
     setIsManualRefreshing(true);
@@ -53,7 +77,45 @@ function EstoquePage() {
     }
   };
 
+  const handleAuditoria = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+
+    if (!activeLojaId) {
+      setFormError("Selecione uma loja física.");
+      return;
+    }
+    if (!activeProdutoId) {
+      setFormError("Selecione um produto.");
+      return;
+    }
+    if (!temContagem || contagemNum < 0) {
+      setFormError("Informe uma quantidade física válida (maior ou igual a zero).");
+      return;
+    }
+
+    try {
+      await auditarEstoque({
+        loja_id: activeLojaId,
+        itens: [
+          {
+            produto_id: activeProdutoId,
+            quantidade_fisica: contagemNum,
+          },
+        ],
+      });
+
+      setQuantidadeFisica("");
+      setIsModalOpen(false);
+    } catch (err: any) {
+      setFormError(err.message || "Erro ao salvar contagem de inventário.");
+    }
+  };
+
   const totalUnidades = saldos.reduce((acc, s) => acc + s.quantidade, 0) || 0;
+
+  const getNomeLoja = (id: string) => lojas?.find((l) => l.id === id)?.nome || id.slice(0, 8);
+  const getNomeProduto = (id: string) => produtos?.find((p) => p.id === id)?.nome || id.slice(0, 8);
 
   return (
     <AppShell
@@ -72,7 +134,9 @@ function EstoquePage() {
               className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
             />
           </button>
-          <PrimaryButton icon={ClipboardList}>Novo inventário</PrimaryButton>
+          <div onClick={() => setIsModalOpen(true)}>
+            <PrimaryButton icon={ClipboardList}>Novo inventário</PrimaryButton>
+          </div>
         </div>
       }
     >
@@ -83,7 +147,7 @@ function EstoquePage() {
               Nenhuma loja/filial cadastrada.
             </div>
           ) : (
-            lojas.map((l, i) => {
+            lojas.map((l) => {
               const itemsLoja = saldos.filter((s) => s.loja_id === l.id).reduce((acc, s) => acc + s.quantidade, 0);
               const occ = totalUnidades > 0 ? Math.min(100, Math.round((itemsLoja / totalUnidades) * 100)) : 0;
 
@@ -133,7 +197,7 @@ function EstoquePage() {
           <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
-                <th className="pb-3 font-semibold">SKU / Ref</th>
+                <th className="pb-3 font-semibold">Produto / Ref</th>
                 <th className="pb-3 font-semibold">Tipo</th>
                 <th className="pb-3 font-semibold">Qtd.</th>
                 <th className="pb-3 font-semibold">Observação / Doc</th>
@@ -151,8 +215,8 @@ function EstoquePage() {
               ) : (
                 movimentacoes.map((l) => (
                   <tr key={l.id} className="border-b border-border/50 transition-colors hover:bg-muted/40">
-                    <td className="py-3 font-mono text-xs font-semibold text-foreground">
-                      {l.produto_id.slice(0, 12)}
+                    <td className="py-3 font-semibold text-foreground">
+                      {getNomeProduto(l.produto_id)}
                     </td>
                     <td className="py-3">
                       <Chip label={l.tipo_movimentacao} tone={typeTone(l.tipo_movimentacao)} />
@@ -161,7 +225,7 @@ function EstoquePage() {
                       {l.quantidade >= 0 ? `+${l.quantidade}` : l.quantidade}
                     </td>
                     <td className="py-3 text-muted-foreground">{l.observacao || "Movimentação de Sistema"}</td>
-                    <td className="py-3 text-muted-foreground">{l.loja_id}</td>
+                    <td className="py-3 text-muted-foreground">{getNomeLoja(l.loja_id)}</td>
                     <td className="py-3 text-xs text-muted-foreground">
                       {new Date(l.data_movimentacao).toLocaleDateString("pt-BR", {
                         day: "2-digit",
@@ -177,6 +241,133 @@ function EstoquePage() {
           </table>
         </div>
       </Card>
+
+      {/* Modal Novo Inventário / Auditoria Física */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+              <ClipboardList className="h-5 w-5 text-forest" />
+              Auditoria de Estoque (Inventário Físico)
+            </DialogTitle>
+          </DialogHeader>
+
+          {formError && (
+            <div className="flex items-center gap-2 rounded-xl bg-destructive/10 p-3 text-xs font-semibold text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleAuditoria} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Loja / Filial *
+              </label>
+              <select
+                value={activeLojaId}
+                onChange={(e) => setLojaId(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
+              >
+                {lojas?.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.nome} ({l.cnpj})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Produto a Inventariar *
+              </label>
+              <select
+                value={activeProdutoId}
+                onChange={(e) => setProdutoId(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
+              >
+                {produtos?.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nome} — SKU: {p.sku}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Quantidade Física Contada na Prateleira *
+              </label>
+              <input
+                required
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Ex: 25"
+                value={quantidadeFisica}
+                onChange={(e) => setQuantidadeFisica(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm font-semibold text-foreground outline-none focus:border-forest"
+              />
+            </div>
+
+            {/* Painel de Divergência Calculada */}
+            <div className="rounded-xl bg-muted/60 p-4 space-y-2 text-xs">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Saldo registrado no sistema:</span>
+                <span className="font-bold">{saldoAtual} un.</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Contagem física informada:</span>
+                <span className="font-bold">{temContagem ? `${contagemNum} un.` : "—"}</span>
+              </div>
+              <div className="flex justify-between border-t border-border/40 pt-2 font-semibold">
+                <span>Divergência apurada:</span>
+                <span
+                  className={
+                    divergencia > 0
+                      ? "text-emerald font-bold"
+                      : divergencia < 0
+                      ? "text-destructive font-bold"
+                      : "text-muted-foreground"
+                  }
+                >
+                  {!temContagem
+                    ? "Aguardando contagem"
+                    : divergencia === 0
+                    ? "0 un. (Estoque conferido / Sem ajuste)"
+                    : divergencia > 0
+                    ? `+${divergencia} un. (Sobra / Ajuste Positivo)`
+                    : `${divergencia} un. (Falta / Ajuste Negativo)`}
+                </span>
+              </div>
+            </div>
+
+            <DialogFooter className="mt-6 flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isAuditing}
+                className="flex items-center gap-2 rounded-full bg-forest px-5 py-2 text-xs font-semibold text-mint shadow-md transition-opacity hover:opacity-95 disabled:opacity-50"
+              >
+                {isAuditing ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  "Concluir Inventário"
+                )}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EstroqueSidebar } from "@/components/estroque/sidebar";
 import { EstroqueDashboard } from "@/components/estroque/dashboard";
 
 export const Route = createFileRoute("/")({
@@ -25,12 +24,5 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  return (
-    <div className="flex min-h-screen bg-background">
-      <EstroqueSidebar />
-      <main className="flex-1">
-        <EstroqueDashboard />
-      </main>
-    </div>
-  );
+  return <EstroqueDashboard />;
 }

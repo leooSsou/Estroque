@@ -56,4 +56,4 @@ dist-ssr/
 .nitro/
 .wrangler/
 .tanstack/
-
+celerybeat-schedule*

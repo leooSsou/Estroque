@@ -1,46 +1,25 @@
 import { useState } from "react";
 import {
-  Bell,
-  ChevronDown,
   ClipboardList,
   FileDown,
-  Search,
-  Store,
   Truck,
   Plus,
   TrendingUp,
   TrendingDown,
-  MoreHorizontal,
   RefreshCw,
+  BarChart3,
+  Layers,
+  ShoppingBag,
 } from "lucide-react";
+import { AppShell } from "./app-shell";
 import {
   useDashboardData,
   useCurvaABCData,
   useEstoqueData,
   useLojasData,
+  useProdutosData,
+  useVendasData,
 } from "@/hooks/useEstroqueApi";
-
-const flow = [
-  { m: "Jan", v: 58, d: 34 },
-  { m: "Fev", v: 62, d: 38 },
-  { m: "Mar", v: 71, d: 41 },
-  { m: "Abr", v: 66, d: 36 },
-  { m: "Mai", v: 78, d: 44 },
-  { m: "Jun", v: 74, d: 39 },
-  { m: "Jul", v: 85, d: 47 },
-  { m: "Ago", v: 82, d: 43 },
-  { m: "Set", v: 90, d: 50 },
-  { m: "Out", v: 87, d: 46 },
-  { m: "Nov", v: 96, d: 52 },
-  { m: "Dez", v: 100, d: 55 },
-];
-
-const activity = [
-  { who: "Camila Duarte", what: "registrou venda #4821 — R$ 1.240,00", when: "há 12 min" },
-  { who: "Rafael Lima", what: "importou NF-e 000.148 (32 itens)", when: "há 48 min" },
-  { who: "Marina Alves", what: "despachou transferência para Filial 01", when: "há 2 h" },
-  { who: "Bruno Teixeira", what: "ajustou inventário: avaria (-3 un.)", when: "há 4 h" },
-];
 
 const typeStyles: Record<string, string> = {
   ENTRADA: "bg-mint text-emerald",
@@ -54,10 +33,54 @@ const typeStyles: Record<string, string> = {
   AUDITORIA: "bg-muted text-muted-foreground",
 };
 
-function Donut({ aPct = 80, bPct = 15, cPct = 5 }: { aPct?: number; bPct?: number; cPct?: number }) {
+function Donut({
+  aPct = 0,
+  bPct = 0,
+  cPct = 0,
+  totalItens = 0,
+  hasData = false,
+}: {
+  aPct?: number;
+  bPct?: number;
+  cPct?: number;
+  totalItens?: number;
+  hasData?: boolean;
+}) {
   const r = 56;
   const c = 2 * Math.PI * r;
   let offset = 0;
+
+  if (!hasData) {
+    return (
+      <svg viewBox="0 0 160 160" className="h-40 w-40">
+        <circle
+          cx="80"
+          cy="80"
+          r={r}
+          fill="none"
+          stroke="var(--border)"
+          strokeWidth="14"
+          strokeDasharray="4 4"
+        />
+        <text
+          x="80"
+          y="76"
+          textAnchor="middle"
+          className="fill-muted-foreground text-[10px] uppercase font-semibold"
+        >
+          Pareto
+        </text>
+        <text
+          x="80"
+          y="92"
+          textAnchor="middle"
+          className="fill-muted-foreground font-display text-[13px] font-bold"
+        >
+          Sem dados
+        </text>
+      </svg>
+    );
+  }
 
   const slices = [
     { label: "Classe A", pct: aPct, color: "var(--emerald-deep)" },
@@ -91,150 +114,101 @@ function Donut({ aPct = 80, bPct = 15, cPct = 5 }: { aPct?: number; bPct?: numbe
         x="80"
         y="76"
         textAnchor="middle"
-        className="fill-muted-foreground text-[9px] uppercase"
+        className="fill-muted-foreground text-[9px] uppercase font-semibold tracking-wider"
       >
-        Itens
+        Pareto
       </text>
       <text
         x="80"
         y="94"
         textAnchor="middle"
-        className="fill-foreground font-display text-[19px] font-bold"
+        className="fill-foreground font-display text-[15px] font-bold"
       >
-        100%
+        {totalItens} {totalItens === 1 ? "item" : "itens"}
       </text>
     </svg>
   );
 }
 
 export function EstroqueDashboard() {
-  const { data: dash, isLoading: isDashLoading, refetch: refetchDash } = useDashboardData();
+  const { data: dash, isFetching: isDashFetching, refetch: refetchDash } = useDashboardData();
   const { data: curva, isLoading: isCurvaLoading } = useCurvaABCData();
   const { saldos, movimentacoes } = useEstoqueData();
   const { data: lojas } = useLojasData();
+  const { data: produtos } = useProdutosData();
+  const { vendas } = useVendasData();
 
-  const [selectedLoja, setSelectedLoja] = useState<string>("Todas as Lojas");
-  const [showLojaDropdown, setShowLojaDropdown] = useState(false);
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
-  // Calcula totais dos KPIs
-  const faturamentoFormatado = `R$ ${(dash?.total_faturamento ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-  const ticketMedioFormatado = `R$ ${(dash?.ticket_medio ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  const handleRefresh = async () => {
+    setIsManualRefreshing(true);
+    try {
+      await refetchDash();
+    } finally {
+      setTimeout(() => setIsManualRefreshing(false), 600);
+    }
+  };
 
-  const rupturas = dash?.produtos_ruptura ?? 0;
-  const criticos = dash?.produtos_estoque_critico ?? 0;
+  // Valores reais dos KPIs retornados pelo Backend
+  const faturamentoLiquido = dash?.faturamento_liquido ?? dash?.total_faturamento ?? 0;
+  const ticketMedio = dash?.ticket_medio ?? 0;
+  const cmv = dash?.cmv ?? 0;
+  const lucroLiquido = dash?.lucro_liquido ?? 0;
+  const margemLucro = dash?.margem_lucro ?? 0;
+  const rupturas = dash?.ruptura_count ?? dash?.produtos_ruptura ?? 0;
+  const criticos = dash?.estoque_critico_count ?? dash?.produtos_estoque_critico ?? 0;
 
-  // Curva ABC percentuais
-  const produtosCurva = curva?.produtos || [];
+  const faturamentoFormatado = `R$ ${faturamentoLiquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  const ticketMedioFormatado = `R$ ${ticketMedio.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  const cmvFormatado = `R$ ${cmv.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  const lucroFormatado = `R$ ${lucroLiquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
+  // Curva ABC real
+  const produtosCurva = curva?.itens || curva?.produtos || [];
   const countA = produtosCurva.filter((p) => p.classe === "A").length;
   const countB = produtosCurva.filter((p) => p.classe === "B").length;
   const countC = produtosCurva.filter((p) => p.classe === "C").length;
-  const totalProdutos = countA + countB + countC;
-  const pctA = totalProdutos > 0 ? Math.round((countA / totalProdutos) * 100) : 0;
-  const pctB = totalProdutos > 0 ? Math.round((countB / totalProdutos) * 100) : 0;
-  const pctC = totalProdutos > 0 ? Math.max(0, 100 - pctA - pctB) : 0;
+  const totalProdutosCurva = countA + countB + countC;
+
+  const pctA = totalProdutosCurva > 0 ? Math.round((countA / totalProdutosCurva) * 100) : 0;
+  const pctB = totalProdutosCurva > 0 ? Math.round((countB / totalProdutosCurva) * 100) : 0;
+  const pctC = totalProdutosCurva > 0 ? Math.max(0, 100 - pctA - pctB) : 0;
+  const temDadosCurva = totalProdutosCurva > 0;
+
+  // Helpers de nomes
+  const getNomeLoja = (id: string) => lojas?.find((l) => l.id === id)?.nome || id.slice(0, 8);
+  const getNomeProduto = (id: string) => produtos?.find((p) => p.id === id)?.nome || "Produto";
 
   return (
-    <div className="min-h-screen flex-1 px-5 py-6 lg:px-8">
-      <header className="flex flex-wrap items-center gap-4">
-        <div className="flex-1">
-          <h1 className="font-display text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Visão executiva consolidada · Agosto 2026
-          </p>
-        </div>
-
-        {/* Store Selector */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setShowLojaDropdown(!showLojaDropdown)}
-            className="flex items-center gap-2 rounded-full bg-card px-3.5 py-2 text-sm font-semibold text-foreground shadow-[0_4px_20px_-2px_rgb(11_43_38_/_0.05)] transition-all hover:bg-muted"
-          >
-            <Store className="h-4 w-4 text-forest" />
-            {selectedLoja}
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
-
-          {showLojaDropdown && (
-            <div className="absolute right-0 top-12 z-20 w-48 rounded-2xl border border-border bg-card p-1.5 shadow-xl">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedLoja("Todas as Lojas");
-                  setShowLojaDropdown(false);
-                }}
-                className="w-full rounded-xl px-3 py-2 text-left text-xs font-semibold text-foreground hover:bg-mint hover:text-emerald"
-              >
-                Todas as Lojas (Consolidado)
-              </button>
-              {lojas?.map((l) => (
-                <button
-                  key={l.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedLoja(l.nome);
-                    setShowLojaDropdown(false);
-                  }}
-                  className="w-full rounded-xl px-3 py-2 text-left text-xs font-medium text-foreground hover:bg-mint hover:text-emerald"
-                >
-                  {l.nome}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Global Search */}
-        <div className="relative hidden md:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            placeholder="Buscar produto, SKU, NF-e…"
-            className="w-64 rounded-xl border border-border bg-card py-2 pl-9 pr-16 text-sm outline-none focus:border-forest"
+    <AppShell
+      title="Dashboard"
+      subtitle="Visão executiva consolidada em tempo real"
+      actions={
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={isDashFetching || isManualRefreshing}
+          className="rounded-full bg-card p-2.5 shadow-bento transition-all hover:bg-muted active:scale-95"
+          title="Recarregar Indicadores"
+        >
+          <RefreshCw
+            className={`h-4 w-4 text-foreground ${(isDashFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
           />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-            ⌘K
-          </span>
-        </div>
-
-        {/* Refresh button */}
-        <button
-          type="button"
-          onClick={() => refetchDash()}
-          title="Recarregar Dados da API"
-          className="rounded-full bg-card p-2.5 shadow-[0_4px_20px_-2px_rgb(11_43_38_/_0.05)] transition-transform hover:rotate-180"
-        >
-          <RefreshCw className={`h-4 w-4 text-foreground ${isDashLoading ? "animate-spin" : ""}`} />
         </button>
-
-        {/* Notifications */}
-        <button
-          type="button"
-          aria-label="Notificações"
-          className="relative rounded-full bg-card p-2.5 shadow-[0_4px_20px_-2px_rgb(11_43_38_/_0.05)]"
-        >
-          <Bell className="h-4 w-4 text-foreground" />
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-destructive" />
-        </button>
-
-        {/* User profile */}
-        <div className="flex items-center gap-2 rounded-full bg-card py-1.5 pl-1.5 pr-4 shadow-[0_4px_20px_-2px_rgb(11_43_38_/_0.05)]">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald text-xs font-bold text-mint">
-            JG
-          </span>
-          <span className="text-sm font-semibold text-foreground">Jonathas G.</span>
-        </div>
-      </header>
-
-      <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-12">
-        {/* Featured action card */}
-        <section className="gradient-emerald rounded-card p-6 xl:col-span-4">
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-mint/60">
-            Faturamento consolidado
-          </p>
-          <p className="mt-2 font-display text-4xl font-bold text-mint">{faturamentoFormatado}</p>
-          <p className="mt-1 text-xs text-mint/70">
-            {lojas?.length ?? 0} {lojas?.length === 1 ? "loja cadastrada" : "lojas cadastradas"} · {dash ? "API online" : "carregando..."}
-          </p>
+      }
+    >
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
+        {/* Card de Faturamento Consolidado */}
+        <section className="gradient-emerald rounded-card p-6 xl:col-span-4 flex flex-col justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-mint/60">
+              Faturamento Consolidado
+            </p>
+            <p className="mt-2 font-display text-4xl font-bold text-mint">{faturamentoFormatado}</p>
+            <p className="mt-1 text-xs text-mint/70">
+              {lojas?.length ?? 0} {lojas?.length === 1 ? "loja ativa" : "lojas ativas"} · {vendas?.length ?? 0} vendas realizadas
+            </p>
+          </div>
 
           <div className="mt-6 grid grid-cols-2 gap-2.5">
             {[
@@ -255,105 +229,129 @@ export function EstroqueDashboard() {
           </div>
         </section>
 
-        {/* KPIs */}
+        {/* 4 Bento KPIs Reais */}
         <div className="grid grid-cols-2 gap-5 xl:col-span-8">
-          <article className="bento-card p-5">
+          <article className="bento-card p-5 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <span className="flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-bold text-emerald">
                 <TrendingUp className="h-3 w-3" />
-                +12,4%
+                Líquido
               </span>
-              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">Lucro: {lucroFormatado}</span>
             </div>
-            <p className="mt-6 font-display text-2xl font-bold text-foreground">{faturamentoFormatado}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Faturamento Mensal</p>
+            <div>
+              <p className="mt-4 font-display text-2xl font-bold text-foreground">{faturamentoFormatado}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Faturamento Mensal</p>
+            </div>
           </article>
 
-          <article className="bento-card p-5">
+          <article className="bento-card p-5 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <span className="flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-bold text-emerald">
-                <TrendingUp className="h-3 w-3" />
-                +5,2%
+                <ShoppingBag className="h-3 w-3" />
+                {vendas.length} {vendas.length === 1 ? "venda" : "vendas"}
               </span>
-              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="mt-6 font-display text-2xl font-bold text-foreground">{ticketMedioFormatado}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Ticket Médio</p>
+            <div>
+              <p className="mt-4 font-display text-2xl font-bold text-foreground">{ticketMedioFormatado}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Ticket Médio por Venda</p>
+            </div>
           </article>
 
-          <article className="bento-card p-5">
+          <article className="bento-card p-5 flex flex-col justify-between">
             <div className="flex items-start justify-between">
-              <span className="flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
-                <TrendingDown className="h-3 w-3" />
+              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                rupturas > 0 || criticos > 0 ? "bg-destructive/10 text-destructive" : "bg-mint text-emerald"
+              }`}>
+                {rupturas > 0 ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
                 {criticos} críticos
               </span>
-              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="mt-6 font-display text-2xl font-bold text-foreground">{rupturas} itens</p>
-            <p className="mt-1 text-xs text-muted-foreground">Rupturas de Estoque</p>
+            <div>
+              <p className="mt-4 font-display text-2xl font-bold text-foreground">{rupturas} itens</p>
+              <p className="mt-1 text-xs text-muted-foreground">Rupturas de Estoque (Zerados)</p>
+            </div>
           </article>
 
-          <article className="bento-card p-5">
+          <article className="bento-card p-5 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <span className="flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-bold text-emerald">
-                <TrendingUp className="h-3 w-3" />
-                +1,9%
+                CMV: {cmvFormatado}
               </span>
-              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="mt-6 font-display text-2xl font-bold text-foreground">43,8%</p>
-            <p className="mt-1 text-xs text-muted-foreground">Margem Bruta Média</p>
+            <div>
+              <p className="mt-4 font-display text-2xl font-bold text-foreground">
+                {margemLucro.toFixed(1)}%
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">Margem de Lucro Operacional</p>
+            </div>
           </article>
         </div>
 
-        {/* Chart */}
-        <section className="bento-card p-6 xl:col-span-8">
+        {/* Gráfico de Vendas & CMV */}
+        <section className="bento-card p-6 xl:col-span-8 flex flex-col justify-between">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-foreground">Fluxo de Vendas & CMV</h2>
               <p className="text-xs text-muted-foreground">
-                Entradas em Deep Emerald · Custos em Sage
+                Consolidação financeira de saídas e custo de mercadoria
               </p>
             </div>
-            <div className="flex items-center gap-1 rounded-full bg-muted p-1">
-              {["Mês", "Trimestre", "Ano"].map((p, i) => (
-                <button
-                  key={p}
-                  type="button"
-                  className={
-                    i === 2
-                      ? "rounded-full bg-emerald px-3 py-1.5 text-xs font-semibold text-mint"
-                      : "rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground"
-                  }
-                >
-                  {p}
-                </button>
-              ))}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald" /> Faturamento
+              </span>
+              <span className="flex items-center gap-1 ml-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-sage" /> Custo (CMV)
+              </span>
             </div>
           </div>
 
-          <div className="mt-8 flex h-56 items-end gap-2.5">
-            {flow.map((f) => (
-              <div key={f.m} className="flex flex-1 flex-col items-center gap-2">
-                <div className="flex h-48 w-full items-end justify-center gap-1">
-                  <div
-                    className="w-1/2 rounded-t-md bg-emerald"
-                    style={{ height: `${f.v}%` }}
-                    title={`Vendas ${f.m}`}
-                  />
-                  <div
-                    className="w-1/2 rounded-t-md bg-sage"
-                    style={{ height: `${f.d}%` }}
-                    title={`CMV ${f.m}`}
-                  />
-                </div>
-                <span className="text-[10px] font-medium text-muted-foreground">{f.m}</span>
-              </div>
-            ))}
-          </div>
+          {vendas.length === 0 ? (
+            <div className="my-10 flex flex-col items-center justify-center text-center">
+              <BarChart3 className="h-10 w-10 text-muted-foreground/40" />
+              <p className="mt-3 text-sm font-semibold text-foreground">Sem vendas registradas no período</p>
+              <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+                Conforme as vendas forem efetuadas no PDV, o volume de receita e o CMV correspondente serão desenhados aqui em tempo real.
+              </p>
+              <a
+                href="/vendas"
+                className="mt-4 rounded-full bg-forest px-4 py-1.5 text-xs font-semibold text-mint transition-opacity hover:opacity-90"
+              >
+                Abrir Frente de Caixa
+              </a>
+            </div>
+          ) : (
+            <div className="mt-8 flex h-52 items-end gap-3">
+              {vendas.slice(-7).map((v) => {
+                const maxVal = Math.max(...vendas.map((x) => x.valor_total), 1);
+                const heightPct = Math.min(100, Math.max(15, Math.round((v.valor_total / maxVal) * 100)));
+                const labelData = v.data_venda
+                  ? new Date(v.data_venda).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+                  : `#${v.id.slice(0, 4)}`;
+                return (
+                  <div key={v.id} className="flex flex-1 flex-col items-center gap-2">
+                    <span className="text-[10px] font-semibold text-foreground/80">
+                      R$ {Math.round(v.valor_total)}
+                    </span>
+                    <div className="flex h-36 w-full items-end justify-center">
+                      <div
+                        className="w-full max-w-[44px] rounded-t-md bg-emerald hover:bg-forest transition-all"
+                        style={{ height: `${heightPct}%` }}
+                        title={`Venda: R$ ${v.valor_total.toFixed(2)}`}
+                      />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground truncate w-full text-center">
+                      {labelData}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
-        {/* ABC */}
+        {/* Curva ABC (Pareto) */}
         <section className="bento-card flex flex-col items-center p-6 xl:col-span-4">
           <div className="flex w-full items-center justify-between">
             <h2 className="text-base font-bold text-foreground">Curva ABC</h2>
@@ -361,47 +359,55 @@ export function EstroqueDashboard() {
               {isCurvaLoading ? "Calculando..." : "Pareto 80/15/5"}
             </span>
           </div>
+
           <div className="my-4">
-            <Donut aPct={pctA} bPct={pctB} cPct={pctC} />
+            <Donut aPct={pctA} bPct={pctB} cPct={pctC} totalItens={totalProdutosCurva} hasData={temDadosCurva} />
           </div>
-          <ul className="w-full space-y-2.5">
-            <li className="flex items-center gap-3 text-sm">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--emerald-deep)" }} />
-              <span className="flex-1 text-muted-foreground">Classe A (80% Faturamento)</span>
-              <span className="font-semibold text-foreground">{pctA}%</span>
-            </li>
-            <li className="flex items-center gap-3 text-sm">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--forest)" }} />
-              <span className="flex-1 text-muted-foreground">Classe B (15% Faturamento)</span>
-              <span className="font-semibold text-foreground">{pctB}%</span>
-            </li>
-            <li className="flex items-center gap-3 text-sm">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--sage)" }} />
-              <span className="flex-1 text-muted-foreground">Classe C (5% Faturamento)</span>
-              <span className="font-semibold text-foreground">{pctC}%</span>
-            </li>
-          </ul>
+
+          {!temDadosCurva ? (
+            <p className="text-center text-xs text-muted-foreground">
+              Nenhum produto faturado no momento para cálculo da Curva ABC.
+            </p>
+          ) : (
+            <ul className="w-full space-y-2.5">
+              <li className="flex items-center gap-3 text-sm">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--emerald-deep)" }} />
+                <span className="flex-1 text-xs text-muted-foreground">Classe A ({countA} itens - 80% Receita)</span>
+                <span className="text-xs font-semibold text-foreground">{pctA}%</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--forest)" }} />
+                <span className="flex-1 text-xs text-muted-foreground">Classe B ({countB} itens - 15% Receita)</span>
+                <span className="text-xs font-semibold text-foreground">{pctB}%</span>
+              </li>
+              <li className="flex items-center gap-3 text-sm">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--sage)" }} />
+                <span className="flex-1 text-xs text-muted-foreground">Classe C ({countC} itens - 5% Receita)</span>
+                <span className="text-xs font-semibold text-foreground">{pctC}%</span>
+              </li>
+            </ul>
+          )}
         </section>
 
-        {/* Ledger */}
+        {/* Ledger de Movimentações Recentes */}
         <section className="bento-card p-6 xl:col-span-8">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-foreground">Ledger de Movimentações</h2>
-              <p className="text-xs text-muted-foreground">Extrato imutável e auditável</p>
+              <p className="text-xs text-muted-foreground">Extrato imutável e auditável em tempo real</p>
             </div>
             <a
               href="/estoque"
               className="rounded-full bg-emerald px-4 py-2 text-xs font-semibold text-mint transition-opacity hover:opacity-90"
             >
-              Ver estoque
+              Ver estoque completo
             </a>
           </div>
 
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[560px] text-left text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                <tr className="text-[11px] uppercase tracking-wide text-muted-foreground border-b border-border pb-2">
                   <th className="pb-3 font-semibold">Produto / Ref</th>
                   <th className="pb-3 font-semibold">Loja</th>
                   <th className="pb-3 font-semibold">Tipo</th>
@@ -413,62 +419,90 @@ export function EstroqueDashboard() {
                 {movimentacoes.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-8 text-center text-xs text-muted-foreground">
-                      Nenhuma movimentação registrada no estoque.
+                      Nenhuma movimentação registrada no ledger de estoque.
                     </td>
                   </tr>
                 ) : (
-                  movimentacoes.slice(0, 5).map((m) => (
-                    <tr key={m.id} className="border-t border-border">
-                      <td className="py-3">
-                        <p className="font-medium text-foreground">{m.observacao || "Movimentação"}</p>
-                        <p className="text-xs text-muted-foreground">Ref: {m.produto_id.slice(0, 8)}</p>
-                      </td>
-                      <td className="py-3 text-muted-foreground">{m.loja_id}</td>
-                      <td className="py-3">
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${typeStyles[m.tipo_movimentacao] || "bg-muted text-muted-foreground"}`}
-                        >
-                          {m.tipo_movimentacao}
-                        </span>
-                      </td>
-                      <td className={`py-3 text-right font-semibold ${m.quantidade >= 0 ? "text-emerald" : "text-destructive"}`}>
-                        {m.quantidade >= 0 ? `+${m.quantidade}` : m.quantidade}
-                      </td>
-                      <td className="py-3 text-right text-xs text-muted-foreground">
-                        {new Date(m.data_movimentacao).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                      </td>
-                    </tr>
-                  ))
+                  movimentacoes.slice(0, 5).map((m) => {
+                    const tipo = m.tipo || m.tipo_movimentacao || "MOVIMENTAÇÃO";
+                    const isPositive = tipo.includes("ENTRADA") || tipo.includes("POSITIVO");
+                    const badgeClass = typeStyles[tipo] || "bg-muted text-muted-foreground";
+                    const qtdText = isPositive ? `+${Math.abs(m.quantidade)}` : `-${Math.abs(m.quantidade)}`;
+                    const qtdColor = isPositive ? "text-emerald" : "text-destructive";
+
+                    return (
+                      <tr key={m.id} className="border-t border-border">
+                        <td className="py-3">
+                          <p className="font-semibold text-foreground">{getNomeProduto(m.produto_id)}</p>
+                          <p className="text-xs text-muted-foreground">{m.motivo || m.observacao || "Movimentação"}</p>
+                        </td>
+                        <td className="py-3 text-muted-foreground">{getNomeLoja(m.loja_id)}</td>
+                        <td className="py-3">
+                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${badgeClass}`}>
+                            {tipo}
+                          </span>
+                        </td>
+                        <td className={`py-3 text-right font-semibold ${qtdColor}`}>
+                          {qtdText}
+                        </td>
+                        <td className="py-3 text-right text-xs text-muted-foreground">
+                          {new Date(m.data_movimentacao).toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
           </div>
         </section>
 
-        {/* Activity */}
+        {/* Atividades Recentes */}
         <section className="bento-card p-6 xl:col-span-4">
-          <h2 className="text-base font-bold text-foreground">Atividades Recentes</h2>
+          <h2 className="text-base font-bold text-foreground">Atividades do Sistema</h2>
+          <p className="text-xs text-muted-foreground mb-4">Eventos operacionais recentes</p>
           {movimentacoes.length === 0 ? (
             <div className="mt-8 flex flex-col items-center justify-center py-6 text-center">
-              <p className="text-xs text-muted-foreground">Nenhuma atividade recente registrada.</p>
+              <Layers className="h-8 w-8 text-muted-foreground/40" />
+              <p className="mt-2 text-xs text-muted-foreground">Nenhuma atividade recente registrada.</p>
             </div>
           ) : (
-            <ul className="mt-5 space-y-5">
-              {movimentacoes.slice(0, 4).map((m) => (
-                <li key={m.id} className="flex gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mint text-[11px] font-bold text-emerald">
-                    {m.tipo_movimentacao.slice(0, 2)}
-                  </span>
-                  <div>
-                    <p className="text-sm leading-snug text-foreground">
-                      <span className="font-semibold">{m.tipo_movimentacao}</span> · {m.observacao || "Movimentação"}
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {new Date(m.data_movimentacao).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
-                </li>
-              ))}
+            <ul className="space-y-4">
+              {movimentacoes.slice(0, 5).map((m) => {
+                const tipo = m.tipo || m.tipo_movimentacao || "MOV";
+                const isPositive = tipo.includes("ENTRADA") || tipo.includes("POSITIVO");
+                const badgeColor = isPositive ? "bg-mint text-emerald" : "bg-destructive/10 text-destructive";
+                const qtdText = isPositive ? `+${Math.abs(m.quantidade)}` : `-${Math.abs(m.quantidade)}`;
+
+                return (
+                  <li key={m.id} className="flex gap-3 text-xs">
+                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-[10px] ${badgeColor}`}>
+                      {tipo.slice(0, 2)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-foreground truncate">
+                        {getNomeProduto(m.produto_id)}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {qtdText} un. · {getNomeLoja(m.loja_id)}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground/70">
+                        {new Date(m.data_movimentacao).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
@@ -476,8 +510,8 @@ export function EstroqueDashboard() {
 
       <footer className="mt-8 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <p>© 2026 Estroque · Gestão de Estoque Inteligente</p>
-        <p>Multi-loja · Multi-tenant · Ledger imutável</p>
+        <p>Multi-loja · Multi-tenant · Ledger imutável auditável</p>
       </footer>
-    </div>
+    </AppShell>
   );
 }

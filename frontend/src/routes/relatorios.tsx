@@ -50,8 +50,8 @@ function RelatoriosPage() {
     }
   };
 
-  const totalFaturamento = dash?.total_faturamento || 0;
-  const produtosCurva = curva?.produtos || [];
+  const totalFaturamento = dash?.faturamento_liquido ?? dash?.total_faturamento ?? 0;
+  const produtosCurva = curva?.itens || curva?.produtos || [];
   const countA = produtosCurva.filter((p) => p.classe === "A").length;
   const countB = produtosCurva.filter((p) => p.classe === "B").length;
   const countC = produtosCurva.filter((p) => p.classe === "C").length;

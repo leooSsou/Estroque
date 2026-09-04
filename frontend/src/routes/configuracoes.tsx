@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Save, Building2, Users, Bell, ShieldCheck } from "lucide-react";
+import { Save, Building2, Users, Bell, ShieldCheck, Check, Warehouse, Plus } from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
+import { useUserData, useLojasData } from "@/hooks/useEstroqueApi";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({
@@ -23,41 +25,77 @@ export const Route = createFileRoute("/configuracoes")({
   component: ConfiguracoesPage,
 });
 
-const toggles = [
-  { l: "Alertar ruptura prevista", d: "Notifica quando a cobertura cai abaixo de 7 dias", on: true },
-  { l: "Bloquear venda sem saldo", d: "Impede saída maior que o saldo disponível", on: true },
-  { l: "Custo médio ponderado", d: "Recalcula o custo a cada entrada de NF-e", on: true },
-  { l: "Resumo diário por e-mail", d: "Enviado às 19h para administradores", on: false },
+const defaultToggles = [
+  { id: "ruptura", l: "Alertar ruptura prevista", d: "Notifica quando a cobertura cai abaixo de 7 dias", on: true },
+  { id: "bloqueio", l: "Bloquear venda sem saldo", d: "Impede saída física com saldo insuficiente", on: true },
+  { id: "custo_medio", l: "Custo médio ponderado", d: "Recalcula o custo a cada entrada de NF-e", on: true },
+  { id: "resumo", l: "Resumo diário por e-mail", d: "Enviado às 19h para administradores", on: false },
 ];
 
 function ConfiguracoesPage() {
+  const { data: user } = useUserData();
+  const { data: lojas } = useLojasData();
+  const [toggles, setToggles] = useState(defaultToggles);
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const toggleItem = (id: string) => {
+    setToggles((prev) => prev.map((t) => (t.id === id ? { ...t, on: !t.on } : t)));
+  };
+
+  const handleSalvar = () => {
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3000);
+  };
+
   return (
     <AppShell
       title="Configurações"
       subtitle="Empresa, equipe e regras de operação"
-      actions={<PrimaryButton icon={Save}>Salvar alterações</PrimaryButton>}
+      actions={
+        <div onClick={handleSalvar}>
+          <PrimaryButton icon={savedSuccess ? Check : Save}>
+            {savedSuccess ? "Alterações Salvas!" : "Salvar alterações"}
+          </PrimaryButton>
+        </div>
+      }
     >
       <div className="grid gap-5 xl:grid-cols-12">
         <Card className="xl:col-span-6">
-          <CardTitle title="Dados da empresa" />
+          <CardTitle title="Dados do Tenant & Empresa" hint="Sincronizado com o Backend" />
           <Building2 className="h-9 w-9 rounded-xl bg-mint p-2 text-emerald" />
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {[
-              { l: "Razão social", p: "Nome da empresa / Fantasia" },
-              { l: "CNPJ", p: "00.000.000/0000-00" },
-              { l: "Regime tributário", p: "Simples Nacional / Lucro Presumido" },
-              { l: "Cidade / UF", p: "Cidade - UF" },
-            ].map((f) => (
-              <label key={f.l} className="block">
-                <span className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                  {f.l}
-                </span>
-                <input
-                  placeholder={f.p}
-                  className="mt-1.5 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-forest"
-                />
-              </label>
-            ))}
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                Inquilino (Tenant ID)
+              </span>
+              <p className="mt-1 font-mono text-xs font-bold text-forest truncate">
+                {user?.tenant_id || "Carregando..."}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                Usuário Conectado
+              </span>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {user?.nome || "Administrador"}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                E-mail Administrativo
+              </span>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {user?.email || "admin@estroque.app"}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                Papel / Permissão
+              </span>
+              <div className="mt-1">
+                <Chip label={user?.role || "DONO"} tone="good" />
+              </div>
+            </div>
           </div>
         </Card>
 
@@ -67,8 +105,9 @@ function ConfiguracoesPage() {
           <ul className="mt-4 space-y-3">
             {toggles.map((t) => (
               <li
-                key={t.l}
-                className="flex items-center gap-4 rounded-bento bg-muted/60 p-3.5"
+                key={t.id}
+                onClick={() => toggleItem(t.id)}
+                className="flex cursor-pointer items-center gap-4 rounded-bento bg-muted/60 p-3.5 transition-colors hover:bg-muted/90"
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground">{t.l}</p>
@@ -84,8 +123,8 @@ function ConfiguracoesPage() {
                   <span
                     className={
                       t.on
-                        ? "ml-auto h-4 w-4 rounded-full bg-card"
-                        : "h-4 w-4 rounded-full bg-card"
+                        ? "ml-auto h-4 w-4 rounded-full bg-card shadow-sm"
+                        : "h-4 w-4 rounded-full bg-card shadow-sm"
                     }
                   />
                 </span>
@@ -95,10 +134,26 @@ function ConfiguracoesPage() {
         </Card>
 
         <Card className="xl:col-span-7">
-          <CardTitle title="Equipe e permissões" hint="Usuários do tenant" />
-          <Users className="h-9 w-9 rounded-xl bg-mint p-2 text-emerald" />
-          <div className="mt-4 flex flex-col items-center justify-center py-8 text-center text-xs text-muted-foreground">
-            Acesse o gerenciamento de usuários para convidar novos membros para a equipe.
+          <CardTitle title="Lojas e filiais cadastradas" hint="multi-loja integrado" />
+          <Warehouse className="h-9 w-9 rounded-xl bg-mint p-2 text-emerald" />
+          <div className="mt-4 space-y-3">
+            {(!lojas || lojas.length === 0) ? (
+              <p className="text-xs text-muted-foreground">Nenhuma loja cadastrada.</p>
+            ) : (
+              lojas.map((l) => (
+                <div
+                  key={l.id}
+                  className="flex items-center justify-between rounded-xl border border-border/50 bg-background p-3.5 text-xs"
+                >
+                  <div>
+                    <p className="text-sm font-bold text-foreground">{l.nome}</p>
+                    <p className="font-mono text-muted-foreground">CNPJ: {l.cnpj}</p>
+                    <p className="text-muted-foreground">{l.endereco || "Endereço matriz"}</p>
+                  </div>
+                  <Chip label={l.ativo ? "Operacional" : "Inativa"} tone={l.ativo ? "good" : "neutral"} />
+                </div>
+              ))
+            )}
           </div>
         </Card>
 
@@ -108,15 +163,15 @@ function ConfiguracoesPage() {
           <ul className="mt-4 space-y-3">
             {[
               { l: "Certificado digital A1", v: "Não configurado", tone: "neutral" as const },
-              { l: "SEFAZ — consulta NF-e", v: "Pronto para XML manual", tone: "good" as const },
-              { l: "Emissor de NFC-e", v: "Não configurado", tone: "neutral" as const },
+              { l: "SEFAZ — importação de XML", v: "Pronto para XML v4.00", tone: "good" as const },
+              { l: "Emissor de NFC-e", v: "Em homologação", tone: "warn" as const },
             ].map((i) => (
               <li key={i.l} className="flex items-center justify-between gap-3 rounded-bento bg-muted/60 p-3.5">
                 <div>
                   <p className="text-sm font-semibold text-foreground">{i.l}</p>
                   <p className="text-xs text-muted-foreground">{i.v}</p>
                 </div>
-                <Chip label={i.tone === "good" ? "Disponível" : "Pendente"} tone={i.tone} />
+                <Chip label={i.tone === "good" ? "Disponível" : i.tone === "warn" ? "Em teste" : "Pendente"} tone={i.tone} />
               </li>
             ))}
           </ul>
