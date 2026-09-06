@@ -136,6 +136,15 @@ export function useEstoqueData(lojaId?: string) {
     },
   });
 
+  const movimentarMutation = useMutation({
+    mutationFn: estroqueApi.movimentarEstoque,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["estoque"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["produtos"] });
+    },
+  });
+
   return {
     saldos: saldosQuery.data || [],
     movimentacoes: movimentacoesQuery.data || [],
@@ -143,6 +152,8 @@ export function useEstoqueData(lojaId?: string) {
     isFetching: saldosQuery.isFetching || movimentacoesQuery.isFetching,
     auditarEstoque: auditarMutation.mutateAsync,
     isAuditing: auditarMutation.isPending,
+    movimentarEstoque: movimentarMutation.mutateAsync,
+    isMoving: movimentarMutation.isPending,
     refetch: () => {
       saldosQuery.refetch();
       movimentacoesQuery.refetch();
