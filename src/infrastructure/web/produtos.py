@@ -70,16 +70,17 @@ def criar_produto(
 
 @router.get("/", response_model=list[ProdutoResponse])
 def listar_produtos(
+    busca: str | None = None,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ) -> list[ProdutoResponse]:
     """
-    Retorna a lista de produtos cadastrados para o Tenant ativo.
+    Retorna a lista de produtos cadastrados para o Tenant ativo, com filtro opcional por busca (Nome, SKU, Código de Barras).
     """
     repo = RepositorioProdutoSQLAlchemy(db)
     use_case = ListarProdutos(repo)
     
-    output = use_case.executar(tenant_id=current_user.tenant_id)
+    output = use_case.executar(tenant_id=current_user.tenant_id, termo_busca=busca)
     return [ProdutoResponse.model_validate(p) for p in output.produtos]
 
 

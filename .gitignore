@@ -13,8 +13,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -47,3 +47,13 @@ htmlcov/
 
 # Scripts locais de teste
 e2e_simulation.py
+
+# Frontend (Node / Vite / Nitro)
+node_modules/
+dist/
+dist-ssr/
+.output/
+.nitro/
+.wrangler/
+.tanstack/
+celerybeat-schedule*

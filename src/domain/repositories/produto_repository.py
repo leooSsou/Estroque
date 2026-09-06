@@ -35,8 +35,8 @@ class ProdutoRepository(ABC):
         """
 
     @abstractmethod
-    def listar_todos(self, tenant_id: UUID) -> list[Produto]:
+    def listar_todos(self, tenant_id: UUID, termo: str | None = None) -> list[Produto]:
         """
-        Lista todos os produtos cadastrados para um determinado Tenant.
+        Lista produtos cadastrados para um determinado Tenant, opcionalmente filtrando por termo (nome, SKU ou código de barras).
         """
 

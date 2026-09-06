@@ -84,13 +84,13 @@ class ListarProdutosOutput:
 
 class ListarProdutos:
     """
-    Caso de Uso: Listar todos os Produtos de um Tenant.
+    Caso de Uso: Listar todos os Produtos de um Tenant (com suporte a busca textual por nome, SKU ou código de barras).
     """
     def __init__(self, produto_repo: ProdutoRepository) -> None:
         self.produto_repo = produto_repo
 
-    def executar(self, tenant_id: UUID) -> ListarProdutosOutput:
-        produtos = self.produto_repo.listar_todos(tenant_id)
+    def executar(self, tenant_id: UUID, termo_busca: str | None = None) -> ListarProdutosOutput:
+        produtos = self.produto_repo.listar_todos(tenant_id, termo=termo_busca)
         return ListarProdutosOutput(produtos=produtos)
 
 

@@ -61,7 +61,7 @@ class AutenticarUsuario:
         # 2. Valida se o Tenant associado existe na base de dados
         tenant = self.tenant_repo.obter_por_id(usuario.tenant_id)
         if not tenant:
-            raise TenantNaoEncontradoException()
+            raise TenantNaoEncontradoException(str(usuario.tenant_id))
 
         # 3. Valida a senha utilizando a acoplagem do serviço de criptografia
         if not self.servico_cripto.verificar_senha(input_data.senha_plana, usuario.senha_hash):

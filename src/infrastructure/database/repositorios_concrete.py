@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
@@ -371,9 +372,19 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             ativo=model.ativo
         )
 
-    def listar_todos(self, tenant_id: UUID) -> list[Produto]:
+    def listar_todos(self, tenant_id: UUID, termo: str | None = None) -> list[Produto]:
         self.db.info["tenant_id"] = tenant_id
-        models = self.db.query(ProdutoModel).all()
+        query = self.db.query(ProdutoModel)
+        if termo and termo.strip():
+            filtro = f"%{termo.strip()}%"
+            query = query.filter(
+                or_(
+                    ProdutoModel.nome.ilike(filtro),
+                    ProdutoModel.sku.ilike(filtro),
+                    ProdutoModel.codigo_barras.ilike(filtro),
+                )
+            )
+        models = query.all()
         return [
             Produto(
                 id=m.id,
