@@ -55,7 +55,7 @@ export const Route = createFileRoute("/produtos")({
   component: ProdutosPage,
 });
 
-export default function ProdutosPage() {
+function ProdutosPage() {
   const queryClient = useQueryClient();
   const { data: lojas } = useLojasData();
   const [searchTerm, setSearchTerm] = useState("");

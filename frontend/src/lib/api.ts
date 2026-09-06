@@ -49,10 +49,17 @@ export async function apiRequest<T>(endpoint: string, options: RequestInit = {})
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (err: any) {
+    throw new Error(
+      `Não foi possível conectar ao backend (${API_BASE_URL}). Verifique se o servidor backend está ativo.`
+    );
+  }
 
   if (!response.ok) {
     let errorDetail = "Erro na requisição";

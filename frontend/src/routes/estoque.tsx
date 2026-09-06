@@ -58,7 +58,7 @@ export const Route = createFileRoute("/estoque")({
 
 type TabOption = "posicao" | "extrato" | "balanco" | "ruptura";
 
-export default function EstoquePage() {
+function EstoquePage() {
   const {
     saldos,
     movimentacoes,
