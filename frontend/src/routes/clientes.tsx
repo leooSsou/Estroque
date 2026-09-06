@@ -213,6 +213,7 @@ function ClientesPage() {
       searchValue={busca}
       onSearchChange={setBusca}
       searchPlaceholder="Buscar por nome, e-mail ou documento..."
+      showLojaSelector={false}
       actions={
         <div className="flex items-center gap-2">
           <button

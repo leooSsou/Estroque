@@ -187,6 +187,8 @@ function FinanceiroPage() {
       searchValue={busca}
       onSearchChange={setBusca}
       searchPlaceholder="Buscar por categoria ou loja..."
+      selectedLojaId={filtroLoja}
+      onLojaChange={setFiltroLoja}
       actions={
         <div className="flex items-center gap-2">
           <button

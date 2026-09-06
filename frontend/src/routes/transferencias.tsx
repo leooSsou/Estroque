@@ -183,9 +183,9 @@ function TransferenciasPage() {
               className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
-          <div onClick={() => setIsModalOpen(true)}>
-            <PrimaryButton icon={Truck}>Nova transferência</PrimaryButton>
-          </div>
+          <PrimaryButton icon={Truck} onClick={() => setIsModalOpen(true)}>
+            Nova transferência
+          </PrimaryButton>
         </div>
       }
     >

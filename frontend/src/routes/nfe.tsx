@@ -111,28 +111,18 @@ function NfePage() {
     <AppShell
       title="Importar NF-e"
       subtitle="Entrada de estoque automatizada por XML v4.00"
+      selectedLojaId={activeLojaId}
+      onLojaChange={setLojaId}
+      allowAllLojas={false}
       actions={
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 text-xs font-semibold shadow-bento">
-            <Warehouse className="h-3.5 w-3.5 text-forest" />
-            <select
-              value={activeLojaId || ""}
-              onChange={(e) => setLojaId(e.target.value)}
-              className="bg-transparent text-foreground outline-none cursor-pointer"
-            >
-              {lojas?.map((l) => (
-                <option key={l.id} value={l.id}>
-                  Loja: {l.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div onClick={() => fileInputRef.current?.click()}>
-            <PrimaryButton icon={UploadCloud}>
-              {isUploading ? "Enviando..." : "Enviar XML"}
-            </PrimaryButton>
-          </div>
+          <PrimaryButton
+            icon={UploadCloud}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            {isUploading ? "Enviando..." : "Enviar XML"}
+          </PrimaryButton>
         </div>
       }
     >

@@ -388,25 +388,11 @@ function EstoquePage() {
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
       searchPlaceholder="Buscar por produto, SKU, EAN ou documento…"
+      selectedLojaId={selectedLojaFilter}
+      onLojaChange={setSelectedLojaFilter}
+      allowAllLojas={true}
       actions={
         <div className="flex items-center gap-2">
-          {/* Seletor Global de Loja */}
-          <div className="relative">
-            <select
-              value={selectedLojaFilter}
-              onChange={(e) => setSelectedLojaFilter(e.target.value)}
-              className="appearance-none rounded-xl border border-border bg-card py-2 pl-8 pr-8 text-xs font-semibold text-foreground shadow-bento outline-none transition-all hover:border-forest/40 focus:border-forest"
-            >
-              <option value="TODAS">🏢 Todas as Filiais (Consolidado)</option>
-              {lojas?.map((l) => (
-                <option key={l.id} value={l.id}>
-                  🏬 {l.nome}
-                </option>
-              ))}
-            </select>
-            <Building2 className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          </div>
-
           {/* Botão Atualizar */}
           <button
             type="button"
@@ -433,20 +419,10 @@ function EstoquePage() {
             <span className="hidden sm:inline">Exportar CSV</span>
           </button>
 
-          {/* Botão Lançar Movimentação Avulsa (Bling) */}
-          <button
-            type="button"
-            onClick={() => handleOpenMovimentacao()}
-            className="flex items-center gap-1.5 rounded-full border border-forest/40 bg-mint/50 px-3.5 py-2 text-xs font-bold text-forest shadow-sm transition-all hover:bg-mint active:scale-95"
-          >
-            <Zap className="h-3.5 w-3.5 text-emerald" />
-            <span>Lançar Movimentação</span>
-          </button>
-
-          {/* Botão Novo Inventário */}
-          <div onClick={() => setActiveTab("balanco")}>
-            <PrimaryButton icon={ClipboardList}>Balanço Físico</PrimaryButton>
-          </div>
+          {/* Botão Principal: Lançar Movimentação */}
+          <PrimaryButton icon={Zap} onClick={() => handleOpenMovimentacao()}>
+            Lançar movimentação
+          </PrimaryButton>
         </div>
       }
     >

@@ -436,25 +436,11 @@ function ProdutosPage() {
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
       searchPlaceholder="Buscar produto por nome, SKU ou código EAN…"
+      selectedLojaId={selectedLojaFilter}
+      onLojaChange={setSelectedLojaFilter}
+      allowAllLojas={true}
       actions={
         <div className="flex items-center gap-2">
-          {/* Seletor de Loja no Cabeçalho (Bling ERP Style) */}
-          <div className="relative">
-            <select
-              value={selectedLojaFilter}
-              onChange={(e) => setSelectedLojaFilter(e.target.value)}
-              className="appearance-none rounded-xl border border-border bg-card py-2 pl-8 pr-8 text-xs font-semibold text-foreground shadow-bento outline-none transition-all hover:border-forest/40 focus:border-forest"
-            >
-              <option value="TODAS">🏢 Todas as Filiais (Consolidado)</option>
-              {lojas?.map((l) => (
-                <option key={l.id} value={l.id}>
-                  🏬 {l.nome}
-                </option>
-              ))}
-            </select>
-            <Building2 className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          </div>
-
           <button
             type="button"
             onClick={handleRefresh}
@@ -481,9 +467,9 @@ function ProdutosPage() {
             <span className="hidden sm:inline">Exportar CSV</span>
           </button>
 
-          <div onClick={() => setIsModalOpen(true)}>
-            <PrimaryButton icon={Plus}>Novo produto</PrimaryButton>
-          </div>
+          <PrimaryButton icon={Plus} onClick={() => setIsModalOpen(true)}>
+            Novo produto
+          </PrimaryButton>
         </div>
       }
     >

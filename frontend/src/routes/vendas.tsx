@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Plus,
@@ -66,6 +66,7 @@ function VendasPage() {
   const { data: lojas } = useLojasData();
   const { clientes } = useClientesData();
 
+  const [filtroLoja, setFiltroLoja] = useState<string>("TODAS");
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -165,6 +166,11 @@ function VendasPage() {
     }
   };
 
+  const vendasFiltradas = useMemo(() => {
+    if (filtroLoja === "TODAS") return vendas;
+    return vendas.filter((s) => s.loja_id === filtroLoja);
+  }, [vendas, filtroLoja]);
+
   const faturamento = `R$ ${(dash?.total_faturamento ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
   const ticketMedio = `R$ ${(dash?.ticket_medio ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
@@ -172,6 +178,8 @@ function VendasPage() {
     <AppShell
       title="Vendas & Frente de Caixa"
       subtitle={`${faturamento} faturados no período`}
+      selectedLojaId={filtroLoja}
+      onLojaChange={setFiltroLoja}
       actions={
         <div className="flex items-center gap-2">
           <button
@@ -185,9 +193,9 @@ function VendasPage() {
               className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
-          <div onClick={() => setIsModalOpen(true)}>
-            <PrimaryButton icon={Plus}>Nova venda</PrimaryButton>
-          </div>
+          <PrimaryButton icon={Plus} onClick={() => setIsModalOpen(true)}>
+            Nova venda
+          </PrimaryButton>
         </div>
       }
     >
@@ -248,14 +256,14 @@ function VendasPage() {
               </tr>
             </thead>
             <tbody>
-              {vendas.length === 0 ? (
+              {vendasFiltradas.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-10 text-center text-xs text-muted-foreground">
-                    Nenhuma venda registrada no sistema.
+                    Nenhuma venda registrada para a filial selecionada.
                   </td>
                 </tr>
               ) : (
-                vendas.map((s) => (
+                vendasFiltradas.map((s) => (
                   <tr
                     key={s.id}
                     className="border-b border-border/50 transition-colors hover:bg-muted/40"

@@ -11,6 +11,10 @@ interface AppShellProps {
   searchValue?: string;
   onSearchChange?: (val: string) => void;
   searchPlaceholder?: string;
+  selectedLojaId?: string;
+  onLojaChange?: (lojaId: string) => void;
+  allowAllLojas?: boolean;
+  showLojaSelector?: boolean;
 }
 
 export function AppShell({
@@ -21,12 +25,24 @@ export function AppShell({
   searchValue,
   onSearchChange,
   searchPlaceholder,
+  selectedLojaId,
+  onLojaChange,
+  allowAllLojas = true,
+  showLojaSelector = true,
 }: AppShellProps) {
   const { data: user } = useUserData();
   const { data: lojas } = useLojasData();
-  const [selectedLojaIndex, setSelectedLojaIndex] = useState(0);
+  const [internalLojaId, setInternalLojaId] = useState<string>("TODAS");
 
-  const activeLoja = lojas?.[selectedLojaIndex] || lojas?.[0];
+  const activeLojaId = selectedLojaId !== undefined ? selectedLojaId : internalLojaId;
+  const handleLojaChange = (newLojaId: string) => {
+    if (onLojaChange) {
+      onLojaChange(newLojaId);
+    } else {
+      setInternalLojaId(newLojaId);
+    }
+  };
+
   const userName = user?.nome || "Jonathas G.";
   const userInitials =
     userName
@@ -54,26 +70,31 @@ export function AppShell({
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           </div>
 
-          {/* Seletor Dinâmico de Loja */}
-          <div className="relative flex items-center gap-2 rounded-full bg-card px-3.5 py-1.5 text-sm font-semibold text-foreground shadow-bento">
-            <Store className="h-4 w-4 text-forest" />
-            <select
-              value={selectedLojaIndex}
-              onChange={(e) => setSelectedLojaIndex(Number(e.target.value))}
-              className="bg-transparent text-sm font-semibold text-foreground outline-none cursor-pointer pr-1"
-            >
-              {!lojas || lojas.length === 0 ? (
-                <option value={0}>Loja Matriz</option>
-              ) : (
-                lojas.map((l, idx) => (
-                  <option key={l.id} value={idx}>
-                    {l.nome}
-                  </option>
-                ))
-              )}
-            </select>
-            <ChevronDown className="pointer-events-none h-3.5 w-3.5 text-muted-foreground" />
-          </div>
+          {/* Seletor Unificado e Dinâmico de Loja (Sem duplicação) */}
+          {showLojaSelector && (
+            <div className="relative flex items-center gap-2 rounded-full bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-bento">
+              <Store className="h-4 w-4 text-forest shrink-0" />
+              <select
+                value={activeLojaId}
+                onChange={(e) => handleLojaChange(e.target.value)}
+                className="bg-transparent text-xs font-semibold text-foreground outline-none cursor-pointer pr-1 appearance-none"
+              >
+                {allowAllLojas && (
+                  <option value="TODAS">🏢 Todas as Filiais (Consolidado)</option>
+                )}
+                {!lojas || lojas.length === 0 ? (
+                  <option value="">Nenhuma filial cadastrada</option>
+                ) : (
+                  lojas.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      🏬 {l.nome}
+                    </option>
+                  ))
+                )}
+              </select>
+              <ChevronDown className="pointer-events-none h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            </div>
+          )}
 
           {searchValue !== undefined && onSearchChange && (
             <div className="relative hidden w-64 md:block">
@@ -93,7 +114,7 @@ export function AppShell({
           <button
             type="button"
             aria-label="Notificações"
-            className="relative rounded-full bg-card p-2.5 shadow-bento"
+            className="relative rounded-full bg-card p-2.5 shadow-bento transition-transform hover:scale-105"
           >
             <Bell className="h-4 w-4 text-foreground" />
             <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-destructive" />
@@ -143,7 +164,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center gap-2 rounded-full bg-emerald px-4 py-2.5 text-sm font-bold text-mint transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`flex items-center gap-2 rounded-full bg-emerald px-4 py-2.5 text-sm font-bold text-mint transition-all hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {Icon ? <Icon className="h-4 w-4" /> : null}
       {children}

@@ -148,6 +148,7 @@ function FornecedoresPage() {
     <AppShell
       title="Fornecedores"
       subtitle={`${fornecedores?.length || 0} parceiros cadastrados no sistema`}
+      showLojaSelector={false}
       actions={
         <div className="flex items-center gap-2">
           <button
@@ -161,9 +162,9 @@ function FornecedoresPage() {
               className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
-          <div onClick={() => setIsModalOpen(true)}>
-            <PrimaryButton icon={Plus}>Novo fornecedor</PrimaryButton>
-          </div>
+          <PrimaryButton icon={Plus} onClick={() => setIsModalOpen(true)}>
+            Novo fornecedor
+          </PrimaryButton>
         </div>
       }
     >

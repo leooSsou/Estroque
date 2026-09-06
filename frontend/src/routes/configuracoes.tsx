@@ -184,12 +184,11 @@ function ConfiguracoesPage() {
     <AppShell
       title="Configurações"
       subtitle="Empresa, equipe e regras de operação"
+      showLojaSelector={false}
       actions={
-        <div onClick={handleSalvar}>
-          <PrimaryButton icon={savedSuccess ? Check : Save}>
-            {savedSuccess ? "Alterações Salvas!" : "Salvar alterações"}
-          </PrimaryButton>
-        </div>
+        <PrimaryButton icon={savedSuccess ? Check : Save} onClick={handleSalvar}>
+          {savedSuccess ? "Alterações Salvas!" : "Salvar alterações"}
+        </PrimaryButton>
       }
     >
       <div className="grid gap-5 xl:grid-cols-12">
