@@ -18,6 +18,7 @@ import { Route as FornecedoresRouteImport } from './routes/fornecedores'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NfeRouteImport } from './routes/nfe'
 import { Route as ProdutosRouteImport } from './routes/produtos'
+import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as TransferenciasRouteImport } from './routes/transferencias'
 import { Route as VendasRouteImport } from './routes/vendas'
@@ -67,6 +68,11 @@ const ProdutosRoute = ProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/nfe': typeof NfeRoute
   '/produtos': typeof ProdutosRoute
+  '/registro': typeof RegistroRoute
   '/relatorios': typeof RelatoriosRoute
   '/transferencias': typeof TransferenciasRoute
   '/vendas': typeof VendasRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/nfe': typeof NfeRoute
   '/produtos': typeof ProdutosRoute
+  '/registro': typeof RegistroRoute
   '/relatorios': typeof RelatoriosRoute
   '/transferencias': typeof TransferenciasRoute
   '/vendas': typeof VendasRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/nfe': typeof NfeRoute
   '/produtos': typeof ProdutosRoute
+  '/registro': typeof RegistroRoute
   '/relatorios': typeof RelatoriosRoute
   '/transferencias': typeof TransferenciasRoute
   '/vendas': typeof VendasRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nfe'
     | '/produtos'
+    | '/registro'
     | '/relatorios'
     | '/transferencias'
     | '/vendas'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nfe'
     | '/produtos'
+    | '/registro'
     | '/relatorios'
     | '/transferencias'
     | '/vendas'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/nfe'
     | '/produtos'
+    | '/registro'
     | '/relatorios'
     | '/transferencias'
     | '/vendas'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   NfeRoute: typeof NfeRoute
   ProdutosRoute: typeof ProdutosRoute
+  RegistroRoute: typeof RegistroRoute
   RelatoriosRoute: typeof RelatoriosRoute
   TransferenciasRoute: typeof TransferenciasRoute
   VendasRoute: typeof VendasRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/relatorios': {
       id: '/relatorios'
       path: '/relatorios'
@@ -285,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   NfeRoute: NfeRoute,
   ProdutosRoute: ProdutosRoute,
+  RegistroRoute: RegistroRoute,
   RelatoriosRoute: RelatoriosRoute,
   TransferenciasRoute: TransferenciasRoute,
   VendasRoute: VendasRoute,

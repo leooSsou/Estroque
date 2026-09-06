@@ -4,15 +4,20 @@ import {
   DashboardResponse,
   CurvaABCResponse,
   Produto,
+  ProdutoUpdateInput,
   EstoqueSaldo,
   EstoqueMovimentacao,
   Transferencia,
   Venda,
   Loja,
+  LojaCreateInput,
+  LojaUpdateInput,
   Fornecedor,
+  FornecedorUpdateInput,
   FinanceiroLancamento,
   Cliente,
   ClienteCreateInput,
+  ClienteUpdateInput,
 } from "@/services/estroqueApi";
 
 // 📊 Dashboard Hook
@@ -78,16 +83,29 @@ export function useProdutosData(busca?: string) {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ProdutoUpdateInput }) =>
+      estroqueApi.atualizarProduto(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["produtos"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    },
+  });
+
   return {
     ...query,
     produtos: query.data || [],
     criarProduto: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    atualizarProduto: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
   };
 }
 
 // 🔁 Estoque & Ledger Hook
 export function useEstoqueData(lojaId?: string) {
+  const queryClient = useQueryClient();
+
   const saldosQuery = useQuery<EstoqueSaldo[]>({
     queryKey: ["estoque", "saldos", lojaId],
     queryFn: async () => {
@@ -164,8 +182,13 @@ export function useTransferenciasData() {
   });
 
   const receberMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { quantidade_recebida: number; justificativa?: string | null } }) =>
-      estroqueApi.receberTransferencia(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { quantidade_recebida: number; justificativa?: string | null };
+    }) => estroqueApi.receberTransferencia(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transferencias"] });
       queryClient.invalidateQueries({ queryKey: ["estoque"] });
@@ -220,6 +243,22 @@ export function useVendasData() {
   };
 }
 
+// 🔍 Venda Individual / Detalhes Hook
+export function useVendaDetalhe(vendaId?: string | null) {
+  return useQuery<Venda | null>({
+    queryKey: ["venda", vendaId],
+    queryFn: async () => {
+      if (!vendaId) return null;
+      try {
+        return await estroqueApi.getVendaPorId(vendaId);
+      } catch {
+        return null;
+      }
+    },
+    enabled: Boolean(vendaId),
+  });
+}
+
 // 🏢 Lojas Hook
 export function useLojasData() {
   const queryClient = useQueryClient();
@@ -236,7 +275,13 @@ export function useLojasData() {
   });
 
   const createMutation = useMutation({
-    mutationFn: estroqueApi.criarLoja,
+    mutationFn: (data: LojaCreateInput) => estroqueApi.criarLoja(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["lojas"] }),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: LojaUpdateInput }) =>
+      estroqueApi.atualizarLoja(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["lojas"] }),
   });
 
@@ -245,6 +290,8 @@ export function useLojasData() {
     lojas: query.data || [],
     criarLoja: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    atualizarLoja: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
   };
 }
 
@@ -268,11 +315,19 @@ export function useFornecedoresData() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fornecedores"] }),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: FornecedorUpdateInput }) =>
+      estroqueApi.atualizarFornecedor(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["fornecedores"] }),
+  });
+
   return {
     ...query,
     fornecedores: query.data || [],
     criarFornecedor: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    atualizarFornecedor: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
   };
 }
 
@@ -349,10 +404,21 @@ export function useClientesData() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ClienteUpdateInput }) =>
+      estroqueApi.atualizarCliente(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clientes"] });
+      queryClient.invalidateQueries({ queryKey: ["vendas"] });
+    },
+  });
+
   return {
     ...query,
     clientes: query.data || [],
     criarCliente: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
+    atualizarCliente: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
   };
 }

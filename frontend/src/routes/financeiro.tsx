@@ -14,10 +14,7 @@ import {
   ArrowDownRight,
 } from "lucide-react";
 import { AppShell, Card, PrimaryButton } from "@/components/estroque/app-shell";
-import {
-  useFinanceiroData,
-  useLojasData,
-} from "@/hooks/useEstroqueApi";
+import { useFinanceiroData, useLojasData } from "@/hooks/useEstroqueApi";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +35,8 @@ export const Route = createFileRoute("/financeiro")({
       { property: "og:title", content: "Financeiro — Fluxo de Caixa e DRE | Estroque" },
       {
         property: "og:description",
-        content: "Gestão financeira multi-loja, extrato de lançamentos, receitas e despesas operacionais.",
+        content:
+          "Gestão financeira multi-loja, extrato de lançamentos, receitas e despesas operacionais.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -90,7 +88,9 @@ function FinanceiroPage() {
   const [formCategoria, setFormCategoria] = useState(CATEGORIAS_DESPESA[0]);
   const [formValor, setFormValor] = useState("");
   const [formStatus, setFormStatus] = useState<"PAGO" | "PENDENTE">("PAGO");
-  const [formDataPagamento, setFormDataPagamento] = useState(new Date().toISOString().split("T")[0]);
+  const [formDataPagamento, setFormDataPagamento] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleRefresh = async () => {
@@ -219,9 +219,7 @@ function FinanceiroPage() {
             <p className="mt-2 font-display text-4xl font-bold text-mint">
               R$ {saldoLiquido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </p>
-            <p className="mt-1 text-xs text-mint/70">
-              Receitas apuradas menos despesas pagas
-            </p>
+            <p className="mt-1 text-xs text-mint/70">Receitas apuradas menos despesas pagas</p>
           </div>
 
           <div className="mt-6 flex items-center gap-2 text-xs text-mint">
@@ -274,8 +272,7 @@ function FinanceiroPage() {
           <article className="bento-card p-5 flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                <Clock className="h-3 w-3" />
-                A Pagar
+                <Clock className="h-3 w-3" />A Pagar
               </span>
               <span className="text-[11px] font-medium text-muted-foreground">
                 {countPendentes} pendentes
@@ -385,12 +382,17 @@ function FinanceiroPage() {
                   const categoriaNome = CATEGORIA_LABELS[item.categoria] || item.categoria;
 
                   return (
-                    <tr key={item.id} className="border-t border-border hover:bg-muted/30 transition-colors">
+                    <tr
+                      key={item.id}
+                      className="border-t border-border hover:bg-muted/30 transition-colors"
+                    >
                       <td className="py-3.5">
                         <div className="flex items-center gap-2">
                           <span
                             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                              isReceita ? "bg-mint text-emerald" : "bg-destructive/10 text-destructive"
+                              isReceita
+                                ? "bg-mint text-emerald"
+                                : "bg-destructive/10 text-destructive"
                             }`}
                           >
                             {isReceita ? (
@@ -401,7 +403,9 @@ function FinanceiroPage() {
                           </span>
                           <div>
                             <p className="font-semibold text-foreground">{categoriaNome}</p>
-                            <p className="text-[11px] text-muted-foreground">ID: #{item.id.slice(0, 8)}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              ID: #{item.id.slice(0, 8)}
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -411,7 +415,9 @@ function FinanceiroPage() {
                       <td className="py-3.5">
                         <span
                           className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                            isReceita ? "bg-mint text-emerald" : "bg-destructive/10 text-destructive"
+                            isReceita
+                              ? "bg-mint text-emerald"
+                              : "bg-destructive/10 text-destructive"
                           }`}
                         >
                           {item.tipo}

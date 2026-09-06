@@ -16,7 +16,8 @@ export const Route = createFileRoute("/relatorios")({
       { property: "og:title", content: "Relatórios — Curva ABC, CMV e giro | Estroque" },
       {
         property: "og:description",
-        content: "Curva ABC por faturamento e margem, giro de estoque, CMV consolidado e perdas operacionais.",
+        content:
+          "Curva ABC por faturamento e margem, giro de estoque, CMV consolidado e perdas operacionais.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -35,8 +36,18 @@ const reports = [
 ];
 
 function RelatoriosPage() {
-  const { data: curva, isLoading: isCurvaLoading, isFetching: isCurvaFetching, refetch: refetchCurva } = useCurvaABCData();
-  const { data: dash, isLoading: isDashLoading, isFetching: isDashFetching, refetch: refetchDash } = useDashboardData();
+  const {
+    data: curva,
+    isLoading: isCurvaLoading,
+    isFetching: isCurvaFetching,
+    refetch: refetchCurva,
+  } = useCurvaABCData();
+  const {
+    data: dash,
+    isLoading: isDashLoading,
+    isFetching: isDashFetching,
+    refetch: refetchDash,
+  } = useDashboardData();
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
   const isFetching = isCurvaFetching || isDashFetching;
@@ -71,7 +82,7 @@ function RelatoriosPage() {
             title="Recarregar relatórios"
           >
             <RefreshCw
-              className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+              className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
           <PrimaryButton icon={Download}>Exportar tudo</PrimaryButton>

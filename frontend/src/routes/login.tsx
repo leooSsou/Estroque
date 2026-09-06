@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Loader2, AlertCircle, ArrowRight, Lock, Mail, Sparkle } from "lucide-react";
 import logo from "@/assets/estroque-logo.png.asset.json";
 import { estroqueApi } from "@/services/estroqueApi";
@@ -10,7 +10,8 @@ export const Route = createFileRoute("/login")({
       { title: "Entrar no Estroque — Gestão de Estoque Inteligente" },
       {
         name: "description",
-        content: "Acesse o painel do Estroque: controle multi-loja, ledger auditável e gestão financeira.",
+        content:
+          "Acesse o painel do Estroque: controle multi-loja, ledger auditável e gestão financeira.",
       },
     ],
   }),
@@ -127,12 +128,22 @@ function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-border/60 text-center">
+          <div className="mt-6 pt-5 border-t border-border/60 text-center space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Não possui uma conta?{" "}
+              <Link
+                to="/registro"
+                className="font-bold text-forest hover:underline underline-offset-2"
+              >
+                Cadastre sua empresa
+              </Link>
+            </p>
+
             <div className="inline-flex items-center gap-1.5 rounded-full bg-mint/50 px-3 py-1 text-[11px] font-semibold text-emerald">
               <Sparkle className="h-3.5 w-3.5 text-forest" />
               <span>Multi-tenant com isolamento estrito</span>
             </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               Ambiente local: <code>admin@estroque.app</code> / <code>admin123</code>
             </p>
           </div>

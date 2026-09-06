@@ -129,7 +129,10 @@ function TransferenciasPage() {
     try {
       await despachar(id);
     } catch (err: any) {
-      alert(err.message || "Erro ao despachar transferência. Verifique se há saldo suficiente na loja de origem.");
+      alert(
+        err.message ||
+          "Erro ao despachar transferência. Verifique se há saldo suficiente na loja de origem.",
+      );
     } finally {
       setActionLoadingId(null);
     }
@@ -177,7 +180,7 @@ function TransferenciasPage() {
             title="Recarregar transferências"
           >
             <RefreshCw
-              className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+              className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
           <div onClick={() => setIsModalOpen(true)}>
@@ -215,7 +218,9 @@ function TransferenciasPage() {
                   className="flex flex-wrap items-center justify-between gap-3 rounded-bento bg-muted/60 p-4 transition-colors hover:bg-muted/90"
                 >
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="font-mono text-xs font-bold text-forest">#{t.id.slice(0, 8)}</span>
+                    <span className="font-mono text-xs font-bold text-forest">
+                      #{t.id.slice(0, 8)}
+                    </span>
                     <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                       {getNomeLoja(t.loja_origem_id)}
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />

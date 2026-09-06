@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ClipboardList, AlertTriangle, Warehouse, RefreshCw, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  ClipboardList,
+  AlertTriangle,
+  Warehouse,
+  RefreshCw,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
 import { useEstoqueData, useLojasData, useProdutosData } from "@/hooks/useEstroqueApi";
 import {
@@ -23,7 +31,8 @@ export const Route = createFileRoute("/estoque")({
       { property: "og:title", content: "Estoque — Saldos por loja e ledger | Estroque" },
       {
         property: "og:description",
-        content: "Saldos em tempo real por loja, alertas de ruptura e ledger imutável de movimentações.",
+        content:
+          "Saldos em tempo real por loja, alertas de ruptura e ledger imutável de movimentações.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -34,9 +43,27 @@ export const Route = createFileRoute("/estoque")({
 
 const alerts = [
   { sku: "SKU-31877", name: "Hub USB-C 7 em 1", status: "Zerado", tone: "bad" as const, days: "—" },
-  { sku: "SKU-77120", name: "Mouse Sem Fio 4000dpi", status: "Crítico", tone: "bad" as const, days: "2 dias" },
-  { sku: "SKU-55901", name: "Teclado Mecânico 75%", status: "Baixo", tone: "warn" as const, days: "9 dias" },
-  { sku: "SKU-90218", name: "Fone Bluetooth ANC", status: "Baixo", tone: "warn" as const, days: "12 dias" },
+  {
+    sku: "SKU-77120",
+    name: "Mouse Sem Fio 4000dpi",
+    status: "Crítico",
+    tone: "bad" as const,
+    days: "2 dias",
+  },
+  {
+    sku: "SKU-55901",
+    name: "Teclado Mecânico 75%",
+    status: "Baixo",
+    tone: "warn" as const,
+    days: "9 dias",
+  },
+  {
+    sku: "SKU-90218",
+    name: "Fone Bluetooth ANC",
+    status: "Baixo",
+    tone: "warn" as const,
+    days: "12 dias",
+  },
 ];
 
 function typeTone(t: string) {
@@ -46,7 +73,8 @@ function typeTone(t: string) {
 }
 
 function EstoquePage() {
-  const { saldos, movimentacoes, isFetching, refetch, auditarEstoque, isAuditing } = useEstoqueData();
+  const { saldos, movimentacoes, isFetching, refetch, auditarEstoque, isAuditing } =
+    useEstoqueData();
   const { data: lojas } = useLojasData();
   const { data: produtos } = useProdutosData();
 
@@ -63,7 +91,8 @@ function EstoquePage() {
   const activeProdutoId = produtoId || produtos?.[0]?.id || "";
 
   const saldoAtual =
-    saldos.find((s) => s.loja_id === activeLojaId && s.produto_id === activeProdutoId)?.quantidade || 0;
+    saldos.find((s) => s.loja_id === activeLojaId && s.produto_id === activeProdutoId)
+      ?.quantidade || 0;
   const contagemNum = parseInt(quantidadeFisica, 10);
   const temContagem = !isNaN(contagemNum) && quantidadeFisica.trim() !== "";
   const divergencia = temContagem ? contagemNum - saldoAtual : 0;
@@ -131,7 +160,7 @@ function EstoquePage() {
             title="Recarregar saldos"
           >
             <RefreshCw
-              className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+              className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
           <div onClick={() => setIsModalOpen(true)}>
@@ -142,14 +171,19 @@ function EstoquePage() {
     >
       <div className="grid gap-5 xl:grid-cols-12">
         <div className="grid gap-5 sm:grid-cols-3 xl:col-span-8">
-          {(!lojas || lojas.length === 0) ? (
+          {!lojas || lojas.length === 0 ? (
             <div className="col-span-3 rounded-card border border-border/50 bg-card p-8 text-center text-xs text-muted-foreground">
               Nenhuma loja/filial cadastrada.
             </div>
           ) : (
             lojas.map((l) => {
-              const itemsLoja = saldos.filter((s) => s.loja_id === l.id).reduce((acc, s) => acc + s.quantidade, 0);
-              const occ = totalUnidades > 0 ? Math.min(100, Math.round((itemsLoja / totalUnidades) * 100)) : 0;
+              const itemsLoja = saldos
+                .filter((s) => s.loja_id === l.id)
+                .reduce((acc, s) => acc + s.quantidade, 0);
+              const occ =
+                totalUnidades > 0
+                  ? Math.min(100, Math.round((itemsLoja / totalUnidades) * 100))
+                  : 0;
 
               return (
                 <Card key={l.id}>
@@ -214,17 +248,24 @@ function EstoquePage() {
                 </tr>
               ) : (
                 movimentacoes.map((l) => (
-                  <tr key={l.id} className="border-b border-border/50 transition-colors hover:bg-muted/40">
+                  <tr
+                    key={l.id}
+                    className="border-b border-border/50 transition-colors hover:bg-muted/40"
+                  >
                     <td className="py-3 font-semibold text-foreground">
                       {getNomeProduto(l.produto_id)}
                     </td>
                     <td className="py-3">
                       <Chip label={l.tipo_movimentacao} tone={typeTone(l.tipo_movimentacao)} />
                     </td>
-                    <td className={`py-3 font-bold ${l.quantidade >= 0 ? "text-emerald" : "text-destructive"}`}>
+                    <td
+                      className={`py-3 font-bold ${l.quantidade >= 0 ? "text-emerald" : "text-destructive"}`}
+                    >
                       {l.quantidade >= 0 ? `+${l.quantidade}` : l.quantidade}
                     </td>
-                    <td className="py-3 text-muted-foreground">{l.observacao || "Movimentação de Sistema"}</td>
+                    <td className="py-3 text-muted-foreground">
+                      {l.observacao || "Movimentação de Sistema"}
+                    </td>
                     <td className="py-3 text-muted-foreground">{getNomeLoja(l.loja_id)}</td>
                     <td className="py-3 text-xs text-muted-foreground">
                       {new Date(l.data_movimentacao).toLocaleDateString("pt-BR", {
@@ -327,17 +368,17 @@ function EstoquePage() {
                     divergencia > 0
                       ? "text-emerald font-bold"
                       : divergencia < 0
-                      ? "text-destructive font-bold"
-                      : "text-muted-foreground"
+                        ? "text-destructive font-bold"
+                        : "text-muted-foreground"
                   }
                 >
                   {!temContagem
                     ? "Aguardando contagem"
                     : divergencia === 0
-                    ? "0 un. (Estoque conferido / Sem ajuste)"
-                    : divergencia > 0
-                    ? `+${divergencia} un. (Sobra / Ajuste Positivo)`
-                    : `${divergencia} un. (Falta / Ajuste Negativo)`}
+                      ? "0 un. (Estoque conferido / Sem ajuste)"
+                      : divergencia > 0
+                        ? `+${divergencia} un. (Sobra / Ajuste Positivo)`
+                        : `${divergencia} un. (Falta / Ajuste Negativo)`}
                 </span>
               </div>
             </div>

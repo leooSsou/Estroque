@@ -192,7 +192,7 @@ export function EstroqueDashboard() {
           title="Recarregar Indicadores"
         >
           <RefreshCw
-            className={`h-4 w-4 text-foreground ${(isDashFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+            className={`h-4 w-4 text-foreground ${isDashFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
           />
         </button>
       }
@@ -206,7 +206,8 @@ export function EstroqueDashboard() {
             </p>
             <p className="mt-2 font-display text-4xl font-bold text-mint">{faturamentoFormatado}</p>
             <p className="mt-1 text-xs text-mint/70">
-              {lojas?.length ?? 0} {lojas?.length === 1 ? "loja ativa" : "lojas ativas"} · {vendas?.length ?? 0} vendas realizadas
+              {lojas?.length ?? 0} {lojas?.length === 1 ? "loja ativa" : "lojas ativas"} ·{" "}
+              {vendas?.length ?? 0} vendas realizadas
             </p>
           </div>
 
@@ -240,7 +241,9 @@ export function EstroqueDashboard() {
               <span className="text-[11px] text-muted-foreground">Lucro: {lucroFormatado}</span>
             </div>
             <div>
-              <p className="mt-4 font-display text-2xl font-bold text-foreground">{faturamentoFormatado}</p>
+              <p className="mt-4 font-display text-2xl font-bold text-foreground">
+                {faturamentoFormatado}
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">Faturamento Mensal</p>
             </div>
           </article>
@@ -253,22 +256,34 @@ export function EstroqueDashboard() {
               </span>
             </div>
             <div>
-              <p className="mt-4 font-display text-2xl font-bold text-foreground">{ticketMedioFormatado}</p>
+              <p className="mt-4 font-display text-2xl font-bold text-foreground">
+                {ticketMedioFormatado}
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">Ticket Médio por Venda</p>
             </div>
           </article>
 
           <article className="bento-card p-5 flex flex-col justify-between">
             <div className="flex items-start justify-between">
-              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
-                rupturas > 0 || criticos > 0 ? "bg-destructive/10 text-destructive" : "bg-mint text-emerald"
-              }`}>
-                {rupturas > 0 ? <TrendingDown className="h-3 w-3" /> : <TrendingUp className="h-3 w-3" />}
+              <span
+                className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                  rupturas > 0 || criticos > 0
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-mint text-emerald"
+                }`}
+              >
+                {rupturas > 0 ? (
+                  <TrendingDown className="h-3 w-3" />
+                ) : (
+                  <TrendingUp className="h-3 w-3" />
+                )}
                 {criticos} críticos
               </span>
             </div>
             <div>
-              <p className="mt-4 font-display text-2xl font-bold text-foreground">{rupturas} itens</p>
+              <p className="mt-4 font-display text-2xl font-bold text-foreground">
+                {rupturas} itens
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">Rupturas de Estoque (Zerados)</p>
             </div>
           </article>
@@ -310,9 +325,12 @@ export function EstroqueDashboard() {
           {vendas.length === 0 ? (
             <div className="my-10 flex flex-col items-center justify-center text-center">
               <BarChart3 className="h-10 w-10 text-muted-foreground/40" />
-              <p className="mt-3 text-sm font-semibold text-foreground">Sem vendas registradas no período</p>
+              <p className="mt-3 text-sm font-semibold text-foreground">
+                Sem vendas registradas no período
+              </p>
               <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-                Conforme as vendas forem efetuadas no PDV, o volume de receita e o CMV correspondente serão desenhados aqui em tempo real.
+                Conforme as vendas forem efetuadas no PDV, o volume de receita e o CMV
+                correspondente serão desenhados aqui em tempo real.
               </p>
               <a
                 href="/vendas"
@@ -325,9 +343,15 @@ export function EstroqueDashboard() {
             <div className="mt-8 flex h-52 items-end gap-3">
               {vendas.slice(-7).map((v) => {
                 const maxVal = Math.max(...vendas.map((x) => x.valor_total), 1);
-                const heightPct = Math.min(100, Math.max(15, Math.round((v.valor_total / maxVal) * 100)));
+                const heightPct = Math.min(
+                  100,
+                  Math.max(15, Math.round((v.valor_total / maxVal) * 100)),
+                );
                 const labelData = v.data_venda
-                  ? new Date(v.data_venda).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+                  ? new Date(v.data_venda).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })
                   : `#${v.id.slice(0, 4)}`;
                 return (
                   <div key={v.id} className="flex flex-1 flex-col items-center gap-2">
@@ -361,7 +385,13 @@ export function EstroqueDashboard() {
           </div>
 
           <div className="my-4">
-            <Donut aPct={pctA} bPct={pctB} cPct={pctC} totalItens={totalProdutosCurva} hasData={temDadosCurva} />
+            <Donut
+              aPct={pctA}
+              bPct={pctB}
+              cPct={pctC}
+              totalItens={totalProdutosCurva}
+              hasData={temDadosCurva}
+            />
           </div>
 
           {!temDadosCurva ? (
@@ -371,18 +401,33 @@ export function EstroqueDashboard() {
           ) : (
             <ul className="w-full space-y-2.5">
               <li className="flex items-center gap-3 text-sm">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--emerald-deep)" }} />
-                <span className="flex-1 text-xs text-muted-foreground">Classe A ({countA} itens - 80% Receita)</span>
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: "var(--emerald-deep)" }}
+                />
+                <span className="flex-1 text-xs text-muted-foreground">
+                  Classe A ({countA} itens - 80% Receita)
+                </span>
                 <span className="text-xs font-semibold text-foreground">{pctA}%</span>
               </li>
               <li className="flex items-center gap-3 text-sm">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--forest)" }} />
-                <span className="flex-1 text-xs text-muted-foreground">Classe B ({countB} itens - 15% Receita)</span>
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: "var(--forest)" }}
+                />
+                <span className="flex-1 text-xs text-muted-foreground">
+                  Classe B ({countB} itens - 15% Receita)
+                </span>
                 <span className="text-xs font-semibold text-foreground">{pctB}%</span>
               </li>
               <li className="flex items-center gap-3 text-sm">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: "var(--sage)" }} />
-                <span className="flex-1 text-xs text-muted-foreground">Classe C ({countC} itens - 5% Receita)</span>
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: "var(--sage)" }}
+                />
+                <span className="flex-1 text-xs text-muted-foreground">
+                  Classe C ({countC} itens - 5% Receita)
+                </span>
                 <span className="text-xs font-semibold text-foreground">{pctC}%</span>
               </li>
             </ul>
@@ -394,7 +439,9 @@ export function EstroqueDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-foreground">Ledger de Movimentações</h2>
-              <p className="text-xs text-muted-foreground">Extrato imutável e auditável em tempo real</p>
+              <p className="text-xs text-muted-foreground">
+                Extrato imutável e auditável em tempo real
+              </p>
             </div>
             <a
               href="/estoque"
@@ -427,24 +474,30 @@ export function EstroqueDashboard() {
                     const tipo = m.tipo || m.tipo_movimentacao || "MOVIMENTAÇÃO";
                     const isPositive = tipo.includes("ENTRADA") || tipo.includes("POSITIVO");
                     const badgeClass = typeStyles[tipo] || "bg-muted text-muted-foreground";
-                    const qtdText = isPositive ? `+${Math.abs(m.quantidade)}` : `-${Math.abs(m.quantidade)}`;
+                    const qtdText = isPositive
+                      ? `+${Math.abs(m.quantidade)}`
+                      : `-${Math.abs(m.quantidade)}`;
                     const qtdColor = isPositive ? "text-emerald" : "text-destructive";
 
                     return (
                       <tr key={m.id} className="border-t border-border">
                         <td className="py-3">
-                          <p className="font-semibold text-foreground">{getNomeProduto(m.produto_id)}</p>
-                          <p className="text-xs text-muted-foreground">{m.motivo || m.observacao || "Movimentação"}</p>
+                          <p className="font-semibold text-foreground">
+                            {getNomeProduto(m.produto_id)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {m.motivo || m.observacao || "Movimentação"}
+                          </p>
                         </td>
                         <td className="py-3 text-muted-foreground">{getNomeLoja(m.loja_id)}</td>
                         <td className="py-3">
-                          <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${badgeClass}`}>
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${badgeClass}`}
+                          >
                             {tipo}
                           </span>
                         </td>
-                        <td className={`py-3 text-right font-semibold ${qtdColor}`}>
-                          {qtdText}
-                        </td>
+                        <td className={`py-3 text-right font-semibold ${qtdColor}`}>{qtdText}</td>
                         <td className="py-3 text-right text-xs text-muted-foreground">
                           {new Date(m.data_movimentacao).toLocaleDateString("pt-BR", {
                             day: "2-digit",
@@ -469,19 +522,27 @@ export function EstroqueDashboard() {
           {movimentacoes.length === 0 ? (
             <div className="mt-8 flex flex-col items-center justify-center py-6 text-center">
               <Layers className="h-8 w-8 text-muted-foreground/40" />
-              <p className="mt-2 text-xs text-muted-foreground">Nenhuma atividade recente registrada.</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Nenhuma atividade recente registrada.
+              </p>
             </div>
           ) : (
             <ul className="space-y-4">
               {movimentacoes.slice(0, 5).map((m) => {
                 const tipo = m.tipo || m.tipo_movimentacao || "MOV";
                 const isPositive = tipo.includes("ENTRADA") || tipo.includes("POSITIVO");
-                const badgeColor = isPositive ? "bg-mint text-emerald" : "bg-destructive/10 text-destructive";
-                const qtdText = isPositive ? `+${Math.abs(m.quantidade)}` : `-${Math.abs(m.quantidade)}`;
+                const badgeColor = isPositive
+                  ? "bg-mint text-emerald"
+                  : "bg-destructive/10 text-destructive";
+                const qtdText = isPositive
+                  ? `+${Math.abs(m.quantidade)}`
+                  : `-${Math.abs(m.quantidade)}`;
 
                 return (
                   <li key={m.id} className="flex gap-3 text-xs">
-                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-[10px] ${badgeColor}`}>
+                    <span
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold text-[10px] ${badgeColor}`}
+                    >
                       {tipo.slice(0, 2)}
                     </span>
                     <div className="min-w-0 flex-1">

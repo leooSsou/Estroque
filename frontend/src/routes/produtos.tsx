@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, Filter, Download, RefreshCw, Loader2, AlertCircle, Search } from "lucide-react";
+import {
+  Plus,
+  Filter,
+  Download,
+  RefreshCw,
+  Loader2,
+  AlertCircle,
+  Search,
+  Edit2,
+} from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
 import { useProdutosData, useLojasData } from "@/hooks/useEstroqueApi";
 import { estroqueApi } from "@/services/estroqueApi";
@@ -48,7 +57,16 @@ function ProdutosPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const { data: produtos, isLoading, isFetching, refetch, criarProduto, isCreating } = useProdutosData(debouncedSearch);
+  const {
+    data: produtos,
+    isLoading,
+    isFetching,
+    refetch,
+    criarProduto,
+    isCreating,
+    atualizarProduto,
+    isUpdating,
+  } = useProdutosData(debouncedSearch);
   const [filterABC, setFilterABC] = useState<string>("Todos");
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
@@ -61,7 +79,7 @@ function ProdutosPage() {
     }
   };
 
-  // Modal State
+  // Modal State - Novo Produto
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nome, setNome] = useState("");
   const [sku, setSku] = useState("");
@@ -73,12 +91,70 @@ function ProdutosPage() {
   const [lojaId, setLojaId] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Modal State - Editar Produto
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editId, setEditId] = useState("");
+  const [editNome, setEditNome] = useState("");
+  const [editSku, setEditSku] = useState("");
+  const [editPrecoCusto, setEditPrecoCusto] = useState("");
+  const [editPrecoVenda, setEditPrecoVenda] = useState("");
+  const [editCodigoBarras, setEditCodigoBarras] = useState("");
+  const [editAtivo, setEditAtivo] = useState(true);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const editCustoNum = parseFloat(editPrecoCusto) || 0;
+  const editVendaNum = parseFloat(editPrecoVenda) || 0;
+  const editMarkupCalculado =
+    editCustoNum > 0 ? (((editVendaNum - editCustoNum) / editCustoNum) * 100).toFixed(1) : "0.0";
+
+  const handleOpenEdit = (p: any) => {
+    setEditId(p.id);
+    setEditNome(p.nome);
+    setEditSku(p.sku);
+    setEditPrecoCusto(p.preco_custo ? p.preco_custo.toString() : "0");
+    setEditPrecoVenda(p.preco_venda ? p.preco_venda.toString() : "0");
+    setEditCodigoBarras(p.codigo_barras || "");
+    setEditAtivo(Boolean(p.ativo));
+    setEditError(null);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSalvarEdicao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditError(null);
+    if (!editNome.trim()) {
+      setEditError("O nome do produto é obrigatório.");
+      return;
+    }
+    if (editVendaNum <= 0) {
+      setEditError("O preço de venda deve ser maior que zero.");
+      return;
+    }
+    try {
+      await atualizarProduto({
+        id: editId,
+        data: {
+          nome: editNome.trim(),
+          preco_custo: editCustoNum,
+          preco_venda: editVendaNum,
+          markup: parseFloat(editMarkupCalculado),
+          codigo_barras: editCodigoBarras.trim() || null,
+          ativo: editAtivo,
+        },
+      });
+      setIsEditModalOpen(false);
+    } catch (err: any) {
+      setEditError(err.message || "Erro ao atualizar produto.");
+    }
+  };
+
   const custoNum = parseFloat(precoCusto) || 0;
   const vendaNum = parseFloat(precoVenda) || 0;
-  const markupCalculado = custoNum > 0 ? (((vendaNum - custoNum) / custoNum) * 100).toFixed(1) : "0.0";
+  const markupCalculado =
+    custoNum > 0 ? (((vendaNum - custoNum) / custoNum) * 100).toFixed(1) : "0.0";
 
   const totalSkus = produtos?.length || 0;
-  const valorTotalEstoque = produtos?.reduce((acc, p) => acc + (p.preco_venda * 10), 0) || 0;
+  const valorTotalEstoque = produtos?.reduce((acc, p) => acc + p.preco_venda * 10, 0) || 0;
 
   const handleSalvarProduto = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,7 +231,7 @@ function ProdutosPage() {
             title="Recarregar catálogo"
           >
             <RefreshCw
-              className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+              className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
           <div onClick={() => setIsModalOpen(true)}>
@@ -167,7 +243,10 @@ function ProdutosPage() {
       <div className="grid gap-5 md:grid-cols-4">
         {[
           { l: "SKUs ativos", v: totalSkus.toString() },
-          { l: "Valor estimado", v: `R$ ${valorTotalEstoque.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` },
+          {
+            l: "Valor estimado",
+            v: `R$ ${valorTotalEstoque.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+          },
           { l: "Abaixo do mínimo", v: "0 itens" },
           { l: "Zerados", v: "0 itens" },
         ].map((k) => (
@@ -198,10 +277,16 @@ function ProdutosPage() {
                 {t}
               </button>
             ))}
-            <button type="button" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-mint/40">
+            <button
+              type="button"
+              className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-mint/40"
+            >
               <Filter className="h-3.5 w-3.5" />
             </button>
-            <button type="button" className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-mint/40">
+            <button
+              type="button"
+              className="rounded-full bg-muted p-2 text-muted-foreground hover:bg-mint/40"
+            >
               <Download className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -219,31 +304,39 @@ function ProdutosPage() {
                 <th className="pb-3 font-semibold">Margem</th>
                 <th className="pb-3 font-semibold">Status</th>
                 <th className="pb-3 font-semibold">ABC</th>
+                <th className="pb-3 text-right font-semibold">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {(!produtos || produtos.length === 0) ? (
+              {!produtos || produtos.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-10 text-center text-xs text-muted-foreground">
-                    Nenhum produto cadastrado no catálogo. Clique em "Novo produto" acima para adicionar.
+                  <td colSpan={9} className="py-10 text-center text-xs text-muted-foreground">
+                    Nenhum produto cadastrado no catálogo. Clique em "Novo produto" acima para
+                    adicionar.
                   </td>
                 </tr>
               ) : (
                 produtos.map((p, idx) => {
-                  const marginCalc = p.preco_custo > 0
-                    ? (((p.preco_venda - p.preco_custo) / p.preco_venda) * 100).toFixed(1) + "%"
-                    : "—";
+                  const marginCalc =
+                    p.preco_custo > 0
+                      ? (((p.preco_venda - p.preco_custo) / p.preco_venda) * 100).toFixed(1) + "%"
+                      : "—";
                   const abcClass = idx % 3 === 0 ? "A" : idx % 3 === 1 ? "B" : "C";
 
                   return (
-                    <tr key={p.id || p.sku} className="border-b border-border/50 transition-colors hover:bg-muted/40">
+                    <tr
+                      key={p.id || p.sku}
+                      className="border-b border-border/50 transition-colors hover:bg-muted/40"
+                    >
                       <td className="py-3.5 font-mono text-xs font-semibold text-muted-foreground">
                         {p.sku}
                       </td>
                       <td className="py-3.5">
                         <p className="font-semibold text-foreground">{p.nome}</p>
                         {p.codigo_barras && (
-                          <p className="text-[11px] text-muted-foreground">EAN: {p.codigo_barras}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            EAN: {p.codigo_barras}
+                          </p>
                         )}
                       </td>
                       <td className="py-3.5 text-muted-foreground">{p.categoria || "Geral"}</td>
@@ -255,13 +348,27 @@ function ProdutosPage() {
                       </td>
                       <td className="py-3.5 font-semibold text-forest">{marginCalc}</td>
                       <td className="py-3.5">
-                        <Chip label={p.ativo ? "Ativo" : "Inativo"} tone={p.ativo ? "good" : "neutral"} />
+                        <Chip
+                          label={p.ativo ? "Ativo" : "Inativo"}
+                          tone={p.ativo ? "good" : "neutral"}
+                        />
                       </td>
                       <td className="py-3.5">
                         <Chip
                           label={`Classe ${abcClass}`}
                           tone={abcClass === "A" ? "good" : abcClass === "B" ? "warn" : "neutral"}
                         />
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(p)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground transition-all hover:border-forest/50 hover:bg-muted active:scale-95"
+                          title="Editar dados do produto"
+                        >
+                          <Edit2 className="h-3 w-3 text-forest" />
+                          Editar
+                        </button>
                       </td>
                     </tr>
                   );
@@ -278,7 +385,8 @@ function ProdutosPage() {
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-foreground">Novo Produto</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              Cadastre um novo SKU no catálogo com precificação por markup e sincronização com o banco.
+              Cadastre um novo SKU no catálogo com precificação por markup e sincronização com o
+              banco.
             </DialogDescription>
           </DialogHeader>
 
@@ -396,7 +504,7 @@ function ProdutosPage() {
                   onChange={(e) => setLojaId(e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
                 >
-                  {(!lojas || lojas.length === 0) ? (
+                  {!lojas || lojas.length === 0 ? (
                     <option value="">Nenhuma loja cadastrada</option>
                   ) : (
                     lojas.map((l) => (
@@ -429,6 +537,149 @@ function ProdutosPage() {
                   </>
                 ) : (
                   "Salvar Produto"
+                )}
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal / Dialog de Edição de Produto */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-foreground">Editar Produto</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Altere preços, margem e dados cadastrais. O SKU e Tenant são imutáveis.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editError && (
+            <div className="flex items-center gap-2 rounded-xl bg-destructive/10 p-3 text-xs font-medium text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{editError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSalvarEdicao} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Nome do Produto *
+              </label>
+              <input
+                required
+                type="text"
+                value={editNome}
+                onChange={(e) => setEditNome(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  SKU (Imutável)
+                </label>
+                <input
+                  disabled
+                  type="text"
+                  value={editSku}
+                  className="w-full rounded-xl border border-border/50 bg-muted/70 px-3.5 py-2.5 font-mono text-sm text-muted-foreground cursor-not-allowed"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Código de Barras (EAN)
+                </label>
+                <input
+                  type="text"
+                  placeholder="7891234567890"
+                  value={editCodigoBarras}
+                  onChange={(e) => setEditCodigoBarras(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Preço de Custo (R$)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={editPrecoCusto}
+                  onChange={(e) => setEditPrecoCusto(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Preço de Venda (R$) *
+                </label>
+                <input
+                  required
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={editPrecoVenda}
+                  onChange={(e) => setEditPrecoVenda(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm font-bold text-foreground outline-none focus:border-forest"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-muted/60 p-3 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Markup recalculado:</span>
+              <span className="font-bold text-forest">{editMarkupCalculado}%</span>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-3">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Status do Produto</p>
+                <p className="text-xs text-muted-foreground">
+                  Ativar ou inativar no catálogo e PDV
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditAtivo(!editAtivo)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  editAtivo ? "bg-forest" : "bg-muted"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    editAtivo ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            <DialogFooter className="mt-6 flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isUpdating}
+                className="flex items-center gap-2 rounded-full bg-forest px-5 py-2 text-xs font-semibold text-mint shadow-md transition-opacity hover:opacity-95 disabled:opacity-50"
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Salvar Alterações"
                 )}
               </button>
             </DialogFooter>

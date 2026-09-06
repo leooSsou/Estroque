@@ -1,4 +1,3 @@
-
 import { useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -29,7 +28,8 @@ export const Route = createFileRoute("/nfe")({
       { property: "og:title", content: "Importar NF-e — Entrada automática por XML | Estroque" },
       {
         property: "og:description",
-        content: "Importação de XML de NF-e v4.00 com de-para de SKUs e atualização de custo médio.",
+        content:
+          "Importação de XML de NF-e v4.00 com de-para de SKUs e atualização de custo médio.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -64,7 +64,10 @@ function NfePage() {
   const { data: lojas } = useLojasData();
 
   const [lojaId, setLojaId] = useState("");
-  const [uploadStatus, setUploadStatus] = useState<{ tipo: "sucesso" | "erro"; msg: string } | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<{
+    tipo: "sucesso" | "erro";
+    msg: string;
+  } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [lastResult, setLastResult] = useState<ImportResult | null>(null);
 
@@ -79,7 +82,7 @@ function NfePage() {
     try {
       const xmlText = await file.text();
       const res = await estroqueApi.importarXmlNfe(xmlText, activeLojaId);
-      
+
       setLastResult(res);
       setUploadStatus({
         tipo: "sucesso",
@@ -157,7 +160,8 @@ function NfePage() {
               Arraste o XML de NF-e aqui ou clique para selecionar
             </p>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              O Estroque analisa o emitente (fornecedor), cadastra produtos novos, atualiza o custo médio e lança as entradas no ledger.
+              O Estroque analisa o emitente (fornecedor), cadastra produtos novos, atualiza o custo
+              médio e lança as entradas no ledger.
             </p>
 
             {uploadStatus && (
@@ -247,16 +251,22 @@ function NfePage() {
               {!lastResult || lastResult.itens_processados?.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-10 text-center text-xs text-muted-foreground">
-                    Nenhuma importação realizada na sessão atual. Selecione um arquivo XML para começar.
+                    Nenhuma importação realizada na sessão atual. Selecione um arquivo XML para
+                    começar.
                   </td>
                 </tr>
               ) : (
                 lastResult.itens_processados.map((i, idx) => (
-                  <tr key={idx} className="border-b border-border/50 transition-colors hover:bg-muted/40">
+                  <tr
+                    key={idx}
+                    className="border-b border-border/50 transition-colors hover:bg-muted/40"
+                  >
                     <td className="py-3 font-semibold text-foreground">{i.produto.nome}</td>
                     <td className="py-3 font-mono text-xs text-forest">{i.produto.sku}</td>
                     <td className="py-3 font-bold text-emerald">+{i.quantidade_importada} un.</td>
-                    <td className="py-3 text-muted-foreground">R$ {i.valor_unitario_nfe.toFixed(2)}</td>
+                    <td className="py-3 text-muted-foreground">
+                      R$ {i.valor_unitario_nfe.toFixed(2)}
+                    </td>
                     <td className="py-3">
                       <Chip label="Integrado no Estoque" tone="good" />
                     </td>

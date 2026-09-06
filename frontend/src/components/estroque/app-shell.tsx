@@ -28,13 +28,14 @@ export function AppShell({
 
   const activeLoja = lojas?.[selectedLojaIndex] || lojas?.[0];
   const userName = user?.nome || "Jonathas G.";
-  const userInitials = userName
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase() || "JG";
+  const userInitials =
+    userName
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() || "JG";
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -61,7 +62,7 @@ export function AppShell({
               onChange={(e) => setSelectedLojaIndex(Number(e.target.value))}
               className="bg-transparent text-sm font-semibold text-foreground outline-none cursor-pointer pr-1"
             >
-              {(!lojas || lojas.length === 0) ? (
+              {!lojas || lojas.length === 0 ? (
                 <option value={0}>Loja Matriz</option>
               ) : (
                 lojas.map((l, idx) => (
@@ -150,13 +151,7 @@ export function PrimaryButton({
   );
 }
 
-export function Card({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <section className={`bento-card p-6 ${className}`}>{children}</section>;
 }
 
@@ -169,7 +164,13 @@ export function CardTitle({ title, hint }: { title: string; hint?: string }) {
   );
 }
 
-export function Chip({ label, tone = "neutral" }: { label: string; tone?: "neutral" | "good" | "warn" | "bad" }) {
+export function Chip({
+  label,
+  tone = "neutral",
+}: {
+  label: string;
+  tone?: "neutral" | "good" | "warn" | "bad";
+}) {
   const tones: Record<string, string> = {
     neutral: "bg-muted text-muted-foreground",
     good: "bg-mint text-emerald",

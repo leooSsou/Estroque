@@ -148,6 +148,32 @@ export interface NovaDespesaInput {
   data_pagamento?: string | null;
 }
 
+export interface RegisterInput {
+  nome_fantasia: string;
+  razao_social: string;
+  cnpj: string;
+  dono_nome: string;
+  dono_email: string;
+  dono_senha: string;
+}
+
+export interface RegisterResponse {
+  tenant_id: string;
+  nome_fantasia: string;
+  dono_id: string;
+  dono_email: string;
+}
+
+export interface ProdutoUpdateInput {
+  nome: string;
+  preco_custo: number;
+  preco_venda: number;
+  markup: number;
+  codigo_barras?: string | null;
+  fornecedor_id?: string | null;
+  ativo: boolean;
+}
+
 export interface Cliente {
   id: string;
   nome: string;
@@ -166,11 +192,42 @@ export interface ClienteCreateInput {
   limite_credito?: number;
 }
 
+export interface ClienteUpdateInput {
+  nome: string;
+  email: string;
+  ativo: boolean;
+  limite_credito: number;
+  saldo_devedor_crediario: number;
+}
+
+export interface FornecedorUpdateInput {
+  nome_fantasia: string;
+  razao_social: string;
+  ativo: boolean;
+}
+
+export interface LojaCreateInput {
+  nome: string;
+  cnpj: string;
+  endereco: string;
+}
+
+export interface LojaUpdateInput {
+  nome: string;
+  endereco: string;
+  ativo: boolean;
+}
+
 export const estroqueApi = {
   // 👤 Usuário & Tenant
   getMe: () => apiRequest<UsuarioMe>("/auth/me"),
   login: (data: { email: string; senha: string }) =>
     apiRequest<{ access_token: string; token_type: string }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  register: (data: RegisterInput) =>
+    apiRequest<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -181,10 +238,18 @@ export const estroqueApi = {
 
   // 📦 Produtos & Catálogo
   getProdutos: (busca?: string) =>
-    apiRequest<Produto[]>(busca && busca.trim() ? `/produtos/?busca=${encodeURIComponent(busca.trim())}` : "/produtos/"),
+    apiRequest<Produto[]>(
+      busca && busca.trim() ? `/produtos/?busca=${encodeURIComponent(busca.trim())}` : "/produtos/",
+    ),
+  getProdutoPorId: (id: string) => apiRequest<Produto>(`/produtos/${id}`),
   criarProduto: (data: Partial<Produto>) =>
     apiRequest<Produto>("/produtos/", {
       method: "POST",
+      body: JSON.stringify(data),
+    }),
+  atualizarProduto: (id: string, data: ProdutoUpdateInput) =>
+    apiRequest<Produto>(`/produtos/${id}`, {
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 
@@ -193,7 +258,7 @@ export const estroqueApi = {
     apiRequest<EstoqueSaldo[]>(lojaId ? `/estoque/saldos?loja_id=${lojaId}` : "/estoque/saldos"),
   getMovimentacoes: (lojaId?: string) =>
     apiRequest<EstoqueMovimentacao[]>(
-      lojaId ? `/estoque/movimentacoes?loja_id=${lojaId}` : "/estoque/movimentacoes"
+      lojaId ? `/estoque/movimentacoes?loja_id=${lojaId}` : "/estoque/movimentacoes",
     ),
   movimentarEstoque: (data: {
     loja_id: string;
@@ -213,7 +278,7 @@ export const estroqueApi = {
     apiRequest<{
       auditoria: any;
       movimentacoes_geradas: EstoqueMovimentacao[];
-    }>("/estoque/auditoria", {
+    }>("/estoque/auditar", {
       method: "POST",
       body: JSON.stringify(data),
     }),
@@ -244,7 +309,10 @@ export const estroqueApi = {
     apiRequest<Transferencia>(`/estoque/transferencias/${id}/despachar`, {
       method: "POST",
     }),
-  receberTransferencia: (id: string, data: { quantidade_recebida: number; justificativa?: string | null }) =>
+  receberTransferencia: (
+    id: string,
+    data: { quantidade_recebida: number; justificativa?: string | null },
+  ) =>
     apiRequest<Transferencia>(`/estoque/transferencias/${id}/receber`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -253,6 +321,7 @@ export const estroqueApi = {
   // 💵 Vendas
   getVendas: (lojaId?: string) =>
     apiRequest<Venda[]>(lojaId ? `/vendas?loja_id=${lojaId}` : "/vendas"),
+  getVendaPorId: (id: string) => apiRequest<Venda>(`/vendas/${id}`),
   criarVenda: (data: {
     loja_id: string;
     cliente_id?: string | null;
@@ -267,25 +336,43 @@ export const estroqueApi = {
 
   // 🏢 Lojas
   getLojas: () => apiRequest<Loja[]>("/lojas/"),
-  criarLoja: (data: Partial<Loja>) =>
+  getLojaPorId: (id: string) => apiRequest<Loja>(`/lojas/${id}`),
+  criarLoja: (data: LojaCreateInput) =>
     apiRequest<Loja>("/lojas/", {
       method: "POST",
+      body: JSON.stringify(data),
+    }),
+  atualizarLoja: (id: string, data: LojaUpdateInput) =>
+    apiRequest<Loja>(`/lojas/${id}`, {
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 
   // 🤝 Fornecedores
   getFornecedores: () => apiRequest<Fornecedor[]>("/fornecedores/"),
+  getFornecedorPorId: (id: string) => apiRequest<Fornecedor>(`/fornecedores/${id}`),
   criarFornecedor: (data: Partial<Fornecedor>) =>
     apiRequest<Fornecedor>("/fornecedores/", {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  atualizarFornecedor: (id: string, data: FornecedorUpdateInput) =>
+    apiRequest<Fornecedor>(`/fornecedores/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 
   // 👥 Clientes & Crediário
   getClientes: () => apiRequest<Cliente[]>("/clientes/"),
+  getClientePorId: (id: string) => apiRequest<Cliente>(`/clientes/${id}`),
   criarCliente: (data: ClienteCreateInput) =>
     apiRequest<Cliente>("/clientes/", {
       method: "POST",
+      body: JSON.stringify(data),
+    }),
+  atualizarCliente: (id: string, data: ClienteUpdateInput) =>
+    apiRequest<Cliente>(`/clientes/${id}`, {
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 
@@ -302,7 +389,9 @@ export const estroqueApi = {
     if (params?.data_inicio) searchParams.append("data_inicio", params.data_inicio);
     if (params?.data_fim) searchParams.append("data_fim", params.data_fim);
     const qs = searchParams.toString();
-    return apiRequest<FinanceiroLancamento[]>(qs ? `/financeiro/lancamentos?${qs}` : "/financeiro/lancamentos");
+    return apiRequest<FinanceiroLancamento[]>(
+      qs ? `/financeiro/lancamentos?${qs}` : "/financeiro/lancamentos",
+    );
   },
   registrarDespesa: (data: NovaDespesaInput) =>
     apiRequest<FinanceiroLancamento>("/financeiro/despesas", {

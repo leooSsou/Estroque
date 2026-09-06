@@ -28,14 +28,11 @@ async function ensureDevToken(): Promise<string | null> {
   return null;
 }
 
-export async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-  
+
   const headers = new Headers(options.headers);
-  
+
   // Attach JWT token if present or auto-authenticate
   if (typeof window !== "undefined") {
     let token = localStorage.getItem("access_token");

@@ -19,7 +19,9 @@ import { useTransferenciasData } from "@/hooks/useEstroqueApi";
 
 export function EstroqueSidebar() {
   const { transferencias } = useTransferenciasData();
-  const pendingCount = transferencias.filter((t) => t.status === "SOLICITADO" || t.status === "DESPACHADO").length;
+  const pendingCount = transferencias.filter(
+    (t) => t.status === "SOLICITADO" || t.status === "DESPACHADO",
+  ).length;
 
   const nav = [
     { label: "Dashboard", icon: LayoutDashboard, to: "/" as const },

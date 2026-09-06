@@ -1,13 +1,29 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, RefreshCw, Loader2, AlertCircle, ShoppingCart } from "lucide-react";
+import {
+  Plus,
+  RefreshCw,
+  Loader2,
+  AlertCircle,
+  ShoppingCart,
+  Receipt,
+  FileText,
+} from "lucide-react";
 import { AppShell, Card, CardTitle, Chip, PrimaryButton } from "@/components/estroque/app-shell";
-import { useVendasData, useDashboardData, useProdutosData, useLojasData, useClientesData } from "@/hooks/useEstroqueApi";
+import {
+  useVendasData,
+  useVendaDetalhe,
+  useDashboardData,
+  useProdutosData,
+  useLojasData,
+  useClientesData,
+} from "@/hooks/useEstroqueApi";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 
@@ -23,7 +39,8 @@ export const Route = createFileRoute("/vendas")({
       { property: "og:title", content: "Vendas — PDV e histórico | Estroque" },
       {
         property: "og:description",
-        content: "Faturamento diário, ticket médio, formas de pagamento e baixa automática de estoque.",
+        content:
+          "Faturamento diário, ticket médio, formas de pagamento e baixa automática de estoque.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -52,7 +69,17 @@ function VendasPage() {
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Form State
+  // Modal State - Detalhes da Venda
+  const [selectedVendaId, setSelectedVendaId] = useState<string | null>(null);
+  const [isDetalheOpen, setIsDetalheOpen] = useState(false);
+  const { data: vendaDetalhe, isLoading: isLoadingDetalhe } = useVendaDetalhe(selectedVendaId);
+
+  const handleVerDetalhes = (id: string) => {
+    setSelectedVendaId(id);
+    setIsDetalheOpen(true);
+  };
+
+  // Form State - Nova Venda
   const [lojaId, setLojaId] = useState("");
   const [produtoId, setProdutoId] = useState("");
   const [clienteId, setClienteId] = useState("");
@@ -106,7 +133,7 @@ function VendasPage() {
         const disponivel = selectedCliente.limite_credito - selectedCliente.saldo_devedor_crediario;
         if (totalCalculado > disponivel) {
           setFormError(
-            `Limite de crediário insuficiente. Limite disponível: R$ ${disponivel.toFixed(2)}.`
+            `Limite de crediário insuficiente. Limite disponível: R$ ${disponivel.toFixed(2)}.`,
           );
           return;
         }
@@ -155,7 +182,7 @@ function VendasPage() {
             title="Recarregar vendas"
           >
             <RefreshCw
-              className={`h-4 w-4 text-foreground ${(isFetching || isManualRefreshing) ? "animate-spin text-emerald" : ""}`}
+              className={`h-4 w-4 text-foreground ${isFetching || isManualRefreshing ? "animate-spin text-emerald" : ""}`}
             />
           </button>
           <div onClick={() => setIsModalOpen(true)}>
@@ -217,20 +244,26 @@ function VendasPage() {
                 <th className="pb-3 font-semibold">Pagamento</th>
                 <th className="pb-3 font-semibold">Total</th>
                 <th className="pb-3 font-semibold">Status</th>
+                <th className="pb-3 text-right font-semibold">Ações</th>
               </tr>
             </thead>
             <tbody>
               {vendas.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-xs text-muted-foreground">
+                  <td colSpan={7} className="py-10 text-center text-xs text-muted-foreground">
                     Nenhuma venda registrada no sistema.
                   </td>
                 </tr>
               ) : (
                 vendas.map((s) => (
-                  <tr key={s.id} className="border-b border-border/50 transition-colors hover:bg-muted/40">
+                  <tr
+                    key={s.id}
+                    className="border-b border-border/50 transition-colors hover:bg-muted/40"
+                  >
                     <td className="py-3 font-mono font-bold text-forest">#{s.id.slice(0, 6)}</td>
-                    <td className="py-3 font-medium text-foreground">{s.cliente_id || "Consumidor Final"}</td>
+                    <td className="py-3 font-medium text-foreground">
+                      {s.cliente_id || "Consumidor Final"}
+                    </td>
                     <td className="py-3 text-muted-foreground">{s.itens?.length || 1} itens</td>
                     <td className="py-3">
                       <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-foreground">
@@ -242,6 +275,17 @@ function VendasPage() {
                     </td>
                     <td className="py-3">
                       <Chip label={s.status || "Concluída"} tone="good" />
+                    </td>
+                    <td className="py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handleVerDetalhes(s.id)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground transition-all hover:border-forest/50 hover:bg-muted active:scale-95"
+                        title="Ver detalhes da venda e comprovante"
+                      >
+                        <Receipt className="h-3 w-3 text-forest" />
+                        Detalhes
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -278,7 +322,7 @@ function VendasPage() {
                 onChange={(e) => setLojaId(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
               >
-                {(!lojas || lojas.length === 0) ? (
+                {!lojas || lojas.length === 0 ? (
                   <option value="">Nenhuma loja cadastrada</option>
                 ) : (
                   lojas.map((l) => (
@@ -299,7 +343,7 @@ function VendasPage() {
                 onChange={(e) => setProdutoId(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-forest"
               >
-                {(!produtos || produtos.length === 0) ? (
+                {!produtos || produtos.length === 0 ? (
                   <option value="">Nenhum produto cadastrado</option>
                 ) : (
                   produtos.map((p) => (
@@ -449,6 +493,148 @@ function VendasPage() {
               </button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal / Dialog de Detalhes da Venda */}
+      <Dialog open={isDetalheOpen} onOpenChange={setIsDetalheOpen}>
+        <DialogContent className="max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold text-foreground">
+              <Receipt className="h-5 w-5 text-forest" />
+              Comprovante de Venda
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Detalhamento de produtos vendidos, descontos e forma de pagamento.
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingDetalhe ? (
+            <div className="flex flex-col items-center justify-center py-10">
+              <Loader2 className="h-6 w-6 animate-spin text-forest" />
+              <p className="mt-2 text-xs text-muted-foreground">Carregando detalhes da venda...</p>
+            </div>
+          ) : vendaDetalhe ? (
+            <div className="space-y-4 pt-2">
+              <div className="rounded-xl border border-border/60 bg-muted/40 p-3 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">ID da Venda:</span>
+                  <span className="font-mono font-semibold text-foreground truncate max-w-[200px]">
+                    {vendaDetalhe.id}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Loja:</span>
+                  <span className="font-semibold text-foreground">
+                    {lojas?.find((l) => l.id === vendaDetalhe.loja_id)?.nome || "Loja Principal"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Cliente:</span>
+                  <span className="font-semibold text-foreground">
+                    {clientes?.find((c) => c.id === vendaDetalhe.cliente_id)?.nome ||
+                      "Consumidor Final"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Pagamento:</span>
+                  <span className="rounded-full bg-mint/50 px-2 py-0.5 text-[11px] font-bold text-emerald">
+                    {vendaDetalhe.forma_pagamento || vendaDetalhe.tipo_pagamento}
+                  </span>
+                </div>
+                {vendaDetalhe.data_venda && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Data/Hora:</span>
+                    <span className="text-foreground">
+                      {new Date(vendaDetalhe.data_venda).toLocaleString("pt-BR")}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Tabela de Itens */}
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Itens da Venda
+                </p>
+                <div className="max-h-48 overflow-y-auto rounded-xl border border-border">
+                  <table className="w-full text-left text-xs">
+                    <thead className="border-b border-border bg-muted/50 text-[11px] uppercase tracking-wider text-muted-foreground">
+                      <tr>
+                        <th className="p-2.5 font-semibold">Produto</th>
+                        <th className="p-2.5 text-center font-semibold">Qtd</th>
+                        <th className="p-2.5 text-right font-semibold">Preço</th>
+                        <th className="p-2.5 text-right font-semibold">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendaDetalhe.itens && vendaDetalhe.itens.length > 0 ? (
+                        vendaDetalhe.itens.map((item, idx) => {
+                          const prod = produtos?.find((p) => p.id === item.produto_id);
+                          const preco = item.preco_unitario || prod?.preco_venda || 0;
+                          const subtotal = preco * item.quantidade;
+
+                          return (
+                            <tr key={item.id || idx} className="border-b border-border/40">
+                              <td className="p-2.5 font-medium text-foreground">
+                                {prod?.nome || `Item ${idx + 1}`}
+                              </td>
+                              <td className="p-2.5 text-center text-muted-foreground font-mono">
+                                {item.quantidade}x
+                              </td>
+                              <td className="p-2.5 text-right text-muted-foreground">
+                                R$ {preco.toFixed(2)}
+                              </td>
+                              <td className="p-2.5 text-right font-bold text-foreground">
+                                R$ {subtotal.toFixed(2)}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="p-4 text-center text-muted-foreground">
+                            Nenhum item listado
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Totais */}
+              <div className="rounded-xl bg-muted/60 p-3 space-y-1.5 text-xs">
+                {vendaDetalhe.desconto > 0 && (
+                  <div className="flex justify-between text-destructive">
+                    <span>Desconto Aplicado:</span>
+                    <span>- R$ {vendaDetalhe.desconto.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-border/50 pt-2 text-sm font-bold text-foreground">
+                  <span>Total Final:</span>
+                  <span className="text-forest">
+                    R${" "}
+                    {vendaDetalhe.valor_total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="py-6 text-center text-xs text-muted-foreground">
+              Não foi possível carregar os dados desta venda.
+            </p>
+          )}
+
+          <DialogFooter className="mt-4 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsDetalheOpen(false)}
+              className="w-full rounded-full bg-forest px-4 py-2 text-xs font-semibold text-mint transition-opacity hover:opacity-95"
+            >
+              Fechar
+            </button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </AppShell>
