@@ -99,3 +99,15 @@ docker compose exec backend ruff check src/ tests/
 # Build e verificação de tipagem do frontend
 cd frontend && npm run build
 ```
+
+---
+
+## 📚 Documentação
+
+Para aprofundamento técnico, especificações e histórico de desenvolvimento, consulte a pasta [`docs/`](docs/):
+
+- [Especificação Técnica & Funcional](docs/especificacao_tecnica.md)
+- [Contexto Arquitetural & Handoff](docs/contexto_ia.md)
+- [Cronograma de Desenvolvimento](docs/cronograma_desenvolvimento.md)
+- [Guia de UI/UX & Design System](docs/ui_ux_prompt_guide.md)
+- [Coleção Postman API](docs/postman_collection.json)
