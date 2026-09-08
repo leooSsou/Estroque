@@ -1,7 +1,7 @@
 # Regras de trabalho no repositório
 
 Projeto SaaS multi-tenant (FastAPI + Clean Architecture). Antes de qualquer mudança, leia
-`DOCUMENTO_CONTEXTO_IA.md` para entender domínio, ondas e decisões de arquitetura.
+`docs/contexto_ia.md` para entender domínio, ondas e decisões de arquitetura.
 
 ## Fluxo de integração (obrigatório)
 
