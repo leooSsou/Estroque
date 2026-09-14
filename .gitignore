@@ -48,12 +48,5 @@ htmlcov/
 # Scripts locais de teste
 e2e_simulation.py
 
-# Frontend (Node / Vite / Nitro)
-node_modules/
-dist/
-dist-ssr/
-.output/
-.nitro/
-.wrangler/
-.tanstack/
+# Celery
 celerybeat-schedule*
