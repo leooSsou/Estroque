@@ -1,9 +1,9 @@
 # 🎨 Guia Mestre de Engenharia de Prompt & Especificação UX/UI
-## Sistema Estroque — Gestão de Estoque Inteligente
+## Sistema Estroque
 
 > **Documento Oficial de Especificação de Interface & Prompts de IA para UX/UI**  
-> **Arquitetura Visual:** Bento Grid Moderno / SaaS Clean (Inspirado no estilo *Coinest*)  
-> **Público-Alvo:** Designers de UI/UX, Engenheiros de Prompt, Desenvolvedores Frontend (React + Tailwind CSS), e IAs Geradoras de Interface (v0.dev, Lovable, Claude Artifacts, Figma AI).
+> **Arquitetura Visual:** Modo Escuro Nativo (Dark Mode) / Bento Grid Moderno (Inspirado no estilo *Coinest / Linear*)  
+> **Público-Alvo:** Designers de UI/UX, Engenheiros de Prompt, Desenvolvedores Frontend, e IAs Geradoras de Interface (v0.dev, Lovable, Claude Artifacts, Figma AI).
 
 ---
 
@@ -11,35 +11,43 @@
 
 ### 🏷️ Marca & Logotipo
 * **Nome do Sistema:** `ESTROQUE`
-* **Assinatura / Slogan:** `GESTÃO DE ESTOQUE INTELIGENTE`
 * **Ícone / Isotipo:** Letra **E** tridimensional isométrica estilizada, composta por três planos dobrados em degradê verde esmeralda com sombra de profundidade.
-* **Tipografia da Marca:** Sans-serif geométrica, bold, caixa alta, com alto contraste e legibilidade.
+* **Tipografia da Marca:** Sans-serif geométrica, bold, caixa alta, com alto contraste e legibilidade, contendo exclusivamente o nome **`ESTROQUE`** (sem subtítulo ou slogan adicional).
+* **Ativos Oficiais:** Disponíveis em alta resolução em `docs/assets/estroque-logo.png` e `docs/assets/favicon.png`.
 
 ---
 
-### 🎨 Paleta de Cores Oficial (Design Tokens)
+### 🎨 Paleta de Cores Oficial — Modo Escuro (Design Tokens)
 
-| Token CSS / Tailwind | Código HEX | Nome | Função / Aplicação na Interface |
+O sistema adota **Modo Escuro Nativo** com fundo em Obsidiana Esmeralda, preservando integralmente os mesmos tons de verde característicos da marca:
+
+| Token CSS / Tailwind | Código HEX | Nome | Função / Aplicação no Modo Escuro |
 | :--- | :--- | :--- | :--- |
-| `estroque-darkest` | `#051F20` | **Deep Forest** | Textos principais (`h1`, `h2`), contraste máximo, rodapés escuros. |
-| `estroque-emerald` | `#0B2B26` | **Deep Emerald** | Cards escuros de destaque (Featured Action Card), Sidebar ativa, Botões primários. |
-| `estroque-pine` | `#163832` | **Pine Green** | Gradientes de fundo, estados de hover em botões escuros. |
-| `estroque-forest` | `#235347` | **Forest Green** | Gráficos principais (barras de faturamento), ícones ativos, botões secundários. |
-| `estroque-sage` | `#8EB69B` | **Sage Green / Mint** | Barras secundárias de gráficos (custos/despesas), badges informativos, bordas sutis. |
-| `estroque-mint` | `#DAF1DE` | **Soft Light Mint** | Fundo de itens ativos na sidebar, badges de status "Concluído", cards claros de destaque. |
-| `estroque-canvas` | `#F4F9F5` | **Off-White Canvas** | Cor de fundo geral da página / canvas da aplicação. |
-| `estroque-card` | `#FFFFFF` | **Pure White** | Fundo dos cards Bento, tabelas, modais, formulários e dropdowns. |
+| `estroque-canvas` | `#070E0D` | **Obsidian Emerald** | **Fundo geral da tela** (quase preto enriquecido com nuance esmeralda profunda). |
+| `estroque-card` | `#0D1917` | **Deep Emerald Card** | Fundo dos cards Bento elevados, tabelas e contêineres principais. |
+| `estroque-elevated` | `#142522` | **Elevated Surface** | Estado de hover em cards, linhas selecionadas de tabelas e campos de busca. |
+| `estroque-modal` | `#1B332E` | **Floating Overlay** | Fundo de modais suspensos, dropdowns de filial e menus de contexto. |
+| `estroque-border` | `rgba(142, 182, 155, 0.12)` | **Subtle Stroke** | Borda ultrafina de 1px em volta dos cards para corte nítido e definição geométrica. |
+| `estroque-vibrant` | `#10B981` | **Vibrant Emerald** | **Botão primário de ação (CTA)** (`+ Nova Venda`, `Lançar`, `Salvar`), acentos e gráficos de faturamento. |
+| `estroque-emerald` | `#0B2B26` | **Deep Emerald** | Cor institucional da marca, cabeçalhos escuros, base da logo. |
+| `estroque-pine` | `#163832` | **Pine Green** | Gradientes de fundo, superfícies de apoio e badges discretos. |
+| `estroque-forest` | `#235347` | **Forest Green** | Botões secundários (`Exportar CSV`, `Filtros`), ícones ativos. |
+| `estroque-sage` | `#8EB69B` | **Sage Green** | Gráficos secundários (custos/CMV), bordas sutis e tags informativas. |
+| `estroque-mint` | `#DAF1DE` | **Soft Light Mint** | Badges de status concluído/positivo (+12.4%), destaques luminosos. |
+| `estroque-text-primary` | `#F3FBF6` | **Pure Off-White** | Títulos (`h1`, `h2`), valores de faturamento e textos de alto contraste. |
+| `estroque-text-secondary` | `#94A89E` | **Sage Grey** | Rótulos de campos, datas, descrições e cabeçalhos de tabela. |
+| `estroque-text-muted` | `#5E756B` | **Dark Muted** | Placeholders vazios e ícones inativos. |
 
 ---
 
-### 📐 Geometria, Espaçamento & Componentes (Estilo Coinest)
+### 📐 Geometria, Espaçamento & Componentes (Estilo Bento Grid Dark)
 * **Layout Base:** Bento Grid com distribuição em 12 colunas e gap de `20px` a `24px`.
 * **Arredondamento de Cantos (`border-radius`):**
   * Containers & Cards Bento: `20px` a `24px` (`rounded-2xl` / `rounded-3xl`).
   * Botões de Ação e Badges de Status: `9999px` (`rounded-full` estilo pill).
   * Campos de Input e Busca: `12px` (`rounded-xl`).
-* **Elevação & Sombras:** `box-shadow: 0 4px 20px -2px rgba(11, 43, 38, 0.04)` para efeito flutuante sutil e elegante.
-* **Linhas e Divisórias:** Bordas ultrafinas (`1px solid #E5EFE7`) ou sem bordas (apenas contraste entre `#FFFFFF` e `#F4F9F5`).
+* **Elevação & Sombras:** `box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(142, 182, 155, 0.1)` para profundidade premium no fundo escuro.
+* **Linhas e Divisórias:** Bordas ultrafinas semitransparentes (`1px solid rgba(142, 182, 155, 0.12)`).
 
 ---
 
@@ -49,18 +57,26 @@
 // tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         estroque: {
-          darkest: '#051F20',
+          canvas: '#070E0D',
+          card: '#0D1917',
+          elevated: '#142522',
+          modal: '#1B332E',
+          vibrant: '#10B981',
           emerald: '#0B2B26',
           pine: '#163832',
           forest: '#235347',
           sage: '#8EB69B',
           mint: '#DAF1DE',
-          canvas: '#F4F9F5',
-          card: '#FFFFFF',
+          text: {
+            primary: '#F3FBF6',
+            secondary: '#94A89E',
+            muted: '#5E756B',
+          }
         }
       },
       borderRadius: {
@@ -68,7 +84,7 @@ module.exports = {
         'card': '24px',
       },
       boxShadow: {
-        'bento': '0 4px 20px -2px rgba(11, 43, 38, 0.05)',
+        'bento-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(142, 182, 155, 0.1)',
       }
     }
   }
@@ -83,24 +99,29 @@ Copie e use este prompt como instrução inicial para qualquer gerador de interf
 
 ```text
 You are an expert Principal UX/UI Designer and Frontend Architect specializing in modern SaaS platforms.
-You are designing the web interface for "ESTROQUE - Gestão de Estoque Inteligente", a premium multi-tenant, multi-store inventory and retail ERP SaaS.
+You are designing the Dark Mode web interface for "ESTROQUE", a premium multi-tenant, multi-store inventory and retail ERP SaaS.
 
-DESIGN SYSTEM GUIDELINES:
-- Layout Style: Ultra-clean, modern Bento Grid inspired by contemporary fintech & analytics dashboards (Coinest style). Generous white space, highly readable data hierarchy.
+BRAND & LOGO GUIDELINES:
+- Brand Name: Exclusively "ESTROQUE" (uppercase, geometric bold sans-serif, NO subtitle or slogan).
+- Logo: 3D isometric stylized green folding letter 'E' made of three layered planes with depth shading.
+
+DESIGN SYSTEM GUIDELINES (DARK MODE):
+- Layout Style: Ultra-clean, modern Dark Bento Grid inspired by contemporary fintech & analytics dashboards (Coinest & Linear style). Generous spacing, highly readable data hierarchy.
 - Color Palette:
-  * Deep Forest (#051F20) for primary headings and strong text contrast.
-  * Deep Emerald (#0B2B26) for primary call-to-action buttons, dark featured action cards, and active menu states.
-  * Pine & Forest Green (#163832, #235347) for gradients, chart bars, and secondary visual accents.
+  * Obsidian Emerald Canvas (#070E0D) as the main page background.
+  * Deep Emerald Cards (#0D1917) for elevated Bento cards with 1px borders (rgba(142, 182, 155, 0.12)).
+  * Elevated & Hover Surfaces (#142522) for interactive elements, search bars, and inputs.
+  * Floating Modals & Overlays (#1B332E) for dialogs and store dropdowns.
+  * Vibrant Emerald (#10B981) for primary CTA buttons (+ Nova Venda, Salvar) with high-contrast text.
   * Sage Green (#8EB69B) and Soft Light Mint (#DAF1DE) for secondary metric bars, pill badges, and active tab highlights.
-  * Off-white Canvas (#F4F9F5) as the main page background.
-  * Pure White (#FFFFFF) for elevated Bento cards.
+  * Text Hierarchy: High-contrast white (#F3FBF6) for primary headings/KPIs, and Sage Grey (#94A89E) for labels and metadata.
 - Geometry & Components:
   * 20px-24px rounded corners on all cards and containers.
   * Pill-shaped badges and action triggers.
-  * Dual-tone data visualizations (Deep Emerald + Sage Green).
-  * Subtle elevation with soft diffuse shadows.
+  * Dual-tone data visualizations (Vibrant Emerald + Sage Green).
+  * Subtle elevation with dark ambient shadows and luminous borders.
 - Navigation Shell:
-  * Left collapsible sidebar featuring the 3D green isometric "ESTROQUE" logo at the top and a bottom "Estroque Pro / Advanced Analytics" banner.
+  * Left collapsible sidebar featuring the 3D green isometric "ESTROQUE" logo at the top.
   * Top bar featuring a store-switcher dropdown (multi-store support), global Cmd+K search bar, quick notifications bell, and user avatar.
 
 Generate modular, responsive, accessible and beautifully crafted components adhering to these exact specifications.
@@ -121,10 +142,10 @@ Generate modular, responsive, accessible and beautifully crafted components adhe
 
 #### 🪄 Prompt para IA (v0 / Lovable / Figma)
 ```text
-Create a modern, elegant authentication and tenant/store selection screen for "Estroque - Gestão de Estoque Inteligente".
+Create a modern, elegant Dark Mode authentication and tenant/store selection screen for "ESTROQUE".
 Layout: Split-screen desktop layout (50/50).
-Left side: Deep emerald gradient background (#0B2B26 to #163832) with a prominent 3D isometric green folding 'E' logo, bold white typography "ESTROQUE", subtitle "Gestão de Estoque Inteligente", and a card highlighting key features (Real-time Ledger, Smart Markup Pricing, Multi-store Sync).
-Right side: Clean white card on #F4F9F5 canvas with email and password inputs (with soft borders and inner icon badges), "Remember my store" checkbox, and a full-width pill button in #0B2B26 reading "Acessar Plataforma".
+Left side: Deep obsidian & emerald gradient background (#070E0D to #0B2B26) with a prominent 3D isometric green folding 'E' logo, bold white typography "ESTROQUE" (no subtitle), and a card highlighting key features (Real-time Ledger, Smart Markup Pricing, Multi-store Sync).
+Right side: Clean dark card (#0D1917) on #070E0D canvas with email and password inputs (with soft borders and inner icon badges), "Remember my store" checkbox, and a full-width pill button in #10B981 reading "Acessar Plataforma".
 Include a Store Selection dropdown preview for multi-store users ("Loja Matriz - São Paulo", "Filial 01 - Campinas").
 ```
 

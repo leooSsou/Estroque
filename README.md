@@ -2,7 +2,7 @@
 
 # Estroque
 
-**Plataforma SaaS multi-tenant para gestão inteligente de estoque e retaguarda multiloja.**
+**Plataforma SaaS multi-tenant para gestão de estoque e retaguarda multiloja.**
 
 [![CI Pipeline](https://github.com/leooSsou/Estroque/actions/workflows/ci.yml/badge.svg)](https://github.com/leooSsou/Estroque/actions/workflows/ci.yml)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-0B2B26.svg)](#-arquitetura)
