@@ -106,6 +106,16 @@ export const Login: React.FC = () => {
       <div className="lg:w-1/2 flex items-center justify-center p-6 lg:p-16">
         <div className="w-full max-w-md bg-[#0D1917] border border-[rgba(142,182,155,0.18)] rounded-3xl p-8 shadow-bento-dark">
           <div className="mb-6">
+            <div className="flex items-center gap-3 mb-4 lg:hidden">
+              <img
+                src="/favicon.png"
+                alt="ESTROQUE"
+                className="w-9 h-9 object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.35)]"
+              />
+              <span className="font-extrabold text-xl tracking-widest text-[#F3FBF6] uppercase font-mono">
+                ESTROQUE
+              </span>
+            </div>
             <h2 className="text-2xl font-bold text-[#F3FBF6]">Acesso ao Sistema</h2>
             <p className="text-xs text-[#94A89E] mt-1">
               Entre com suas credenciais de inquilino para acessar sua rede.
