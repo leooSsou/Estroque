@@ -159,3 +159,20 @@
   will-change: transform, opacity;
 }
 
+/* Custom smooth scrollbar for tables on low-res screens */
+.table-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.table-scrollbar::-webkit-scrollbar-track {
+  background: #070E0D;
+  border-radius: 9999px;
+}
+.table-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(142, 182, 155, 0.25);
+  border-radius: 9999px;
+}
+.table-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #10B981;
+}
+

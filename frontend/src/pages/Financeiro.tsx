@@ -130,39 +130,41 @@ export const Financeiro: React.FC = () => {
           <BentoCard
             title="Lançamentos & Extrato Contábil"
           >
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                    <th className="py-3 px-3 font-semibold">Data</th>
-                    <th className="py-3 px-3 font-semibold">Tipo</th>
-                    <th className="py-3 px-3 font-semibold">Descrição / Categoria</th>
-                    <th className="py-3 px-3 font-semibold">Status</th>
-                    <th className="py-3 px-3 font-semibold text-right">Valor</th>
+            <div className="overflow-x-auto table-scrollbar pb-2">
+              <table className="w-full text-left min-w-[900px]">
+                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                    <th className="py-4 px-4">Data</th>
+                    <th className="py-4 px-4 text-center">Tipo</th>
+                    <th className="py-4 px-4">Descrição / Categoria</th>
+                    <th className="py-4 px-4 text-center">Status</th>
+                    <th className="py-4 px-4 text-right">Valor</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+                <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
                   {lancamentos.map((l) => (
-                    <tr key={l.id} className="hover:bg-[#142522]/40 transition-colors">
-                      <td className="py-3.5 px-3 font-mono text-[#94A89E]">
+                    <tr key={l.id} className="hover:bg-[#142522]/50 transition-colors group">
+                      <td className="py-4 px-4 font-mono text-sm font-semibold text-[#A2B89B]">
                         {new Date(l.data_lancamento).toLocaleDateString('pt-BR')}
                       </td>
-                      <td className="py-3.5 px-3">
+                      <td className="py-4 px-4 text-center">
                         <Badge variant={l.tipo === 'RECEITA' ? 'mint' : 'danger'}>
                           {l.tipo}
                         </Badge>
                       </td>
-                      <td className="py-3.5 px-3">
-                        <div className="font-semibold text-[#F3FBF6]">{l.descricao || l.categoria}</div>
-                        <div className="text-[10px] text-[#94A89E]">{l.categoria}</div>
+                      <td className="py-4 px-4">
+                        <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                          {l.descricao || l.categoria}
+                        </div>
+                        <div className="text-xs text-[#A2B89B] font-mono mt-0.5">{l.categoria}</div>
                       </td>
-                      <td className="py-3.5 px-3">
+                      <td className="py-4 px-4 text-center">
                         <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'warning'}>
                           {l.status_pagamento}
                         </Badge>
                       </td>
                       <td
-                        className={`py-3.5 px-3 font-mono font-bold text-right ${
+                        className={`py-4 px-4 font-mono text-base font-extrabold text-right ${
                           l.tipo === 'RECEITA' ? 'text-[#10B981]' : 'text-red-400'
                         }`}
                       >

@@ -204,30 +204,30 @@ export const PDVVendas: React.FC = () => {
                 <div
                   key={prod.id}
                   onClick={() => handleAddToCart(prod)}
-                  className={`bg-[#0D1917] border rounded-2xl p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-250 hover:border-[#10B981]/50 group btn-press hover-lift ${
+                  className={`bg-[#0D1917] border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-250 hover:border-[#10B981]/50 group btn-press hover-lift ${
                     stock === 0
                       ? 'opacity-40 border-red-500/20 pointer-events-none'
-                      : 'border-[rgba(142,182,155,0.14)] hover:bg-[#142522]/50 hover:shadow-glow-emerald'
+                      : 'border-[rgba(142,182,155,0.18)] hover:bg-[#142522]/50 hover:shadow-glow-emerald'
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between text-[11px] text-[#94A89E] mb-1 font-mono">
+                    <div className="flex items-center justify-between text-xs text-[#A2B89B] mb-1.5 font-mono">
                       <span>{prod.sku}</span>
-                      <span className={stock === 0 ? 'text-red-400 font-bold' : 'text-[#8EB69B]'}>
+                      <span className={stock === 0 ? 'text-red-400 font-extrabold' : 'text-[#DAF1DE] font-semibold'}>
                         {stock} un
                       </span>
                     </div>
-                    <h4 className="text-xs font-semibold text-[#F3FBF6] line-clamp-2 mb-2 group-hover:text-[#10B981] transition-colors">
+                    <h4 className="text-sm font-bold text-[#F3FBF6] line-clamp-2 mb-2.5 group-hover:text-[#10B981] transition-colors">
                       {prod.nome}
                     </h4>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-[rgba(142,182,155,0.08)]">
-                    <span className="text-sm font-bold text-[#10B981] font-mono">
+                  <div className="flex items-center justify-between pt-2.5 border-t border-[rgba(142,182,155,0.1)]">
+                    <span className="text-base font-extrabold text-[#10B981] font-mono">
                       R$ {prod.preco_venda.toFixed(2)}
                     </span>
-                    <button className="w-7 h-7 rounded-lg bg-[#142522] group-hover:bg-[#10B981] group-hover:text-[#070E0D] flex items-center justify-center text-[#DAF1DE] transition-transform group-hover:scale-110">
-                      <Plus className="w-3.5 h-3.5" />
+                    <button className="w-8 h-8 rounded-xl bg-[#142522] group-hover:bg-[#10B981] group-hover:text-[#070E0D] flex items-center justify-center text-[#DAF1DE] transition-transform group-hover:scale-110">
+                      <Plus className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -244,21 +244,21 @@ export const PDVVendas: React.FC = () => {
                 <ShoppingCart className="w-5 h-5 text-[#10B981]" />
                 <h3 className="text-base font-bold text-[#F3FBF6]">Carrinho de Venda</h3>
               </div>
-              <span className="text-xs text-[#8EB69B] font-mono font-semibold">
+              <span className="text-xs text-[#DAF1DE] font-mono font-bold bg-[#142522] px-2.5 py-1 rounded-full border border-[rgba(142,182,155,0.2)]">
                 {cart.reduce((a, b) => a + b.quantidade, 0)} itens
               </span>
             </div>
 
             {/* Customer Selector & Real-Time Credit Limit Widget */}
             <div className="space-y-2 p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)]">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-[#94A89E]">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-[#DAF1DE]">
                 <UserCheck className="w-4 h-4 text-[#10B981]" />
                 <span>Cliente / Titular do Crediário</span>
               </label>
               <select
                 value={selectedClienteId}
                 onChange={(e) => setSelectedClienteId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:outline-none font-medium"
               >
                 <option value="">Consumidor Final (Sem Crediário)</option>
                 {clientes.map((cli) => (
@@ -269,11 +269,11 @@ export const PDVVendas: React.FC = () => {
               </select>
 
               {selectedCliente && (
-                <div className="pt-2 border-t border-[rgba(142,182,155,0.08)] flex items-center justify-between text-xs">
+                <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-[11px] text-[#94A89E]">Limite Disponível:</span>
+                    <span className="text-[#A2B89B] font-medium">Limite Disponível:</span>
                     <div
-                      className={`font-mono font-bold ${
+                      className={`font-mono font-extrabold text-sm ${
                         limiteDisponivel <= 0 ? 'text-red-400' : 'text-[#10B981]'
                       }`}
                     >
@@ -281,8 +281,8 @@ export const PDVVendas: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[11px] text-[#94A89E]">Limite Total:</span>
-                    <div className="font-mono text-[#DAF1DE]">
+                    <span className="text-[#A2B89B] font-medium">Limite Total:</span>
+                    <div className="font-mono text-sm font-bold text-[#DAF1DE]">
                       R$ {selectedCliente.limite_credito.toFixed(2)}
                     </div>
                   </div>
@@ -291,40 +291,40 @@ export const PDVVendas: React.FC = () => {
             </div>
 
             {/* Cart Items List */}
-            <div className="max-h-60 overflow-y-auto space-y-2 pr-1 divide-y divide-[rgba(142,182,155,0.06)]">
+            <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 divide-y divide-[rgba(142,182,155,0.08)]">
               {cart.length === 0 ? (
-                <div className="text-center py-8 text-xs text-[#5E756B]">
+                <div className="text-center py-8 text-sm text-[#5E756B]">
                   Nenhum item adicionado ao carrinho ainda.
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.produto.id} className="pt-2 flex items-center justify-between gap-2">
+                  <div key={item.produto.id} className="pt-2.5 flex items-center justify-between gap-3">
                     <div className="truncate flex-1">
-                      <div className="text-xs font-semibold text-[#F3FBF6] truncate">
+                      <div className="text-sm font-bold text-[#F3FBF6] truncate">
                         {item.produto.nome}
                       </div>
-                      <div className="text-[10px] text-[#8EB69B] font-mono">
+                      <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
                         R$ {item.preco_unitario.toFixed(2)} un
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => updateQuantity(item.produto.id, -1)}
-                        className="w-6 h-6 rounded-lg bg-[#142522] flex items-center justify-center text-[#94A89E] hover:text-white"
+                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] btn-press"
                       >
-                        <Minus className="w-3 h-3" />
+                        <Minus className="w-4 h-4" />
                       </button>
-                      <span className="w-6 text-center text-xs font-mono font-bold text-[#F3FBF6]">
+                      <span className="w-8 text-center text-sm font-mono font-extrabold text-[#F3FBF6]">
                         {item.quantidade}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.produto.id, 1)}
-                        className="w-6 h-6 rounded-lg bg-[#142522] flex items-center justify-center text-[#10B981] hover:text-white"
+                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#10B981] border border-[rgba(142,182,155,0.2)] btn-press"
                       >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-4 h-4" />
                       </button>
-                      <span className="w-16 text-right font-mono font-bold text-xs text-[#DAF1DE]">
+                      <span className="w-20 text-right font-mono font-extrabold text-sm md:text-base text-[#10B981]">
                         R$ {(item.quantidade * item.preco_unitario).toFixed(2)}
                       </span>
                     </div>
@@ -335,14 +335,14 @@ export const PDVVendas: React.FC = () => {
 
             {/* Payment Methods Selector */}
             <div className="space-y-2">
-              <label className="block text-xs font-medium text-[#94A89E]">Forma de Pagamento</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-semibold">
+              <label className="block text-xs font-semibold text-[#DAF1DE]">Forma de Pagamento</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
                 {[
                   { id: 'PIX', label: 'PIX', icon: QrCode },
                   { id: 'CARTAO_CREDITO', label: 'Crédito', icon: CreditCard },
                   { id: 'CARTAO_DEBITO', label: 'Débito', icon: CreditCard },
                   { id: 'DINHEIRO', label: 'Dinheiro', icon: Banknote },
-                  { id: 'CREDIARIO', label: 'Crediário (A Prazo)', icon: CalendarClock },
+                  { id: 'CREDIARIO', label: 'Crediário', icon: CalendarClock },
                 ].map((pm) => {
                   const Icon = pm.icon;
                   return (
@@ -350,13 +350,13 @@ export const PDVVendas: React.FC = () => {
                       key={pm.id}
                       type="button"
                       onClick={() => setFormaPagamento(pm.id as FormaPagamento)}
-                      className={`p-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                      className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold btn-press ${
                         formaPagamento === pm.id
-                          ? 'bg-[#10B981] text-[#070E0D] font-bold shadow-glow-emerald'
-                          : 'bg-[#070E0D] text-[#94A89E] border border-[rgba(142,182,155,0.14)] hover:bg-[#142522]'
+                          ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
+                          : 'bg-[#070E0D] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522]'
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-4 h-4" />
                       <span>{pm.label}</span>
                     </button>
                   );
@@ -377,24 +377,27 @@ export const PDVVendas: React.FC = () => {
             )}
 
             {/* Totals & Final Action Button */}
-            <div className="pt-3 border-t border-[rgba(142,182,155,0.12)] space-y-2">
-              <div className="flex items-center justify-between text-xs text-[#94A89E]">
+            <div className="pt-3 border-t border-[rgba(142,182,155,0.12)] space-y-2.5">
+              <div className="flex items-center justify-between text-sm text-[#A2B89B]">
                 <span>Subtotal:</span>
-                <span className="font-mono">R$ {subtotal.toFixed(2)}</span>
+                <span className="font-mono font-semibold text-[#DAF1DE]">R$ {subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-[#94A89E]">
+              <div className="flex items-center justify-between text-sm text-[#A2B89B]">
                 <span>Desconto Aplicado:</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={desconto}
-                  onChange={(e) => setDesconto(parseFloat(e.target.value) || 0)}
-                  className="w-20 px-2 py-0.5 rounded bg-[#070E0D] border border-[rgba(142,182,155,0.18)] font-mono text-right text-xs text-[#F3FBF6]"
-                />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs">R$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={desconto}
+                    onChange={(e) => setDesconto(parseFloat(e.target.value) || 0)}
+                    className="w-24 px-2.5 py-1 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] font-mono text-right text-sm text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
+                  />
+                </div>
               </div>
               <div className="flex items-center justify-between text-base font-bold text-[#F3FBF6] pt-1">
                 <span>Total a Pagar:</span>
-                <span className="text-2xl font-mono text-[#10B981]">
+                <span className="text-3xl font-mono font-extrabold text-[#10B981]">
                   R$ {valorTotal.toFixed(2)}
                 </span>
               </div>
@@ -402,7 +405,7 @@ export const PDVVendas: React.FC = () => {
               <button
                 onClick={handleFinalizeSale}
                 disabled={cart.length === 0 || crediarioExcedido}
-                className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
+                className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm md:text-base font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
               >
                 <CheckCircle2 className="w-5 h-5" />
                 <span>Finalizar Venda & Emitir Cupom</span>

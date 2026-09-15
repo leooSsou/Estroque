@@ -157,60 +157,64 @@ export const LedgerAuditoria: React.FC = () => {
 
       {/* Ledger Table */}
       <BentoCard>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                <th className="py-3 px-3 font-semibold">Data / Hora</th>
-                <th className="py-3 px-3 font-semibold">Tipo</th>
-                <th className="py-3 px-3 font-semibold">SKU & Item</th>
-                <th className="py-3 px-3 font-semibold">Qtd Movimentada</th>
-                <th className="py-3 px-3 font-semibold">Saldo Anterior</th>
-                <th className="py-3 px-3 font-semibold">Saldo Resultante</th>
-                <th className="py-3 px-3 font-semibold">Responsável</th>
-                <th className="py-3 px-3 font-semibold">Motivo Fiscal / Razão</th>
+        <div className="overflow-x-auto table-scrollbar pb-2">
+          <table className="w-full text-left min-w-[1050px]">
+            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                <th className="py-4 px-4">Data / Hora</th>
+                <th className="py-4 px-4 text-center">Tipo</th>
+                <th className="py-4 px-4">SKU & Item</th>
+                <th className="py-4 px-4">Qtd Movimentada</th>
+                <th className="py-4 px-4">Saldo Anterior</th>
+                <th className="py-4 px-4">Saldo Resultante</th>
+                <th className="py-4 px-4">Responsável</th>
+                <th className="py-4 px-4">Motivo / Documento</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {filtered.map((mov) => {
                 const prod = produtos[mov.produto_id];
                 return (
-                  <tr key={mov.id} className="hover:bg-[#142522]/40 transition-colors">
-                    <td className="py-3.5 px-3 font-mono text-[#94A89E]">
+                  <tr key={mov.id} className="hover:bg-[#142522]/50 transition-colors group">
+                    <td className="py-4 px-4 font-mono text-xs font-semibold text-[#A2B89B]">
                       {new Date(mov.data_movimentacao).toLocaleString('pt-BR')}
                     </td>
-                    <td className="py-3.5 px-3">
+                    <td className="py-4 px-4 text-center">
                       <Badge variant={mov.tipo === 'ENTRADA' ? 'mint' : 'danger'}>
                         {mov.tipo === 'ENTRADA' ? (
-                          <span className="flex items-center gap-1">
-                            <ArrowDownRight className="w-3.5 h-3.5 text-[#10B981]" /> ENTRADA
+                          <span className="flex items-center gap-1.5 font-bold">
+                            <ArrowDownRight className="w-4 h-4 text-[#10B981]" /> ENTRADA
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1">
-                            <ArrowUpRight className="w-3.5 h-3.5 text-red-400" /> SAÍDA
+                          <span className="flex items-center gap-1.5 font-bold">
+                            <ArrowUpRight className="w-4 h-4 text-red-400" /> SAÍDA
                           </span>
                         )}
                       </Badge>
                     </td>
-                    <td className="py-3.5 px-3">
-                      <div className="font-semibold text-[#F3FBF6]">{prod?.nome || 'Item do Catálogo'}</div>
-                      <div className="text-[10px] text-[#94A89E] font-mono">
+                    <td className="py-4 px-4">
+                      <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                        {prod?.nome || 'Item do Catálogo'}
+                      </div>
+                      <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
                         SKU: {prod?.sku || mov.produto_id.slice(0, 8)}
                       </div>
                     </td>
-                    <td className="py-3.5 px-3 font-mono font-bold text-[#F3FBF6]">
-                      {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`} un
+                    <td className="py-4 px-4 font-mono text-base font-extrabold">
+                      <span className={mov.tipo === 'ENTRADA' ? 'text-[#10B981]' : 'text-red-400'}>
+                        {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`} un
+                      </span>
                     </td>
-                    <td className="py-3.5 px-3 font-mono text-[#94A89E]">
+                    <td className="py-4 px-4 font-mono text-sm font-semibold text-[#A2B89B]">
                       {mov.saldo_anterior ?? '—'} un
                     </td>
-                    <td className="py-3.5 px-3 font-mono font-bold text-[#10B981]">
+                    <td className="py-4 px-4 font-mono text-base font-extrabold text-[#F3FBF6]">
                       {mov.saldo_resultante ?? '—'} un
                     </td>
-                    <td className="py-3.5 px-3 text-[#DAF1DE]">
+                    <td className="py-4 px-4 text-sm font-semibold text-[#DAF1DE]">
                       {mov.responsavel || 'Operador'}
                     </td>
-                    <td className="py-3.5 px-3 text-[#94A89E] max-w-xs truncate">
+                    <td className="py-4 px-4 text-xs font-medium text-[#C1D7C8] max-w-xs">
                       {mov.motivo}
                     </td>
                   </tr>

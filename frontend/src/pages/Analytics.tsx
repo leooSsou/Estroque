@@ -108,36 +108,36 @@ export const Analytics: React.FC = () => {
       <BentoCard
         title="Curva Acumulada de Pareto"
       >
-        <div className="space-y-3 pt-2">
+        <div className="space-y-4 pt-2">
           {curvaItems.map((item, idx) => (
-            <div key={item.produto_id} className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 truncate max-w-md">
-                  <span className="w-5 h-5 rounded-full bg-[#142522] text-[#10B981] flex items-center justify-center font-mono font-bold text-[10px]">
+            <div key={item.produto_id} className="space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2.5 truncate max-w-lg">
+                  <span className="w-6 h-6 rounded-full bg-[#142522] text-[#10B981] border border-[rgba(142,182,155,0.25)] flex items-center justify-center font-mono font-extrabold text-xs flex-shrink-0">
                     {idx + 1}
                   </span>
-                  <span className="font-semibold text-[#F3FBF6] truncate">{item.nome}</span>
+                  <span className="font-bold text-sm md:text-base text-[#F3FBF6] truncate">{item.nome}</span>
                   <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'sage' : 'neutral'}>
                     Classe {item.classe}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-4 font-mono">
-                  <span className="text-[#DAF1DE]">
+                  <span className="text-[#10B981] font-bold text-sm md:text-base">
                     R$ {item.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-[#8EB69B] w-12 text-right">
+                  <span className="text-[#DAF1DE] font-extrabold text-sm w-14 text-right">
                     {item.percentual_acumulado}%
                   </span>
                 </div>
               </div>
 
-              <div className="w-full h-2 rounded-full bg-[#070E0D] overflow-hidden">
+              <div className="w-full h-3.5 rounded-full bg-[#070E0D] border border-[rgba(142,182,155,0.1)] overflow-hidden p-0.5">
                 <div
-                  className={`h-full rounded-full transition-all ${
+                  className={`h-full rounded-full transition-all duration-500 ${
                     item.classe === 'A'
-                      ? 'bg-[#10B981]'
+                      ? 'bg-gradient-to-r from-[#059669] to-[#10B981]'
                       : item.classe === 'B'
-                      ? 'bg-[#8EB69B]'
+                      ? 'bg-gradient-to-r from-[#163832] to-[#8EB69B]'
                       : 'bg-[#5E756B]'
                   }`}
                   style={{ width: `${item.percentual_acumulado}%` }}
@@ -152,58 +152,60 @@ export const Analytics: React.FC = () => {
       <BentoCard
         title="Recomendações de Giro & Estoque"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                <th className="py-3 px-3 font-semibold">Produto</th>
-                <th className="py-3 px-3 font-semibold">Classe</th>
-                <th className="py-3 px-3 font-semibold">Faturamento</th>
-                <th className="py-3 px-3 font-semibold">Giro Médio</th>
-                <th className="py-3 px-3 font-semibold">Estoque Atual</th>
-                <th className="py-3 px-3 font-semibold text-right">Ação Recomendada</th>
+        <div className="overflow-x-auto table-scrollbar pb-2">
+          <table className="w-full text-left min-w-[960px]">
+            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                <th className="py-4 px-4">Produto</th>
+                <th className="py-4 px-4 text-center">Classe</th>
+                <th className="py-4 px-4">Faturamento</th>
+                <th className="py-4 px-4">Giro Médio</th>
+                <th className="py-4 px-4">Estoque Atual</th>
+                <th className="py-4 px-4 text-right">Ação Recomendada</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {curvaItems.map((item) => (
-                <tr key={item.produto_id} className="hover:bg-[#142522]/40 transition-colors">
-                  <td className="py-3.5 px-3">
-                    <div className="font-semibold text-[#F3FBF6]">{item.nome}</div>
-                    <div className="text-[10px] text-[#94A89E] font-mono">SKU: {item.sku}</div>
+                <tr key={item.produto_id} className="hover:bg-[#142522]/50 transition-colors group">
+                  <td className="py-4 px-4">
+                    <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                      {item.nome}
+                    </div>
+                    <div className="text-xs text-[#A2B89B] font-mono mt-0.5">SKU: {item.sku}</div>
                   </td>
-                  <td className="py-3.5 px-3">
+                  <td className="py-4 px-4 text-center">
                     <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'sage' : 'neutral'}>
                       Classe {item.classe}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-3 font-mono font-bold text-[#10B981]">
+                  <td className="py-4 px-4 font-mono text-base font-extrabold text-[#10B981]">
                     R$ {item.faturamento.toFixed(2)}
                   </td>
-                  <td className="py-3.5 px-3 font-mono text-[#DAF1DE]">
+                  <td className="py-4 px-4 font-mono text-sm font-semibold text-[#DAF1DE]">
                     {item.giro_dias || 25} dias
                   </td>
-                  <td className="py-3.5 px-3 font-mono font-bold text-[#F3FBF6]">
+                  <td className="py-4 px-4 font-mono text-base font-bold text-[#F3FBF6]">
                     {item.estoque_atual ?? 12} un
                   </td>
-                  <td className="py-3.5 px-3 text-right">
+                  <td className="py-4 px-4 text-right">
                     {item.classe === 'A' ? (
                       <button
                         onClick={() => handleAction(item, 'Emitir Pedido de Compra')}
-                        className="px-3 py-1 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-[11px] shadow-glow-emerald transition-all"
+                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all btn-press"
                       >
                         Comprar com Fornecedor
                       </button>
                     ) : item.classe === 'B' ? (
                       <button
                         onClick={() => handleAction(item, 'Acompanhar Giro')}
-                        className="px-3 py-1 rounded-full bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] border border-[rgba(142,182,155,0.2)] text-[11px] font-semibold transition-all"
+                        className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all btn-press"
                       >
                         Monitorar Giro
                       </button>
                     ) : (
                       <button
                         onClick={() => handleAction(item, 'Criar Promoção de Queima')}
-                        className="px-3 py-1 rounded-full bg-[#2B2312] hover:bg-amber-900/60 text-amber-300 border border-amber-500/30 text-[11px] font-semibold transition-all"
+                        className="px-4 py-2 rounded-xl bg-[#2B2312] hover:bg-amber-900/60 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all btn-press"
                       >
                         Criar Desconto / Promoção
                       </button>

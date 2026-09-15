@@ -153,68 +153,68 @@ export const Transferencias: React.FC = () => {
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[10px] text-[#8EB69B] font-mono">
+                  <span className="text-xs text-[#8EB69B] font-mono font-semibold">
                     #{trf.id.slice(0, 8)}
                   </span>
                   {trf.status === 'SOLICITADO' && (
                     <Badge variant="warning">
-                      <Clock className="w-3 h-3 mr-1 inline" /> Solicitado
+                      <Clock className="w-3.5 h-3.5 mr-1 inline" /> Solicitado
                     </Badge>
                   )}
                   {trf.status === 'DESPACHADO' && (
                     <Badge variant="blue">
-                      <Truck className="w-3 h-3 mr-1 inline" /> Em Trânsito
+                      <Truck className="w-3.5 h-3.5 mr-1 inline" /> Em Trânsito
                     </Badge>
                   )}
                   {trf.status === 'RECEBIDO' && (
                     <Badge variant="mint">
-                      <CheckCircle2 className="w-3 h-3 mr-1 inline" /> Recebido
+                      <CheckCircle2 className="w-3.5 h-3.5 mr-1 inline" /> Recebido
                     </Badge>
                   )}
                   {trf.status === 'DIVERGENTE' && (
                     <Badge variant="danger">
-                      <AlertTriangle className="w-3 h-3 mr-1 inline" /> Divergente
+                      <AlertTriangle className="w-3.5 h-3.5 mr-1 inline" /> Divergente
                     </Badge>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Package className="w-4 h-4 text-[#10B981]" />
-                    <span className="text-sm font-semibold text-[#F3FBF6] truncate">
+                    <Package className="w-5 h-5 text-[#10B981] flex-shrink-0" />
+                    <span className="text-sm md:text-base font-bold text-[#F3FBF6] truncate">
                       {prod?.nome || 'Produto'}
                     </span>
                   </div>
-                  <div className="text-xs font-mono text-[#DAF1DE]">
-                    Quantidade: <strong className="text-base text-[#10B981]">{trf.quantidade}</strong> un
+                  <div className="text-sm font-mono text-[#DAF1DE]">
+                    Quantidade: <strong className="text-lg font-bold text-[#10B981]">{trf.quantidade}</strong> un
                   </div>
                 </div>
 
                 {/* Origin -> Destination Route */}
-                <div className="mt-4 p-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.1)] space-y-2 text-xs">
+                <div className="mt-4 p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.1)] space-y-2 text-sm">
                   <div className="flex items-center gap-2 text-[#94A89E]">
-                    <span className="w-2 h-2 rounded-full bg-[#8EB69B]" />
-                    <span className="truncate">Origem: <strong>{getLojaNome(trf.loja_origem_id)}</strong></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#8EB69B] flex-shrink-0" />
+                    <span className="truncate">Origem: <strong className="text-[#F3FBF6]">{getLojaNome(trf.loja_origem_id)}</strong></span>
                   </div>
                   <div className="flex items-center gap-2 text-[#DAF1DE]">
-                    <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-                    <span className="truncate">Destino: <strong>{getLojaNome(trf.loja_destino_id)}</strong></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] flex-shrink-0" />
+                    <span className="truncate">Destino: <strong className="text-[#10B981]">{getLojaNome(trf.loja_destino_id)}</strong></span>
                   </div>
                 </div>
 
                 {trf.justificativa && (
-                  <div className="mt-3 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-[11px] text-red-300">
+                  <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
                     <strong>Motivo de Divergência:</strong> {trf.justificativa}
                   </div>
                 )}
               </div>
 
               {/* Action Buttons based on status */}
-              <div className="pt-2 border-t border-[rgba(142,182,155,0.1)]">
+              <div className="pt-3 border-t border-[rgba(142,182,155,0.1)]">
                 {trf.status === 'SOLICITADO' && (
                   <button
                     onClick={() => handleDespachar(trf.id)}
-                    className="w-full py-2 px-3 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-sm font-semibold text-[#10B981] flex items-center justify-center gap-2 transition-all"
                   >
                     <Truck className="w-4 h-4" />
                     <span>Despachar Carga</span>
@@ -224,7 +224,7 @@ export const Transferencias: React.FC = () => {
                 {trf.status === 'DESPACHADO' && (
                   <button
                     onClick={() => handleOpenReceiving(trf)}
-                    className="w-full py-2 px-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-bold shadow-glow-emerald flex items-center justify-center gap-2 transition-all"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Conferência Cega de Recebimento</span>
@@ -232,7 +232,7 @@ export const Transferencias: React.FC = () => {
                 )}
 
                 {(trf.status === 'RECEBIDO' || trf.status === 'DIVERGENTE') && (
-                  <div className="text-center text-[11px] text-[#5E756B]">
+                  <div className="text-center text-xs text-[#5E756B] py-1">
                     Transferência concluída
                   </div>
                 )}

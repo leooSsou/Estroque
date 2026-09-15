@@ -187,44 +187,46 @@ export const Contatos: React.FC = () => {
       {/* Tables based on active tab */}
       {activeTab === 'CLIENTES' ? (
         <BentoCard>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                  <th className="py-3 px-3 font-semibold">Cliente</th>
-                  <th className="py-3 px-3 font-semibold">CPF / CNPJ</th>
-                  <th className="py-3 px-3 font-semibold">Telefone</th>
-                  <th className="py-3 px-3 font-semibold">Limite Total</th>
-                  <th className="py-3 px-3 font-semibold">Saldo Devedor</th>
-                  <th className="py-3 px-3 font-semibold">Limite Disponível</th>
-                  <th className="py-3 px-3 font-semibold">Status</th>
+          <div className="overflow-x-auto table-scrollbar pb-2">
+            <table className="w-full text-left min-w-[1000px]">
+              <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+                <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                  <th className="py-4 px-4">Cliente / E-mail</th>
+                  <th className="py-4 px-4">CPF / CNPJ</th>
+                  <th className="py-4 px-4">Telefone</th>
+                  <th className="py-4 px-4">Limite Total</th>
+                  <th className="py-4 px-4">Saldo Devedor</th>
+                  <th className="py-4 px-4">Limite Disponível</th>
+                  <th className="py-4 px-4 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+              <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
                 {filteredClientes.map((c) => {
                   const disponivel = Math.max(0, c.limite_credito - c.saldo_devedor_crediario);
                   return (
-                    <tr key={c.id} className="hover:bg-[#142522]/40 transition-colors">
-                      <td className="py-3.5 px-3">
-                        <div className="font-semibold text-[#F3FBF6]">{c.nome}</div>
-                        <div className="text-[10px] text-[#94A89E]">{c.email}</div>
+                    <tr key={c.id} className="hover:bg-[#142522]/50 transition-colors group">
+                      <td className="py-4 px-4">
+                        <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                          {c.nome}
+                        </div>
+                        <div className="text-xs text-[#A2B89B] font-mono mt-0.5">{c.email}</div>
                       </td>
-                      <td className="py-3.5 px-3 font-mono text-[#DAF1DE]">
+                      <td className="py-4 px-4 font-mono text-sm font-semibold text-[#DAF1DE]">
                         {c.documento}
                       </td>
-                      <td className="py-3.5 px-3 font-mono text-[#94A89E]">
+                      <td className="py-4 px-4 font-mono text-sm text-[#A2B89B]">
                         {c.telefone || '—'}
                       </td>
-                      <td className="py-3.5 px-3 font-mono font-semibold text-[#F3FBF6]">
+                      <td className="py-4 px-4 font-mono text-base font-bold text-[#F3FBF6]">
                         R$ {c.limite_credito.toFixed(2)}
                       </td>
-                      <td className="py-3.5 px-3 font-mono font-bold text-amber-400">
+                      <td className="py-4 px-4 font-mono text-base font-extrabold text-amber-400">
                         R$ {c.saldo_devedor_crediario.toFixed(2)}
                       </td>
-                      <td className="py-3.5 px-3 font-mono font-bold text-[#10B981]">
+                      <td className="py-4 px-4 font-mono text-base font-extrabold text-[#10B981]">
                         R$ {disponivel.toFixed(2)}
                       </td>
-                      <td className="py-3.5 px-3">
+                      <td className="py-4 px-4 text-center">
                         {c.saldo_devedor_crediario >= c.limite_credito ? (
                           <Badge variant="danger">Limite Esgotado</Badge>
                         ) : (
@@ -240,37 +242,39 @@ export const Contatos: React.FC = () => {
         </BentoCard>
       ) : (
         <BentoCard>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                  <th className="py-3 px-3 font-semibold">Nome Fantasia</th>
-                  <th className="py-3 px-3 font-semibold">Razão Social</th>
-                  <th className="py-3 px-3 font-semibold">CNPJ</th>
-                  <th className="py-3 px-3 font-semibold">Contato / E-mail</th>
-                  <th className="py-3 px-3 font-semibold">Telefone</th>
-                  <th className="py-3 px-3 font-semibold">Status</th>
+          <div className="overflow-x-auto table-scrollbar pb-2">
+            <table className="w-full text-left min-w-[950px]">
+              <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+                <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                  <th className="py-4 px-4">Nome Fantasia</th>
+                  <th className="py-4 px-4">Razão Social</th>
+                  <th className="py-4 px-4">CNPJ</th>
+                  <th className="py-4 px-4">Contato / E-mail</th>
+                  <th className="py-4 px-4">Telefone</th>
+                  <th className="py-4 px-4 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+              <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
                 {filteredFornecedores.map((f) => (
-                  <tr key={f.id} className="hover:bg-[#142522]/40 transition-colors">
-                    <td className="py-3.5 px-3 font-semibold text-[#F3FBF6]">
-                      {f.nome_fantasia}
+                  <tr key={f.id} className="hover:bg-[#142522]/50 transition-colors group">
+                    <td className="py-4 px-4">
+                      <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                        {f.nome_fantasia}
+                      </div>
                     </td>
-                    <td className="py-3.5 px-3 text-[#94A89E]">
+                    <td className="py-4 px-4 text-sm font-medium text-[#DAF1DE]">
                       {f.razao_social}
                     </td>
-                    <td className="py-3.5 px-3 font-mono text-[#DAF1DE]">
+                    <td className="py-4 px-4 font-mono text-sm font-semibold text-[#A2B89B]">
                       {f.cnpj}
                     </td>
-                    <td className="py-3.5 px-3 text-[#8EB69B]">
+                    <td className="py-4 px-4 text-sm text-[#DAF1DE]">
                       {f.email || '—'}
                     </td>
-                    <td className="py-3.5 px-3 font-mono text-[#94A89E]">
+                    <td className="py-4 px-4 font-mono text-sm text-[#A2B89B]">
                       {f.telefone || '—'}
                     </td>
-                    <td className="py-3.5 px-3">
+                    <td className="py-4 px-4 text-center">
                       <Badge variant="mint">Ativo</Badge>
                     </td>
                   </tr>

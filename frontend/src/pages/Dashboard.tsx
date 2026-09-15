@@ -136,17 +136,17 @@ export const Dashboard: React.FC = () => {
           className="lg:col-span-2"
           title="Fluxo de Caixa"
           action={
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[11px] text-[#10B981] font-mono">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" /> Faturamento
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 text-xs font-bold text-[#10B981] font-mono">
+                <span className="w-3 h-3 rounded-full bg-[#10B981]" /> Faturamento
               </span>
-              <span className="flex items-center gap-1 text-[11px] text-[#8EB69B] font-mono">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#8EB69B]" /> Despesas
+              <span className="flex items-center gap-1.5 text-xs font-bold text-[#8EB69B] font-mono">
+                <span className="w-3 h-3 rounded-full bg-[#8EB69B]" /> Despesas
               </span>
             </div>
           }
         >
-          <div className="h-64 flex items-end justify-between gap-3 pt-6 px-2">
+          <div className="h-72 flex items-end justify-between gap-3 pt-6 px-2">
             {[
               { month: 'Jan', revenue: 65, expense: 42 },
               { month: 'Fev', revenue: 72, expense: 48 },
@@ -155,24 +155,24 @@ export const Dashboard: React.FC = () => {
               { month: 'Mai', revenue: 78, expense: 49 },
               { month: 'Jun', revenue: 92, expense: 58 },
             ].map((bar, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                <div className="w-full max-w-[48px] flex items-end justify-center gap-1 h-full">
+              <div key={idx} className="flex-1 flex flex-col items-center gap-2.5 h-full justify-end group">
+                <div className="w-full max-w-[56px] flex items-end justify-center gap-1.5 h-full">
                   {/* Revenue Bar */}
                   <div
                     style={{ height: `${bar.revenue}%` }}
-                    className="w-1/2 bg-gradient-to-t from-[#0B2B26] to-[#10B981] rounded-t-md transition-all group-hover:brightness-125 relative"
+                    className="w-1/2 bg-gradient-to-t from-[#0B2B26] to-[#10B981] rounded-t-lg transition-all group-hover:brightness-125 relative shadow-sm"
                   >
-                    <div className="opacity-0 group-hover:opacity-100 absolute -top-7 left-1/2 -translate-x-1/2 bg-[#1B332E] px-1.5 py-0.5 rounded text-[10px] text-[#F3FBF6] whitespace-nowrap border border-[rgba(142,182,155,0.2)] font-mono">
+                    <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1B332E] px-2 py-1 rounded-lg text-xs text-[#F3FBF6] whitespace-nowrap border border-[rgba(142,182,155,0.25)] font-mono font-bold z-10 shadow-lg pointer-events-none">
                       R$ {bar.revenue * 1000}
                     </div>
                   </div>
                   {/* Expense Bar */}
                   <div
                     style={{ height: `${bar.expense}%` }}
-                    className="w-1/2 bg-[#8EB69B]/60 rounded-t-md transition-all group-hover:bg-[#8EB69B]"
+                    className="w-1/2 bg-[#8EB69B]/60 rounded-t-lg transition-all group-hover:bg-[#8EB69B]"
                   />
                 </div>
-                <span className="text-xs font-mono text-[#94A89E]">{bar.month}</span>
+                <span className="text-xs md:text-sm font-bold font-mono text-[#DAF1DE]">{bar.month}</span>
               </div>
             ))}
           </div>
@@ -184,51 +184,51 @@ export const Dashboard: React.FC = () => {
           action={
             <button
               onClick={() => navigate('/analytics')}
-              className="text-xs text-[#10B981] hover:underline font-semibold"
+              className="text-xs text-[#10B981] hover:underline font-bold"
             >
               Ver Detalhes →
             </button>
           }
         >
           <div className="space-y-4 pt-2">
-            <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)] space-y-3">
+            <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)] space-y-3.5">
               <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-[#10B981]">Classe A</span>
-                  <span className="font-mono text-[#F3FBF6]">80.1%</span>
+                <div className="flex items-center justify-between text-sm mb-1.5">
+                  <span className="font-bold text-[#10B981]">Classe A</span>
+                  <span className="font-mono font-extrabold text-[#F3FBF6]">80.1%</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-[#142522] overflow-hidden">
-                  <div className="h-full bg-[#10B981] rounded-full" style={{ width: '80.1%' }} />
+                <div className="w-full h-3 rounded-full bg-[#142522] overflow-hidden p-0.5">
+                  <div className="h-full bg-gradient-to-r from-[#059669] to-[#10B981] rounded-full" style={{ width: '80.1%' }} />
                 </div>
               </div>
 
               <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-[#8EB69B]">Classe B</span>
-                  <span className="font-mono text-[#F3FBF6]">15.0%</span>
+                <div className="flex items-center justify-between text-sm mb-1.5">
+                  <span className="font-bold text-[#8EB69B]">Classe B</span>
+                  <span className="font-mono font-extrabold text-[#F3FBF6]">15.0%</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-[#142522] overflow-hidden">
-                  <div className="h-full bg-[#8EB69B]" style={{ width: '15.0%' }} />
+                <div className="w-full h-3 rounded-full bg-[#142522] overflow-hidden p-0.5">
+                  <div className="h-full bg-gradient-to-r from-[#163832] to-[#8EB69B] rounded-full" style={{ width: '15.0%' }} />
                 </div>
               </div>
 
               <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-[#5E756B]">Classe C</span>
-                  <span className="font-mono text-[#F3FBF6]">4.9%</span>
+                <div className="flex items-center justify-between text-sm mb-1.5">
+                  <span className="font-bold text-[#5E756B]">Classe C</span>
+                  <span className="font-mono font-extrabold text-[#F3FBF6]">4.9%</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-[#142522] overflow-hidden">
-                  <div className="h-full bg-[#5E756B]" style={{ width: '4.9%' }} />
+                <div className="w-full h-3 rounded-full bg-[#142522] overflow-hidden p-0.5">
+                  <div className="h-full bg-[#5E756B] rounded-full" style={{ width: '4.9%' }} />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl bg-[#142522]/50 border border-[rgba(142,182,155,0.14)] text-xs">
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#142522]/50 border border-[rgba(142,182,155,0.16)] text-xs md:text-sm">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-[#10B981]" />
-                <span className="text-[#DAF1DE]">Diagnóstico Automatizado</span>
+                <span className="text-[#DAF1DE] font-semibold">Diagnóstico Automatizado</span>
               </div>
-              <span className="text-[#94A89E]">1 ruptura pendente</span>
+              <span className="text-amber-400 font-bold font-mono">1 ruptura pendente</span>
             </div>
           </div>
         </BentoCard>
@@ -239,8 +239,8 @@ export const Dashboard: React.FC = () => {
         title={
           <span className="flex items-center gap-2.5">
             <span>Histórico de Auditoria</span>
-            <span className="flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 font-mono font-bold">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
               Ao Vivo
             </span>
           </span>
@@ -248,28 +248,28 @@ export const Dashboard: React.FC = () => {
         action={
           <button
             onClick={() => navigate('/ledger')}
-            className="text-xs text-[#10B981] hover:underline font-semibold btn-press"
+            className="text-xs text-[#10B981] hover:underline font-bold btn-press"
           >
             Acessar Completo →
           </button>
         }
       >
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[rgba(142,182,155,0.12)] text-[#94A89E]">
-                <th className="py-2.5 px-3 font-semibold">Data & Hora</th>
-                <th className="py-2.5 px-3 font-semibold">Tipo</th>
-                <th className="py-2.5 px-3 font-semibold">Quantidade</th>
-                <th className="py-2.5 px-3 font-semibold">Motivo / Operação</th>
-                <th className="py-2.5 px-3 font-semibold">Responsável</th>
-                <th className="py-2.5 px-3 font-semibold">Saldo Final</th>
+        <div className="overflow-x-auto table-scrollbar pb-2">
+          <table className="w-full text-left min-w-[850px]">
+            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                <th className="py-3.5 px-4">Data & Hora</th>
+                <th className="py-3.5 px-4 text-center">Tipo</th>
+                <th className="py-3.5 px-4">Quantidade</th>
+                <th className="py-3.5 px-4">Motivo / Operação</th>
+                <th className="py-3.5 px-4">Responsável</th>
+                <th className="py-3.5 px-4 text-right">Saldo Final</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {recentMovements.map((mov) => (
-                <tr key={mov.id} className="table-row-hover">
-                  <td className="py-3 px-3 font-mono text-[#94A89E]">
+                <tr key={mov.id} className="hover:bg-[#142522]/50 transition-colors group">
+                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B]">
                     {new Date(mov.data_movimentacao).toLocaleDateString('pt-BR', {
                       day: '2-digit',
                       month: '2-digit',
@@ -277,25 +277,27 @@ export const Dashboard: React.FC = () => {
                       minute: '2-digit',
                     })}
                   </td>
-                  <td className="py-3 px-3">
+                  <td className="py-3.5 px-4 text-center">
                     <Badge variant={mov.tipo === 'ENTRADA' ? 'mint' : 'danger'}>
                       {mov.tipo === 'ENTRADA' ? (
-                        <span className="flex items-center gap-1">
-                          <ArrowDownRight className="w-3 h-3 text-[#10B981]" /> ENTRADA
+                        <span className="flex items-center gap-1.5 font-bold">
+                          <ArrowDownRight className="w-4 h-4 text-[#10B981]" /> ENTRADA
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1">
-                          <ArrowUpRight className="w-3 h-3 text-red-400" /> SAÍDA
+                        <span className="flex items-center gap-1.5 font-bold">
+                          <ArrowUpRight className="w-4 h-4 text-red-400" /> SAÍDA
                         </span>
                       )}
                     </Badge>
                   </td>
-                  <td className="py-3 px-3 font-mono font-bold text-[#F3FBF6]">
-                    {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`}
+                  <td className="py-3.5 px-4 font-mono text-base font-extrabold">
+                    <span className={mov.tipo === 'ENTRADA' ? 'text-[#10B981]' : 'text-red-400'}>
+                      {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`}
+                    </span>
                   </td>
-                  <td className="py-3 px-3 text-[#F3FBF6]">{mov.motivo}</td>
-                  <td className="py-3 px-3 text-[#94A89E]">{mov.responsavel || 'Operador'}</td>
-                  <td className="py-3 px-3 font-mono font-semibold text-[#10B981]">
+                  <td className="py-3.5 px-4 text-sm font-bold text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">{mov.motivo}</td>
+                  <td className="py-3.5 px-4 text-sm font-semibold text-[#DAF1DE]">{mov.responsavel || 'Operador'}</td>
+                  <td className="py-3.5 px-4 font-mono text-base font-extrabold text-[#10B981] text-right">
                     {mov.saldo_resultante ?? '—'} un
                   </td>
                 </tr>

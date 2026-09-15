@@ -228,37 +228,39 @@ export const NFeImport: React.FC = () => {
           <BentoCard
             title="Conciliação de Itens"
           >
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                    <th className="py-3 px-3 font-semibold">Descrição no XML</th>
-                    <th className="py-3 px-3 font-semibold">EAN / NCM</th>
-                    <th className="py-3 px-3 font-semibold">Quantidade</th>
-                    <th className="py-3 px-3 font-semibold">Custo Unitário</th>
-                    <th className="py-3 px-3 font-semibold">Subtotal</th>
-                    <th className="py-3 px-3 font-semibold">Ação no Catálogo</th>
+            <div className="overflow-x-auto table-scrollbar pb-2">
+              <table className="w-full text-left min-w-[950px]">
+                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                    <th className="py-4 px-4">Descrição no XML</th>
+                    <th className="py-4 px-4">EAN / NCM</th>
+                    <th className="py-4 px-4">Quantidade</th>
+                    <th className="py-4 px-4">Custo Unitário</th>
+                    <th className="py-4 px-4">Subtotal</th>
+                    <th className="py-4 px-4 text-center">Ação no Catálogo</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+                <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
                   {nfeItens.map((item) => (
-                    <tr key={item.id} className="hover:bg-[#142522]/40 transition-colors">
-                      <td className="py-3 px-3 font-semibold text-[#F3FBF6]">
-                        {item.descricao}
+                    <tr key={item.id} className="hover:bg-[#142522]/50 transition-colors group">
+                      <td className="py-4 px-4">
+                        <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                          {item.descricao}
+                        </div>
                       </td>
-                      <td className="py-3 px-3 font-mono text-[#94A89E]">
+                      <td className="py-4 px-4 font-mono text-xs font-semibold text-[#A2B89B]">
                         {item.ean} • {item.ncm}
                       </td>
-                      <td className="py-3 px-3 font-mono font-bold text-[#DAF1DE]">
+                      <td className="py-4 px-4 font-mono text-base font-extrabold text-[#DAF1DE]">
                         +{item.quantidade} un
                       </td>
-                      <td className="py-3 px-3 font-mono text-[#94A89E]">
+                      <td className="py-4 px-4 font-mono text-sm font-semibold text-[#C1D7C8]">
                         R$ {item.valor_unitario.toFixed(2)}
                       </td>
-                      <td className="py-3 px-3 font-mono font-bold text-[#10B981]">
+                      <td className="py-4 px-4 font-mono text-base font-extrabold text-[#10B981]">
                         R$ {item.valor_total.toFixed(2)}
                       </td>
-                      <td className="py-3 px-3">
+                      <td className="py-4 px-4 text-center">
                         {item.match_existente ? (
                           <Badge variant="mint">Atualizar Custo Médio</Badge>
                         ) : (

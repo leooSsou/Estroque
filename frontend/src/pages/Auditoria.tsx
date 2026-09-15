@@ -152,37 +152,39 @@ export const Auditoria: React.FC = () => {
       <BentoCard
         title="Balanço & Comparativo de Inventário"
       >
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                <th className="py-3 px-3 font-semibold">Produto / SKU</th>
-                <th className="py-3 px-3 font-semibold">Estoque Sistema</th>
-                <th className="py-3 px-3 font-semibold">Estoque Contado</th>
-                <th className="py-3 px-3 font-semibold">Divergência</th>
-                <th className="py-3 px-3 font-semibold">Impacto Financeiro</th>
-                <th className="py-3 px-3 font-semibold text-right">Contador Rápido</th>
+        <div className="overflow-x-auto table-scrollbar pb-2">
+          <table className="w-full text-left min-w-[1000px]">
+            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                <th className="py-4 px-4">Produto / Identificação</th>
+                <th className="py-4 px-4 text-center">Estoque Sistema</th>
+                <th className="py-4 px-4 text-center">Contagem Física</th>
+                <th className="py-4 px-4 text-center">Divergência</th>
+                <th className="py-4 px-4 text-right">Impacto Financeiro</th>
+                <th className="py-4 px-4 text-right">Contador Rápido</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {items.map((item, idx) => {
                 const diff = item.contado - item.sistema;
                 const impact = diff * item.produto.preco_custo;
 
                 return (
-                  <tr key={item.produto.id} className="hover:bg-[#142522]/40 transition-colors">
-                    <td className="py-3 px-3">
-                      <div className="font-semibold text-[#F3FBF6]">{item.produto.nome}</div>
-                      <div className="text-[10px] text-[#94A89E] font-mono">
+                  <tr key={item.produto.id} className="hover:bg-[#142522]/50 transition-colors group">
+                    <td className="py-4 px-4">
+                      <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                        {item.produto.nome}
+                      </div>
+                      <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
                         SKU: {item.produto.sku} • EAN: {item.produto.codigo_barras || 'N/A'}
                       </div>
                     </td>
 
-                    <td className="py-3 px-3 font-mono text-[#94A89E]">
+                    <td className="py-4 px-4 font-mono text-base font-bold text-[#DAF1DE] text-center">
                       {item.sistema} un
                     </td>
 
-                    <td className="py-3 px-3 font-mono font-bold text-[#F3FBF6]">
+                    <td className="py-4 px-4 text-center">
                       <input
                         type="number"
                         min="0"
@@ -195,43 +197,52 @@ export const Auditoria: React.FC = () => {
                             return copy;
                           });
                         }}
-                        className="w-20 px-2 py-1 rounded-lg bg-[#070E0D] border border-[rgba(142,182,155,0.18)] font-mono text-center text-[#10B981] font-bold focus:outline-none"
+                        className="w-24 px-3 py-1.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.25)] font-mono text-center text-base text-[#10B981] font-extrabold focus:border-[#10B981] focus:outline-none"
                       />
                     </td>
 
-                    <td className="py-3 px-3 font-mono font-bold">
+                    <td className="py-4 px-4 text-center font-mono">
                       {diff === 0 ? (
-                        <span className="text-[#8EB69B]">0 (Exato)</span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#163832] text-[#10B981] border border-[#10B981]/30 text-xs font-bold">
+                          0 (Conforme)
+                        </span>
                       ) : diff > 0 ? (
-                        <span className="text-[#10B981]">+{diff} un (Sobra)</span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-950/60 text-[#34D399] border border-emerald-500/30 text-xs font-bold">
+                          +{diff} un (Sobra)
+                        </span>
                       ) : (
-                        <span className="text-red-400">{diff} un (Falta)</span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-950/60 text-red-400 border border-red-500/30 text-xs font-bold">
+                          {diff} un (Falta)
+                        </span>
                       )}
                     </td>
 
-                    <td className="py-3 px-3 font-mono font-bold">
-                      <span className={impact < 0 ? 'text-red-400' : impact > 0 ? 'text-[#10B981]' : 'text-[#94A89E]'}>
+                    <td className="py-4 px-4 font-mono text-base font-extrabold text-right">
+                      <span className={impact < 0 ? 'text-red-400' : impact > 0 ? 'text-[#10B981]' : 'text-[#DAF1DE]'}>
                         R$ {impact.toFixed(2)}
                       </span>
                     </td>
 
-                    <td className="py-3 px-3 text-right">
-                      <div className="inline-flex items-center gap-1">
+                    <td className="py-4 px-4 text-right">
+                      <div className="inline-flex items-center gap-1.5">
                         <button
                           onClick={() => handleIncrement(idx, -1)}
-                          className="w-7 h-7 rounded-lg bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#F3FBF6] transition-colors"
+                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          title="Subtrair 1"
                         >
                           -1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 1)}
-                          className="w-7 h-7 rounded-lg bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#10B981] transition-colors"
+                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#10B981] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          title="Somar 1"
                         >
                           +1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 5)}
-                          className="px-2 h-7 rounded-lg bg-[#142522] hover:bg-[#163832] text-xs font-semibold text-[#8EB69B] transition-colors"
+                          className="px-3 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#34D399] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          title="Somar 5"
                         >
                           +5
                         </button>

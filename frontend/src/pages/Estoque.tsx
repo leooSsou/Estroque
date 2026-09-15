@@ -129,37 +129,39 @@ export const Estoque: React.FC = () => {
 
       {/* Multi-Store Balances Table */}
       <BentoCard>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[rgba(142,182,155,0.14)] text-[#94A89E]">
-                <th className="py-3 px-3 font-semibold">SKU & Item</th>
+        <div className="overflow-x-auto table-scrollbar pb-2">
+          <table className="w-full text-left min-w-[960px]">
+            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+                <th className="py-4 px-4">SKU & Item</th>
                 {lojas.map((loja) => (
-                  <th key={loja.id} className="py-3 px-3 font-semibold">
+                  <th key={loja.id} className="py-4 px-4">
                     {loja.nome}
                   </th>
                 ))}
-                <th className="py-3 px-3 font-semibold">Saldo Total Rede</th>
-                <th className="py-3 px-3 font-semibold">Valoração Total (Custo)</th>
-                <th className="py-3 px-3 font-semibold text-right">Ação</th>
+                <th className="py-4 px-4">Saldo Total Rede</th>
+                <th className="py-4 px-4">Valoração Total (Custo)</th>
+                <th className="py-4 px-4 text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
+            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {filtered.map((prod) => {
                 const totalStock = prod.estoque_total ?? 0;
                 const totalCostVal = totalStock * prod.preco_custo;
 
                 return (
-                  <tr key={prod.id} className="hover:bg-[#142522]/40 transition-colors">
-                    <td className="py-3.5 px-3">
+                  <tr key={prod.id} className="hover:bg-[#142522]/50 transition-colors group">
+                    <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#142522] flex items-center justify-center text-[#10B981] flex-shrink-0">
-                          <Package className="w-4 h-4" />
+                        <div className="w-10 h-10 rounded-xl bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] flex-shrink-0">
+                          <Package className="w-5 h-5" />
                         </div>
                         <div>
-                          <div className="font-semibold text-[#F3FBF6]">{prod.nome}</div>
-                          <div className="text-[11px] text-[#94A89E] font-mono">
-                            {prod.sku} • Mínimo: {prod.estoque_minimo || 5} un
+                          <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
+                            {prod.nome}
+                          </div>
+                          <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
+                            SKU: {prod.sku} • Mínimo: {prod.estoque_minimo || 5} un
                           </div>
                         </div>
                       </div>
@@ -169,11 +171,11 @@ export const Estoque: React.FC = () => {
                     {lojas.map((loja) => {
                       const stockInLoja = prod.estoque_por_loja?.[loja.id] ?? 0;
                       return (
-                        <td key={loja.id} className="py-3.5 px-3 font-mono">
+                        <td key={loja.id} className="py-4 px-4 font-mono">
                           <span
-                            className={`font-bold ${
+                            className={`font-bold text-sm md:text-base ${
                               stockInLoja === 0
-                                ? 'text-red-400'
+                                ? 'text-red-400 font-extrabold'
                                 : stockInLoja <= (prod.estoque_minimo || 5)
                                 ? 'text-amber-400'
                                 : 'text-[#DAF1DE]'
@@ -185,18 +187,18 @@ export const Estoque: React.FC = () => {
                       );
                     })}
 
-                    <td className="py-3.5 px-3 font-mono font-bold text-[#10B981]">
+                    <td className="py-4 px-4 font-mono text-base font-extrabold text-[#10B981]">
                       {totalStock} un
                     </td>
 
-                    <td className="py-3.5 px-3 font-mono text-[#8EB69B]">
+                    <td className="py-4 px-4 font-mono text-sm md:text-base font-semibold text-[#DAF1DE]">
                       R$ {totalCostVal.toFixed(2)}
                     </td>
 
-                    <td className="py-3.5 px-3 text-right">
+                    <td className="py-4 px-4 text-right">
                       <button
                         onClick={() => handleOpenMovement(prod)}
-                        className="px-2.5 py-1 rounded-lg bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] border border-[rgba(142,182,155,0.2)] text-[11px] transition-all"
+                        className="px-3.5 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm"
                       >
                         Ajustar
                       </button>
