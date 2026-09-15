@@ -17,7 +17,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
 }) => {
   return (
     <div
-      className={`bg-[#0D1917] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 md:p-6 shadow-bento-dark transition-all hover:border-[rgba(142,182,155,0.22)] ${className}`}
+      className={`bg-[#0D1917] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 md:p-6 shadow-bento-dark transition-all duration-300 hover:border-[rgba(142,182,155,0.28)] ${className}`}
     >
       {(title || subtitle || action) && (
         <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-[rgba(142,182,155,0.08)]">

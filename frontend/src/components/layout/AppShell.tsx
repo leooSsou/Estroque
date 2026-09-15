@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { Search, X, Package, ArrowRight } from 'lucide-react';
@@ -12,6 +12,7 @@ export const AppShell: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Produto[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Keyboard shortcut for Cmd+K / Ctrl+K
   useEffect(() => {
@@ -64,7 +65,9 @@ export const AppShell: React.FC = () => {
         />
 
         <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          <Outlet />
+          <div key={location.pathname} className="animate-fade-in-up">
+            <Outlet />
+          </div>
         </main>
       </div>
 

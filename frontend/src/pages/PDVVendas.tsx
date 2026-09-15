@@ -210,10 +210,10 @@ export const PDVVendas: React.FC = () => {
                 <div
                   key={prod.id}
                   onClick={() => handleAddToCart(prod)}
-                  className={`bg-[#0D1917] border rounded-2xl p-3.5 flex flex-col justify-between cursor-pointer transition-all hover:border-[#10B981]/50 group ${
+                  className={`bg-[#0D1917] border rounded-2xl p-3.5 flex flex-col justify-between cursor-pointer transition-all duration-250 hover:border-[#10B981]/50 group btn-press hover-lift ${
                     stock === 0
-                      ? 'opacity-40 border-red-500/20'
-                      : 'border-[rgba(142,182,155,0.14)] hover:bg-[#142522]/50'
+                      ? 'opacity-40 border-red-500/20 pointer-events-none'
+                      : 'border-[rgba(142,182,155,0.14)] hover:bg-[#142522]/50 hover:shadow-glow-emerald'
                   }`}
                 >
                   <div>
@@ -232,7 +232,7 @@ export const PDVVendas: React.FC = () => {
                     <span className="text-sm font-bold text-[#10B981] font-mono">
                       R$ {prod.preco_venda.toFixed(2)}
                     </span>
-                    <button className="w-7 h-7 rounded-lg bg-[#142522] group-hover:bg-[#10B981] group-hover:text-[#070E0D] flex items-center justify-center text-[#DAF1DE] transition-colors">
+                    <button className="w-7 h-7 rounded-lg bg-[#142522] group-hover:bg-[#10B981] group-hover:text-[#070E0D] flex items-center justify-center text-[#DAF1DE] transition-transform group-hover:scale-110">
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -408,7 +408,7 @@ export const PDVVendas: React.FC = () => {
               <button
                 onClick={handleFinalizeSale}
                 disabled={cart.length === 0 || crediarioExcedido}
-                className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2"
+                className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
               >
                 <CheckCircle2 className="w-5 h-5" />
                 <span>Finalizar Venda & Emitir Cupom</span>

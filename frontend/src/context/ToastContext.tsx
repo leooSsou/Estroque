@@ -49,9 +49,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-center justify-between gap-3 p-4 rounded-xl shadow-bento-dark border transition-all duration-300 animate-in fade-in slide-in-from-bottom-3 ${
+            className={`pointer-events-auto flex items-center justify-between gap-3 p-4 rounded-2xl shadow-glow-emerald border transition-all duration-300 animate-slide-in-right ${
               t.type === 'success'
-                ? 'bg-[#0D1917] border-[#10B981] text-[#F3FBF6]'
+                ? 'bg-[#0D1917] border-[#10B981]/50 text-[#F3FBF6]'
                 : t.type === 'error'
                 ? 'bg-[#1C0F0F] border-red-500/50 text-red-100'
                 : t.type === 'warning'
@@ -68,7 +68,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             </div>
             <button
               onClick={() => removeToast(t.id)}
-              className="text-[#94A89E] hover:text-[#F3FBF6] p-1 transition-colors"
+              className="text-[#94A89E] hover:text-[#F3FBF6] p-1.5 rounded-lg hover:bg-[#142522] btn-press transition-colors"
             >
               <X className="w-4 h-4" />
             </button>

@@ -21,8 +21,9 @@ export const StatCard: React.FC<StatCardProps> = ({
   icon: Icon,
 }) => {
   return (
-    <div className="bg-[#0D1917] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 shadow-bento-dark relative overflow-hidden group hover:border-[rgba(142,182,155,0.25)] transition-all">
-      <div className="flex items-start justify-between">
+    <div className="bg-[#0D1917] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 shadow-bento-dark relative overflow-hidden group hover:border-[#10B981]/40 hover:-translate-y-1 hover:shadow-glow-emerald transition-all duration-300">
+      <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/15 transition-all duration-500 pointer-events-none" />
+      <div className="flex items-start justify-between relative z-10">
         <div className="space-y-1">
           <span className="text-xs font-medium text-[#94A89E] uppercase tracking-wider">
             {title}
@@ -31,7 +32,7 @@ export const StatCard: React.FC<StatCardProps> = ({
             {value}
           </div>
         </div>
-        <div className="w-11 h-11 rounded-2xl bg-[#142522] border border-[rgba(142,182,155,0.18)] flex items-center justify-center text-[#10B981] shadow-sm group-hover:scale-105 transition-transform">
+        <div className="w-11 h-11 rounded-2xl bg-[#142522] border border-[rgba(142,182,155,0.18)] flex items-center justify-center text-[#10B981] shadow-sm group-hover:scale-110 group-hover:bg-[#10B981]/10 group-hover:border-[#10B981]/40 transition-all duration-300">
           <Icon className="w-5 h-5" />
         </div>
       </div>

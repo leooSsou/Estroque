@@ -69,7 +69,7 @@ export const Dashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => navigate('/pdv')}
-              className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald btn-press hover-lift flex items-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
               <span>+ Nova Venda (PDV)</span>
@@ -77,7 +77,7 @@ export const Dashboard: React.FC = () => {
 
             <button
               onClick={() => navigate('/nfe')}
-              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] text-[#DAF1DE] font-semibold text-xs transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/40 text-[#DAF1DE] font-semibold text-xs btn-press hover-lift flex items-center gap-2"
             >
               <FileSpreadsheet className="w-4 h-4 text-[#10B981]" />
               <span>Importar XML NF-e</span>
@@ -85,7 +85,7 @@ export const Dashboard: React.FC = () => {
 
             <button
               onClick={() => navigate('/transferencias')}
-              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] text-[#DAF1DE] font-semibold text-xs transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/40 text-[#DAF1DE] font-semibold text-xs btn-press hover-lift flex items-center gap-2"
             >
               <ArrowLeftRight className="w-4 h-4 text-[#8EB69B]" />
               <span>Transferir Estoque</span>
@@ -93,7 +93,7 @@ export const Dashboard: React.FC = () => {
 
             <button
               onClick={() => navigate('/ledger')}
-              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] text-[#DAF1DE] font-semibold text-xs transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/40 text-[#DAF1DE] font-semibold text-xs btn-press hover-lift flex items-center gap-2"
             >
               <ClipboardCheck className="w-4 h-4 text-[#8EB69B]" />
               <span>Auditoria Física</span>
@@ -246,12 +246,20 @@ export const Dashboard: React.FC = () => {
 
       {/* 4. Live Ledger Feed Card */}
       <BentoCard
-        title="Histórico Recente de Auditoria (Ledger Imutável)"
+        title={
+          <span className="flex items-center gap-2.5">
+            <span>Histórico Recente de Auditoria</span>
+            <span className="flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+              Ao Vivo
+            </span>
+          </span>
+        }
         subtitle="Últimos lançamentos com conciliação física automática e rastreabilidade"
         action={
           <button
             onClick={() => navigate('/ledger')}
-            className="text-xs text-[#10B981] hover:underline font-semibold"
+            className="text-xs text-[#10B981] hover:underline font-semibold btn-press"
           >
             Acessar Livro-Razão Completo →
           </button>
@@ -271,7 +279,7 @@ export const Dashboard: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.06)]">
               {recentMovements.map((mov) => (
-                <tr key={mov.id} className="hover:bg-[#142522]/40 transition-colors">
+                <tr key={mov.id} className="table-row-hover">
                   <td className="py-3 px-3 font-mono text-[#94A89E]">
                     {new Date(mov.data_movimentacao).toLocaleDateString('pt-BR', {
                       day: '2-digit',

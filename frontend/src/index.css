@@ -42,10 +42,38 @@
     border: 1px solid rgba(142, 182, 155, 0.12);
     border-radius: 20px;
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(142, 182, 155, 0.08);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
   }
   .bento-card-elevated {
     background-color: #142522;
     border: 1px solid rgba(142, 182, 155, 0.18);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  }
+  .bento-card-interactive {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  }
+  .bento-card-interactive:hover {
+    transform: translateY(-2px);
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6), 0 0 20px -3px rgba(16, 185, 129, 0.2);
+  }
+  .btn-press {
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+  .hover-lift {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+  .table-row-hover {
+    transition: background-color 0.18s ease;
+  }
+  .table-row-hover:hover {
+    background-color: rgba(20, 37, 34, 0.65);
   }
   .bento-input {
     background-color: #0D1917;
@@ -58,5 +86,14 @@
     outline: none;
     border-color: #10B981;
     box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
