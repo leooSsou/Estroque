@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Store,
   Search,
-  Bell,
   LogOut,
   ChevronDown,
   ShieldCheck,
@@ -116,14 +115,6 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
           <span>Ledger Imutável</span>
         </div>
 
-        {/* Notifications */}
-        <button
-          className="h-10 w-10 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors flex items-center justify-center relative flex-shrink-0"
-          title="Notificações do Sistema"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-        </button>
 
         {/* User Dropdown */}
         <div className="relative">
