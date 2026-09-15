@@ -536,10 +536,10 @@ export const PDVVendas: React.FC = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
             <button
               onClick={() => setReceiptModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
             >
               Fechar
             </button>
@@ -547,7 +547,7 @@ export const PDVVendas: React.FC = () => {
               onClick={() => {
                 window.print();
               }}
-              className="px-6 py-2 rounded-full bg-[#10B981] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Comprovante</span>

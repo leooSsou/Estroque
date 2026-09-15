@@ -102,8 +102,7 @@
 }
 
 .page-enter {
-  animation: pageFadeSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-  will-change: transform, opacity;
+  animation: pageFadeSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Glowing top laser indicator on route transition */

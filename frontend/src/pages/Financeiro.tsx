@@ -330,11 +330,13 @@ export const Financeiro: React.FC = () => {
       >
         <form onSubmit={handleCreateExpense} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#94A89E] mb-1">Categoria</label>
+            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              Categoria
+            </label>
             <select
               value={despesaCategoria}
               onChange={(e) => setDespesaCategoria(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             >
               <option value="Aluguel & Condomínio">Aluguel & Condomínio</option>
               <option value="Energia Elétrica & Internet">Energia Elétrica & Internet</option>
@@ -346,20 +348,24 @@ export const Financeiro: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#94A89E] mb-1">Descrição / Detalhes</label>
+            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              Descrição / Detalhes
+            </label>
             <input
               type="text"
               required
               value={despesaDescricao}
               onChange={(e) => setDespesaDescricao(e.target.value)}
               placeholder="Ex: Pagamento da fatura de energia CPFL"
-              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Valor (R$)</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Valor (R$)
+              </label>
               <input
                 type="number"
                 step="0.01"
@@ -367,16 +373,18 @@ export const Financeiro: React.FC = () => {
                 required
                 value={despesaValor}
                 onChange={(e) => setDespesaValor(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Status Pagamento</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Status Pagamento
+              </label>
               <select
                 value={despesaStatus}
                 onChange={(e) => setDespesaStatus(e.target.value as 'PENDENTE' | 'PAGO')}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               >
                 <option value="PAGO">Liquidado (Pago)</option>
                 <option value="PENDENTE">A Pagar (Pendente)</option>
@@ -384,17 +392,17 @@ export const Financeiro: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
             <button
               type="button"
               onClick={() => setNewExpenseModal(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
             >
               Lançar Despesa
             </button>

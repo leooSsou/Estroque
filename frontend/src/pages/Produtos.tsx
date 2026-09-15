@@ -436,16 +436,16 @@ export const Produtos: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
             <button
               onClick={() => setMarkupModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] hover:bg-[#163832] text-xs font-semibold text-[#94A89E]"
+              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               onClick={handleSaveMarkup}
-              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Novo Preço</span>
@@ -462,32 +462,36 @@ export const Produtos: React.FC = () => {
       >
         <form onSubmit={handleCreateProduct} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#94A89E] mb-1">Nome do Produto</label>
+            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              Nome do Produto
+            </label>
             <input
               type="text"
               required
               value={newNome}
               onChange={(e) => setNewNome(e.target.value)}
               placeholder="Ex: Teclado Sem Fio Bluetooth"
-              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">SKU (Código)</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                SKU (Código)
+              </label>
               <input
                 type="text"
                 required
                 value={newSku}
                 onChange={(e) => setNewSku(e.target.value)}
                 placeholder="Ex: TEC-BLU-07"
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none uppercase"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all uppercase"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
                 Código de Barras (EAN-13)
               </label>
               <input
@@ -495,66 +499,72 @@ export const Produtos: React.FC = () => {
                 value={newBarcode}
                 onChange={(e) => setNewBarcode(e.target.value)}
                 placeholder="Ex: 7891234560074"
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Preço de Custo (R$)</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Preço de Custo (R$)
+              </label>
               <input
                 type="number"
                 step="0.01"
                 required
                 value={newCusto}
                 onChange={(e) => setNewCusto(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Markup (%)</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Markup (%)
+              </label>
               <input
                 type="number"
                 step="1"
                 required
                 value={newMarkup}
                 onChange={(e) => setNewMarkup(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Estoque Inicial (un)</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Estoque Inicial (un)
+              </label>
               <input
                 type="number"
                 required
                 value={newEstoqueInicial}
                 onChange={(e) => setNewEstoqueInicial(parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.12)] flex items-center justify-between text-xs">
-            <span className="text-[#94A89E]">Preço de Venda Gerado:</span>
-            <span className="text-sm font-bold text-[#10B981] font-mono">
+          <div className="p-3.5 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] flex items-center justify-between text-xs">
+            <span className="text-[#94A89E] font-medium">Preço de Venda Gerado:</span>
+            <span className="text-base font-bold text-[#10B981] font-mono">
               R$ {(newCusto * (1 + newMarkup / 100)).toFixed(2)}
             </span>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
             <button
               type="button"
               onClick={() => setNewProductModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
             >
               Salvar Produto
             </button>

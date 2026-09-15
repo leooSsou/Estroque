@@ -333,11 +333,13 @@ export const Estoque: React.FC = () => {
       >
         <form onSubmit={handleSubmitMovement} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#94A89E] mb-1">Produto</label>
+            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              Produto
+            </label>
             <select
               value={movProdutoId}
               onChange={(e) => setMovProdutoId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             >
               {produtos.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -347,13 +349,15 @@ export const Estoque: React.FC = () => {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Loja / Depósito</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Loja / Depósito
+              </label>
               <select
                 value={movLojaId}
                 onChange={(e) => setMovLojaId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -364,55 +368,61 @@ export const Estoque: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Tipo</label>
-              <div className="grid grid-cols-2 gap-2">
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Tipo da Operação
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setMovTipo('ENTRADA')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  className={`h-11 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
                     movTipo === 'ENTRADA'
-                      ? 'bg-[#10B981] text-[#070E0D]'
-                      : 'bg-[#070E0D] text-[#94A89E] border border-[rgba(142,182,155,0.15)]'
+                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-extrabold'
+                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
                   }`}
                 >
-                  <ArrowDownRight className="w-3.5 h-3.5" />
+                  <ArrowDownRight className="w-4 h-4" />
                   <span>ENTRADA</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMovTipo('SAIDA')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  className={`h-11 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
                     movTipo === 'SAIDA'
-                      ? 'bg-red-500 text-white'
-                      : 'bg-[#070E0D] text-[#94A89E] border border-[rgba(142,182,155,0.15)]'
+                      ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/20 font-extrabold'
+                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
                   }`}
                 >
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <ArrowUpRight className="w-4 h-4" />
                   <span>SAÍDA</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Quantidade</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Quantidade
+              </label>
               <input
                 type="number"
                 min="1"
                 required
                 value={movQtd}
                 onChange={(e) => setMovQtd(parseInt(e.target.value) || 1)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Motivo / Razão</label>
+              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+                Motivo / Razão
+              </label>
               <select
                 value={movMotivo}
                 onChange={(e) => setMovMotivo(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               >
                 <option value="Ajuste de inventário rotativo">Ajuste de inventário rotativo</option>
                 <option value="Avaria ou dano em transporte">Avaria ou dano em transporte</option>
@@ -423,17 +433,17 @@ export const Estoque: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
             <button
               type="button"
               onClick={() => setMovementModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
             >
               Confirmar Movimentação
             </button>
