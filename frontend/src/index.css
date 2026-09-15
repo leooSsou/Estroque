@@ -175,3 +175,49 @@
   background: #10B981;
 }
 
+/* Animated Striped Pattern for Financial Charts */
+@keyframes chartStripeShift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 48px 0;
+  }
+}
+
+.chart-grid-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(16, 185, 129, 0.035) 0,
+    rgba(16, 185, 129, 0.035) 2px,
+    transparent 0,
+    transparent 16px
+  );
+  background-size: 48px 48px;
+  animation: chartStripeShift 25s linear infinite;
+}
+
+@keyframes gridGlowPulse {
+  0%, 100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.chart-grid-line {
+  animation: gridGlowPulse 4s ease-in-out infinite;
+}
+
+.bar-stripes-pattern {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.08) 0,
+    rgba(255, 255, 255, 0.08) 1.5px,
+    transparent 0,
+    transparent 7px
+  );
+}
+
+

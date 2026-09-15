@@ -131,50 +131,108 @@ export const Dashboard: React.FC = () => {
 
       {/* 3. Central Grid: Cash Flow Dual-Tone Chart & ABC Curve Donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Central Chart: Dual-Tone Bar Visualization */}
+        {/* Central Chart: Dual-Tone Bar Visualization with Animated Stripes and Guide Tracks */}
         <BentoCard
           className="lg:col-span-2"
           title="Fluxo de Caixa"
           action={
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5 text-xs font-bold text-[#10B981] font-mono">
-                <span className="w-3 h-3 rounded-full bg-[#10B981]" /> Faturamento
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-2 text-xs font-bold text-[#10B981] font-mono">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shadow-[0_0_10px_#10B981]" /> Faturamento
               </span>
-              <span className="flex items-center gap-1.5 text-xs font-bold text-[#8EB69B] font-mono">
-                <span className="w-3 h-3 rounded-full bg-[#8EB69B]" /> Despesas
+              <span className="flex items-center gap-2 text-xs font-bold text-[#8EB69B] font-mono">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#8EB69B]" /> Despesas
               </span>
             </div>
           }
         >
-          <div className="h-72 flex items-end justify-between gap-3 pt-6 px-2">
-            {[
-              { month: 'Jan', revenue: 65, expense: 42 },
-              { month: 'Fev', revenue: 72, expense: 48 },
-              { month: 'Mar', revenue: 68, expense: 40 },
-              { month: 'Abr', revenue: 84, expense: 52 },
-              { month: 'Mai', revenue: 78, expense: 49 },
-              { month: 'Jun', revenue: 92, expense: 58 },
-            ].map((bar, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2.5 h-full justify-end group">
-                <div className="w-full max-w-[56px] flex items-end justify-center gap-1.5 h-full">
-                  {/* Revenue Bar */}
-                  <div
-                    style={{ height: `${bar.revenue}%` }}
-                    className="w-1/2 bg-gradient-to-t from-[#0B2B26] to-[#10B981] rounded-t-lg transition-all group-hover:brightness-125 relative shadow-sm"
-                  >
-                    <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1B332E] px-2 py-1 rounded-lg text-xs text-[#F3FBF6] whitespace-nowrap border border-[rgba(142,182,155,0.25)] font-mono font-bold z-10 shadow-lg pointer-events-none">
-                      R$ {bar.revenue * 1000}
+          {/* Main Chart Area with Animated Stripe Texture */}
+          <div className="relative h-80 w-full chart-grid-stripes rounded-2xl border border-[rgba(142,182,155,0.12)] p-4 overflow-hidden mt-2 bg-[#070E0D]/60">
+            {/* Horizontal Alternating Bands / Faixas de Nível */}
+            <div className="absolute inset-x-0 top-4 bottom-10 flex flex-col justify-between pointer-events-none pl-3 pr-4">
+              {[
+                { label: 'R$ 100k', pct: 100 },
+                { label: 'R$ 75k', pct: 75 },
+                { label: 'R$ 50k', pct: 50 },
+                { label: 'R$ 25k', pct: 25 },
+                { label: 'R$ 0', pct: 0 },
+              ].map((lvl, i) => (
+                <div key={i} className="w-full flex items-center gap-3">
+                  <span className="text-[10px] font-mono text-[#5E756B] w-12 text-right font-semibold">
+                    {lvl.label}
+                  </span>
+                  <div className="flex-1 border-b border-dashed border-[rgba(142,182,155,0.15)] chart-grid-line" />
+                </div>
+              ))}
+            </div>
+
+            {/* Alternating Horizontal Gradient Faixas */}
+            <div className="absolute inset-x-0 top-4 bottom-10 left-16 right-4 flex flex-col pointer-events-none">
+              <div className="flex-1 bg-[#10B981]/[0.015] border-b border-[rgba(142,182,155,0.06)]" />
+              <div className="flex-1 bg-transparent border-b border-[rgba(142,182,155,0.06)]" />
+              <div className="flex-1 bg-[#10B981]/[0.015] border-b border-[rgba(142,182,155,0.06)]" />
+              <div className="flex-1 bg-transparent" />
+            </div>
+
+            {/* Vertical Columns & Bars Container */}
+            <div className="relative z-10 flex items-end justify-between gap-3 h-full pt-4 pb-2 pl-14 pr-4">
+              {[
+                { month: 'Jan', fullMonth: 'Janeiro', revenue: 65, expense: 42 },
+                { month: 'Fev', fullMonth: 'Fevereiro', revenue: 72, expense: 48 },
+                { month: 'Mar', fullMonth: 'Março', revenue: 68, expense: 40 },
+                { month: 'Abr', fullMonth: 'Abril', revenue: 84, expense: 52 },
+                { month: 'Mai', fullMonth: 'Maio', revenue: 78, expense: 49 },
+                { month: 'Jun', fullMonth: 'Junho', revenue: 92, expense: 58 },
+              ].map((bar, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2.5 h-full justify-end group relative cursor-pointer">
+                  {/* Animated Column Track Beam (Faixa Vertical no Hover) */}
+                  <div className="absolute inset-y-0 -inset-x-1 rounded-2xl bg-transparent group-hover:bg-[#10B981]/[0.06] group-hover:border-x group-hover:border-[#10B981]/25 group-hover:shadow-[inset_0_0_20px_rgba(16,185,129,0.08)] transition-all duration-300 pointer-events-none" />
+
+                  {/* Floating Glassmorphism HUD Tooltip */}
+                  <div className="opacity-0 group-hover:opacity-100 absolute -top-14 left-1/2 -translate-x-1/2 bg-[#0D1917]/95 backdrop-blur-xl px-3.5 py-2 rounded-xl text-xs text-[#F3FBF6] whitespace-nowrap border border-[#10B981]/40 font-mono shadow-[0_12px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(16,185,129,0.25)] z-30 pointer-events-none transition-all duration-200 group-hover:-translate-y-1">
+                    <div className="text-[11px] font-bold text-[#DAF1DE] pb-1 border-b border-[rgba(142,182,155,0.15)] mb-1 flex items-center justify-between gap-4">
+                      <span>{bar.fullMonth}</span>
+                      <span className="text-[#10B981] font-extrabold">Lucro: +R$ {(bar.revenue - bar.expense) * 1000}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[10px]">
+                      <span className="text-[#10B981] font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" /> R$ {bar.revenue * 1000}
+                      </span>
+                      <span className="text-[#8EB69B] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#8EB69B]" /> R$ {bar.expense * 1000}
+                      </span>
                     </div>
                   </div>
-                  {/* Expense Bar */}
-                  <div
-                    style={{ height: `${bar.expense}%` }}
-                    className="w-1/2 bg-[#8EB69B]/60 rounded-t-lg transition-all group-hover:bg-[#8EB69B]"
-                  />
+
+                  {/* Dual Bars */}
+                  <div className="w-full max-w-[56px] flex items-end justify-center gap-2 h-full pb-2">
+                    {/* Revenue Bar with Striped Texture & Glowing Neon Cap */}
+                    <div
+                      style={{ height: `${bar.revenue}%` }}
+                      className="w-1/2 bg-gradient-to-t from-[#061C18] via-[#0B382F] to-[#10B981] rounded-t-lg transition-all duration-300 group-hover:scale-y-[1.03] origin-bottom relative shadow-md shadow-[#10B981]/15 overflow-hidden"
+                    >
+                      {/* Glowing Top Cap */}
+                      <div className="absolute top-0 inset-x-0 h-1.5 bg-[#34D399] rounded-t-lg shadow-[0_0_12px_#10B981]" />
+                      {/* Diagonal Pinstripe Texture */}
+                      <div className="absolute inset-0 bar-stripes-pattern opacity-50" />
+                    </div>
+
+                    {/* Expense Bar */}
+                    <div
+                      style={{ height: `${bar.expense}%` }}
+                      className="w-1/2 bg-gradient-to-t from-[#091513] to-[#8EB69B]/70 rounded-t-lg transition-all duration-300 group-hover:scale-y-[1.03] group-hover:bg-[#8EB69B] origin-bottom relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 inset-x-0 h-1 bg-[#DAF1DE]/40 rounded-t-lg" />
+                    </div>
+                  </div>
+
+                  {/* Month Label */}
+                  <span className="text-xs md:text-sm font-bold font-mono text-[#DAF1DE] group-hover:text-[#10B981] group-hover:scale-110 transition-all">
+                    {bar.month}
+                  </span>
                 </div>
-                <span className="text-xs md:text-sm font-bold font-mono text-[#DAF1DE]">{bar.month}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </BentoCard>
 
