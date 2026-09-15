@@ -15,6 +15,8 @@ import {
   Package,
   Layers,
   Search,
+  X,
+  Store,
 } from 'lucide-react';
 
 export const Estoque: React.FC = () => {
@@ -97,33 +99,44 @@ export const Estoque: React.FC = () => {
         </button>
       </div>
 
-      {/* Filter and Store Selector */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.12)]">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-[#8EB69B] absolute left-3.5 top-3" />
+      {/* Filter and Store Selector - High-Resolution Control */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+        <div className="relative flex-1 max-w-full sm:max-w-md">
+          <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filtrar produtos ou SKU..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none"
+            placeholder="Filtrar por nome do produto ou SKU..."
+            className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-[#8EB69B]" />
+        <div className="flex items-center gap-2.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)]">
+          <Store className="w-4 h-4 text-[#10B981] ml-2" />
           <select
             value={selectedLojaFilter}
             onChange={(e) => setSelectedLojaFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+            className="px-3 py-2 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.22)] text-xs md:text-sm font-semibold text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none cursor-pointer transition-all"
           >
-            <option value="TODAS">Todas as Lojas (Consolidado)</option>
+            <option value="TODAS">Todas as Filiais (Visão Consolidada)</option>
             {lojas.map((l) => (
               <option key={l.id} value={l.id}>
                 {l.nome}
               </option>
             ))}
           </select>
+          <span className="px-2.5 py-1 mr-1 rounded-lg bg-[#142522] text-[#8EB69B] font-mono text-xs font-bold border border-[rgba(142,182,155,0.15)]">
+            {filtered.length} itens
+          </span>
         </div>
       </div>
 

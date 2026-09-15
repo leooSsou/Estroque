@@ -18,6 +18,8 @@ import {
   Clock,
   CheckCircle2,
   DollarSign,
+  Search,
+  X,
 } from 'lucide-react';
 
 export const Financeiro: React.FC = () => {
@@ -25,6 +27,8 @@ export const Financeiro: React.FC = () => {
   const { toast } = useToast();
   const [lancamentos, setLancamentos] = useState<FinanceiroLancamento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'RECEITA' | 'DESPESA'>('TODOS');
 
   // New expense modal
   const [newExpenseModal, setNewExpenseModal] = useState(false);
@@ -80,6 +84,21 @@ export const Financeiro: React.FC = () => {
 
   const saldoLiquido = totalReceitas - totalDespesas;
 
+  const counts = {
+    TODOS: lancamentos.length,
+    RECEITA: lancamentos.filter((l) => l.tipo === 'RECEITA').length,
+    DESPESA: lancamentos.filter((l) => l.tipo === 'DESPESA').length,
+  };
+
+  const filteredLancamentos = lancamentos.filter((l) => {
+    const q = search.toLowerCase();
+    const matchSearch =
+      (l.descricao || '').toLowerCase().includes(q) ||
+      (l.categoria || '').toLowerCase().includes(q);
+    if (tipoFilter !== 'TODOS' && l.tipo !== tipoFilter) return false;
+    return matchSearch;
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -126,7 +145,65 @@ export const Financeiro: React.FC = () => {
       {/* Main Grid: Entries Table & Celery Routine Widget */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Entries Table (7 cols) */}
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-8 space-y-4">
+          {/* Segmented Filter & Search Bar - High-Resolution Control */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar lançamento por descrição ou categoria..."
+                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] flex items-center gap-1.5 overflow-x-auto table-scrollbar">
+              {(
+                [
+                  { key: 'TODOS', label: 'Todos', count: counts.TODOS },
+                  { key: 'RECEITA', label: 'Receitas', count: counts.RECEITA },
+                  { key: 'DESPESA', label: 'Despesas', count: counts.DESPESA },
+                ] as const
+              ).map((item) => {
+                const isActive = tipoFilter === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setTipoFilter(item.key)}
+                    className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap btn-press cursor-pointer select-none ${
+                      isActive
+                        ? item.key === 'DESPESA'
+                          ? 'bg-red-500 text-white shadow-[0_2px_10px_rgba(239,68,68,0.4)]'
+                          : 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
+                        : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80 border border-transparent'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+                        isActive
+                          ? 'bg-black/20 text-current'
+                          : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
+                      }`}
+                    >
+                      {item.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <BentoCard
             title="Lançamentos & Extrato Contábil"
           >
@@ -142,7 +219,7 @@ export const Financeiro: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
-                  {lancamentos.map((l) => (
+                  {filteredLancamentos.map((l) => (
                     <tr key={l.id} className="hover:bg-[#142522]/50 transition-colors group">
                       <td className="py-4 px-4 font-mono text-sm font-semibold text-[#A2B89B]">
                         {new Date(l.data_lancamento).toLocaleDateString('pt-BR')}

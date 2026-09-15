@@ -14,6 +14,7 @@ import {
   Phone,
   CreditCard,
   CheckCircle2,
+  X,
 } from 'lucide-react';
 
 export const Contatos: React.FC = () => {
@@ -142,45 +143,71 @@ export const Contatos: React.FC = () => {
         </button>
       </div>
 
-      {/* Tabs & Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.12)]">
-        {/* Tabs */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+      {/* Tabs & Search - High-Resolution Control */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+        {/* Segmented Tab Switcher */}
+        <div className="p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] flex items-center gap-1.5">
           <button
             onClick={() => setActiveTab('CLIENTES')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all duration-200 btn-press cursor-pointer select-none ${
               activeTab === 'CLIENTES'
-                ? 'bg-[#10B981] text-[#070E0D]'
-                : 'bg-[#142522] text-[#94A89E] hover:text-[#F3FBF6]'
+                ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
+                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80'
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>Clientes ({clientes.length})</span>
+            <span>Clientes</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+                activeTab === 'CLIENTES'
+                  ? 'bg-black/20 text-current'
+                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
+              }`}
+            >
+              {clientes.length}
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('FORNECEDORES')}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all duration-200 btn-press cursor-pointer select-none ${
               activeTab === 'FORNECEDORES'
-                ? 'bg-[#10B981] text-[#070E0D]'
-                : 'bg-[#142522] text-[#94A89E] hover:text-[#F3FBF6]'
+                ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
+                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80'
             }`}
           >
             <Building2 className="w-4 h-4" />
-            <span>Fornecedores ({fornecedores.length})</span>
+            <span>Fornecedores</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+                activeTab === 'FORNECEDORES'
+                  ? 'bg-black/20 text-current'
+                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
+              }`}
+            >
+              {fornecedores.length}
+            </span>
           </button>
         </div>
 
         {/* Search */}
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-[#8EB69B] absolute left-3.5 top-3" />
+        <div className="relative flex-1 max-w-full sm:max-w-md">
+          <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Buscar por nome, documento ou e-mail...`}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none"
+            className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

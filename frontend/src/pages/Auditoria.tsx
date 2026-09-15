@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   RotateCcw,
   Sparkles,
+  X,
 } from 'lucide-react';
 
 interface AuditItemState {
@@ -124,23 +125,32 @@ export const Auditoria: React.FC = () => {
         </button>
       </div>
 
-      {/* Barcode Scanner Bar */}
-      <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
-        <form onSubmit={handleBarcodeScan} className="flex flex-col sm:flex-row items-center gap-3">
+      {/* Barcode Scanner Bar - High-Resolution Dock */}
+      <div className="p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+        <form onSubmit={handleBarcodeScan} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1 w-full">
-            <Barcode className="w-5 h-5 text-[#10B981] absolute left-3.5 top-3" />
+            <Barcode className="w-5 h-5 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={barcodeQuery}
               onChange={(e) => setBarcodeQuery(e.target.value)}
               placeholder="Bipar código de barras (EAN-13) ou digitar SKU e pressionar Enter..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none"
+              className="w-full pl-11 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
             />
+            {barcodeQuery && (
+              <button
+                type="button"
+                onClick={() => setBarcodeQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           <button
             type="submit"
-            className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] transition-all flex items-center justify-center gap-2 flex-shrink-0"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald transition-all flex items-center justify-center gap-2 flex-shrink-0 btn-press cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>Bipar Item (+1)</span>

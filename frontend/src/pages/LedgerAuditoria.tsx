@@ -14,6 +14,7 @@ import {
   ClipboardList,
   Search,
   Filter,
+  X,
 } from 'lucide-react';
 
 export const LedgerAuditoria: React.FC = () => {
@@ -79,6 +80,12 @@ export const LedgerAuditoria: React.FC = () => {
     return matchSearch;
   });
 
+  const counts = {
+    TODOS: ledger.length,
+    ENTRADA: ledger.filter((m) => m.tipo === 'ENTRADA').length,
+    SAIDA: ledger.filter((m) => m.tipo === 'SAIDA').length,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -107,51 +114,62 @@ export const LedgerAuditoria: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.12)]">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-[#8EB69B] absolute left-3.5 top-3" />
+      {/* Filter and Search Bar - High-Resolution Segmented Control */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+        <div className="relative flex-1 max-w-full sm:max-w-md">
+          <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por produto, SKU ou motivo..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none"
+            className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-[#8EB69B]" />
-          <button
-            onClick={() => setTipoFilter('TODOS')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              tipoFilter === 'TODOS'
-                ? 'bg-[#10B981] text-[#070E0D] font-bold'
-                : 'bg-[#142522] text-[#94A89E] hover:text-[#F3FBF6]'
-            }`}
-          >
-            Todos
-          </button>
-          <button
-            onClick={() => setTipoFilter('ENTRADA')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              tipoFilter === 'ENTRADA'
-                ? 'bg-[#10B981] text-[#070E0D] font-bold'
-                : 'bg-[#142522] text-[#94A89E] hover:text-[#F3FBF6]'
-            }`}
-          >
-            Entradas
-          </button>
-          <button
-            onClick={() => setTipoFilter('SAIDA')}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              tipoFilter === 'SAIDA'
-                ? 'bg-red-500 text-white font-bold'
-                : 'bg-[#142522] text-[#94A89E] hover:text-[#F3FBF6]'
-            }`}
-          >
-            Saídas
-          </button>
+        {/* Segmented Filter Pills */}
+        <div className="p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] flex items-center gap-1.5 overflow-x-auto table-scrollbar">
+          {(
+            [
+              { key: 'TODOS', label: 'Todas as Operações', count: counts.TODOS },
+              { key: 'ENTRADA', label: 'Entradas', count: counts.ENTRADA },
+              { key: 'SAIDA', label: 'Saídas', count: counts.SAIDA },
+            ] as const
+          ).map((item) => {
+            const isActive = tipoFilter === item.key;
+            return (
+              <button
+                key={item.key}
+                onClick={() => setTipoFilter(item.key)}
+                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap btn-press cursor-pointer select-none ${
+                  isActive
+                    ? item.key === 'SAIDA'
+                      ? 'bg-red-500 text-white shadow-[0_2px_12px_rgba(239,68,68,0.4)]'
+                      : 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
+                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80 border border-transparent'
+                }`}
+              >
+                <span>{item.label}</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                    isActive
+                      ? 'bg-black/20 text-current'
+                      : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
+                  }`}
+                >
+                  {item.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

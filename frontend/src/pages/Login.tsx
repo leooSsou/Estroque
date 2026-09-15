@@ -57,48 +57,67 @@ export const Login: React.FC = () => {
           </span>
         </div>
 
-        {/* Center Hero Card */}
+        {/* Center Hero Card: Authentic ERP System Console */}
         <div className="my-12 lg:my-0 z-10 space-y-6 max-w-lg">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#142522] border border-[#10B981]/30 text-xs font-semibold text-[#10B981]">
-            <Zap className="w-3.5 h-3.5" />
-            <span>Sistema Operacional de Varejo & Estoque</span>
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#0D1917]/90 border border-[rgba(142,182,155,0.22)] text-xs font-mono text-[#DAF1DE] shadow-inner">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="font-semibold text-[#10B981]">ESTROQUE ERP</span>
+            <span className="text-[#5E756B]">|</span>
+            <span className="text-[#8EB69B]">Ambiente de Produção v2.4</span>
           </div>
 
-          <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[#F3FBF6] leading-tight">
-            Gestão precisa de ponta a ponta.
-          </h1>
+          <div className="space-y-3">
+            <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#F3FBF6] leading-snug">
+              Plataforma Central de Gestão & Frente de Caixa
+            </h1>
 
-          <p className="text-sm lg:text-base text-[#94A89E] leading-relaxed">
-            Catálogo completo com código de barras, formação de preço por Markup inteligente,
-            controle de filiais, ledger de auditoria fiscal e ponto de venda com crediário.
-          </p>
+            <p className="text-sm text-[#94A89E] leading-relaxed">
+              Operação de inventário multi-filiais, conciliação fiscal em tempo real e controle financeiro integrado para redes de varejo e atacado.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
-            <div className="p-3.5 rounded-2xl bg-[#0D1917]/70 border border-[rgba(142,182,155,0.14)] backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#10B981] mb-1">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Ledger Imutável</span>
-              </div>
-              <p className="text-[11px] text-[#94A89E]">
-                Rastreabilidade fiscal completa de todas as entradas e saídas.
-              </p>
+          {/* Operational Services Monitor (Real ERP Feel) */}
+          <div className="rounded-2xl bg-[#0D1917]/85 border border-[rgba(142,182,155,0.18)] p-4 backdrop-blur-md space-y-3 shadow-bento-dark">
+            <div className="flex items-center justify-between text-xs pb-2.5 border-b border-[rgba(142,182,155,0.1)]">
+              <span className="font-mono text-[#DAF1DE] font-semibold flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+                Status dos Módulos Operacionais
+              </span>
+              <span className="text-[11px] font-mono text-[#10B981] font-bold flex items-center gap-1.5 bg-[#142522] px-2 py-0.5 rounded-md border border-[#10B981]/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                100% Operacional
+              </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#0D1917]/70 border border-[rgba(142,182,155,0.14)] backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#10B981] mb-1">
-                <Store className="w-4 h-4" />
-                <span>Multi-Lojas Nativo</span>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070E0D]/70 border border-[rgba(142,182,155,0.1)]">
+                <span className="text-[#94A89E] text-xs">SEFAZ / NF-e 4.0</span>
+                <span className="text-[#10B981] font-bold text-xs">Conectado</span>
               </div>
-              <p className="text-[11px] text-[#94A89E]">
-                Transferências entre filiais com conferência cega e blindagem de estoque.
-              </p>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070E0D]/70 border border-[rgba(142,182,155,0.1)]">
+                <span className="text-[#94A89E] text-xs">Frente de Caixa (PDV)</span>
+                <span className="text-[#10B981] font-bold text-xs">Ativo</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070E0D]/70 border border-[rgba(142,182,155,0.1)]">
+                <span className="text-[#94A89E] text-xs">Ledger de Auditoria</span>
+                <span className="text-[#10B981] font-bold text-xs">SHA-256</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070E0D]/70 border border-[rgba(142,182,155,0.1)]">
+                <span className="text-[#94A89E] text-xs">Rede Multi-Lojas</span>
+                <span className="text-[#10B981] font-bold text-xs">Sincronizada</span>
+              </div>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-[#070E0D]/40 border border-[rgba(142,182,155,0.1)] text-xs text-[#8EB69B]">
+            <Store className="w-4 h-4 text-[#10B981] flex-shrink-0" />
+            <span>Sessão corporativa autenticada com isolamento de dados por inquilino.</span>
           </div>
         </div>
 
         {/* Footer info */}
         <div className="text-xs text-[#5E756B] z-10">
-          © {new Date().getFullYear()} ESTROQUE. Todos os direitos reservados.
+          © {new Date().getFullYear()} ESTROQUE Sistemas de Gestão. Todos os direitos reservados.
         </div>
       </div>
 
@@ -124,38 +143,38 @@ export const Login: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1.5">
+              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
                 E-mail Corporativo
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-[#8EB69B] absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-[#10B981] absolute left-3.5 top-3.5" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@loja.com.br"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-medium text-[#94A89E]">Senha</label>
-                <span className="text-[11px] text-[#8EB69B] hover:underline cursor-pointer">
+                <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider">Senha</label>
+                <span className="text-xs text-[#8EB69B] hover:text-[#10B981] transition-colors cursor-pointer font-medium">
                   Esqueceu a senha?
                 </span>
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[#8EB69B] absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-[#10B981] absolute left-3.5 top-3.5" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -164,9 +183,9 @@ export const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-6 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-sm shadow-glow-emerald transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                className="w-full py-3.5 px-6 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald transition-all flex items-center justify-center gap-2 group disabled:opacity-50 btn-press cursor-pointer"
               >
-                <span>{loading ? 'Validando...' : 'Acessar Plataforma'}</span>
+                <span>{loading ? 'Validando credenciais...' : 'Acessar Plataforma'}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -174,10 +193,10 @@ export const Login: React.FC = () => {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[rgba(142,182,155,0.1)]" />
+              <div className="w-full border-t border-[rgba(142,182,155,0.15)]" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0D1917] px-3 text-[#5E756B] font-mono">ou</span>
+              <span className="bg-[#0D1917] px-3 text-[#7A9988] font-mono font-semibold">acesso rápido</span>
             </div>
           </div>
 
@@ -186,10 +205,10 @@ export const Login: React.FC = () => {
             type="button"
             onClick={handleDemoLogin}
             disabled={loading}
-            className="w-full py-2.5 px-4 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] text-xs font-semibold text-[#DAF1DE] transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-sm font-bold text-[#DAF1DE] transition-all flex items-center justify-center gap-2 btn-press cursor-pointer"
           >
-            <Zap className="w-3.5 h-3.5 text-[#10B981]" />
-            <span>Entrar com Conta de Demonstração (Dono)</span>
+            <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+            <span>Entrar em Modo Demonstração (Dono da Rede)</span>
           </button>
         </div>
       </div>
