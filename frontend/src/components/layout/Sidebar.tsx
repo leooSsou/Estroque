@@ -12,7 +12,8 @@ import {
   Users,
   BarChart3,
   Store,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -43,30 +44,47 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
-      {/* Brand Header */}
-      <div className="h-18 flex items-center justify-between px-4 border-b border-[rgba(142,182,155,0.12)]">
+      {/* Brand Header: Aligned h-20 with TopBar */}
+      <div className="h-20 flex items-center justify-between px-4 sm:px-5 border-b border-[rgba(142,182,155,0.12)] flex-shrink-0">
         <div className="flex items-center gap-3 overflow-hidden">
           <img
             src="/favicon.png"
             alt="ESTROQUE"
-            className="w-10 h-10 object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] flex-shrink-0"
+            className="w-9 h-9 object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] flex-shrink-0"
           />
           {!collapsed && (
-            <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-wider text-[#F3FBF6] uppercase leading-none font-mono">
+            <div className="flex flex-col min-w-0">
+              <span className="font-extrabold text-lg tracking-wider text-[#F3FBF6] uppercase leading-tight font-mono truncate">
                 ESTROQUE
               </span>
-              <span className="text-[10px] text-[#10B981] font-semibold tracking-widest uppercase mt-0.5">
+              <span className="text-[10px] text-[#10B981] font-semibold tracking-widest uppercase truncate">
                 ENTERPRISE ERP
               </span>
             </div>
           )}
         </div>
+
+        {/* Collapse toggle button inside sidebar header */}
+        <button
+          onClick={onToggleCollapse}
+          className="p-1.5 rounded-lg text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors flex-shrink-0"
+          title={collapsed ? 'Expandir Menu' : 'Recolher Menu'}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="w-4 h-4 text-[#8EB69B]" />
+          ) : (
+            <PanelLeftClose className="w-4 h-4 text-[#8EB69B]" />
+          )}
+        </button>
       </div>
 
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        <div className={`px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#5E756B] ${collapsed ? 'text-center' : ''}`}>
+        <div
+          className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5E756B] ${
+            collapsed ? 'text-center' : ''
+          }`}
+        >
           {collapsed ? '•••' : 'Módulos Operacionais'}
         </div>
         {navItems.map((item) => {
@@ -89,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                 <div className="flex items-center justify-between flex-1 truncate">
                   <span className="truncate">{item.label}</span>
                   {item.badge && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#163832] text-[#8EB69B] border border-[rgba(142,182,155,0.15)] font-mono">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#163832] text-[#8EB69B] border border-[rgba(142,182,155,0.15)] font-mono">
                       {item.badge}
                     </span>
                   )}
@@ -101,7 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
       </div>
 
       {/* Active Store Indicator at Footer */}
-      <div className="p-3 border-t border-[rgba(142,182,155,0.12)] bg-[#0D1917]/70">
+      <div className="p-3 border-t border-[rgba(142,182,155,0.12)] bg-[#0D1917]/70 flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-[#142522] border border-[rgba(142,182,155,0.18)] flex items-center justify-center text-[#10B981] flex-shrink-0">
             <Store className="w-4 h-4" />

@@ -23,12 +23,13 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   return (
-    <header className="h-18 bg-[#070E0D]/90 backdrop-blur-md border-b border-[rgba(142,182,155,0.12)] sticky top-0 z-30 px-4 md:px-6 flex items-center justify-between">
-      {/* Left: Hamburger & Store Switcher */}
-      <div className="flex items-center gap-4">
+    <header className="h-20 bg-[#070E0D]/95 backdrop-blur-md border-b border-[rgba(142,182,155,0.12)] sticky top-0 z-30 px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
+      {/* Left: Mobile Toggle & Store Switcher */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Only visible on mobile/tablet screens */}
         <button
           onClick={onToggleSidebar}
-          className="p-2 rounded-xl text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+          className="md:hidden h-10 w-10 rounded-xl text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors flex items-center justify-center border border-[rgba(142,182,155,0.14)]"
           title="Alternar Menu"
         >
           <Menu className="w-5 h-5" />
@@ -38,14 +39,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
         <div className="relative">
           <button
             onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
-            className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522] hover:border-[#10B981]/40 transition-all text-sm font-medium text-[#F3FBF6]"
+            className="h-10 flex items-center gap-2.5 px-3.5 sm:px-4 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522] hover:border-[#10B981]/40 transition-all text-xs sm:text-sm font-semibold text-[#F3FBF6]"
           >
-            <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-            <Store className="w-4 h-4 text-[#8EB69B]" />
-            <span className="hidden sm:inline-block max-w-[180px] truncate">
+            <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse flex-shrink-0" />
+            <Store className="w-4 h-4 text-[#8EB69B] flex-shrink-0" />
+            <span className="max-w-[140px] sm:max-w-[200px] truncate">
               {activeLoja?.nome || 'Selecionar Loja'}
             </span>
-            <ChevronDown className="w-4 h-4 text-[#94A89E]" />
+            <ChevronDown className="w-3.5 h-3.5 text-[#94A89E] flex-shrink-0" />
           </button>
 
           {storeDropdownOpen && (
@@ -92,48 +93,48 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
       </div>
 
       {/* Center: Global Search Bar */}
-      <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
+      <div className="hidden md:flex items-center flex-1 max-w-md mx-6 lg:mx-8">
         <button
           onClick={onOpenSearch}
-          className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] text-sm text-[#94A89E] hover:border-[rgba(142,182,155,0.3)] hover:text-[#F3FBF6] transition-all"
+          className="h-10 w-full flex items-center justify-between px-4 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] text-xs text-[#94A89E] hover:border-[rgba(142,182,155,0.3)] hover:text-[#F3FBF6] transition-all"
         >
-          <div className="flex items-center gap-2.5">
-            <Search className="w-4 h-4 text-[#8EB69B]" />
-            <span className="text-xs">Buscar produtos, EAN, clientes, vendas...</span>
+          <div className="flex items-center gap-2.5 truncate">
+            <Search className="w-4 h-4 text-[#8EB69B] flex-shrink-0" />
+            <span className="truncate">Buscar produtos, EAN, clientes, vendas...</span>
           </div>
-          <kbd className="hidden lg:inline-block px-2 py-0.5 text-[10px] font-mono rounded bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.18)]">
+          <kbd className="hidden lg:inline-block px-2 py-0.5 text-[10px] font-mono rounded bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.18)] flex-shrink-0 ml-2">
             ⌘K
           </kbd>
         </button>
       </div>
 
       {/* Right: Status Pill, Notifications & User Profile */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5 sm:gap-3.5">
         {/* Ledger Status Pill */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#163832]/60 border border-[rgba(142,182,155,0.18)] text-[11px] font-medium text-[#DAF1DE]">
+        <div className="hidden xl:flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#163832]/60 border border-[rgba(142,182,155,0.18)] text-[11px] font-medium text-[#DAF1DE]">
           <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
           <span>Ledger Imutável</span>
         </div>
 
         {/* Notifications */}
         <button
-          className="p-2 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors relative"
+          className="h-10 w-10 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors flex items-center justify-center relative flex-shrink-0"
           title="Notificações do Sistema"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+          <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
         </button>
 
         {/* User Dropdown */}
         <div className="relative">
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] hover:bg-[#142522] transition-colors"
+            className="h-10 flex items-center gap-2.5 pl-1.5 pr-3 sm:pr-3.5 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] hover:bg-[#142522] transition-colors flex-shrink-0"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#10B981] to-[#0B2B26] flex items-center justify-center font-bold text-xs text-white uppercase shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#10B981] to-[#0B2B26] flex items-center justify-center font-bold text-xs text-white uppercase shadow-sm flex-shrink-0">
               {user?.nome ? user.nome.charAt(0) : 'U'}
             </div>
-            <div className="hidden lg:flex flex-col text-left">
+            <div className="hidden sm:flex flex-col text-left">
               <span className="text-xs font-semibold text-[#F3FBF6] leading-tight">
                 {user?.nome || 'Operador'}
               </span>
@@ -141,7 +142,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
                 {user?.role || 'DONO'}
               </span>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-[#94A89E]" />
+            <ChevronDown className="w-3.5 h-3.5 text-[#94A89E] flex-shrink-0" />
           </button>
 
           {userMenuOpen && (
