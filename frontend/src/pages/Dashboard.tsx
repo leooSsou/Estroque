@@ -21,12 +21,22 @@ import {
   Layers,
 } from 'lucide-react';
 
+const CASH_FLOW_DATA = [
+  { month: 'Jan', fullMonth: 'Janeiro', revenue: 65000, expense: 42000, revPct: 65, expPct: 42 },
+  { month: 'Fev', fullMonth: 'Fevereiro', revenue: 72000, expense: 48000, revPct: 72, expPct: 48 },
+  { month: 'Mar', fullMonth: 'Março', revenue: 68000, expense: 40000, revPct: 68, expPct: 40 },
+  { month: 'Abr', fullMonth: 'Abril', revenue: 84000, expense: 52000, revPct: 84, expPct: 52 },
+  { month: 'Mai', fullMonth: 'Maio', revenue: 78000, expense: 49000, revPct: 78, expPct: 49 },
+  { month: 'Jun', fullMonth: 'Junho', revenue: 92000, expense: 58000, revPct: 92, expPct: 58 },
+];
+
 export const Dashboard: React.FC = () => {
   const { activeLoja } = useAuth();
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardAnalytics | null>(null);
   const [recentMovements, setRecentMovements] = useState<MovimentacaoEstoque[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredCashFlowIdx, setHoveredCashFlowIdx] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -134,20 +144,56 @@ export const Dashboard: React.FC = () => {
         {/* Central Chart: Dual-Tone Bar Visualization with Animated Stripes and Guide Tracks */}
         <BentoCard
           className="lg:col-span-2"
-          title="Fluxo de Caixa"
+          title={
+            <div className="flex items-center gap-3">
+              <span>Fluxo de Caixa</span>
+              {hoveredCashFlowIdx !== null ? (
+                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 font-bold tracking-wide">
+                  {CASH_FLOW_DATA[hoveredCashFlowIdx].fullMonth}
+                </span>
+              ) : (
+                <span className="text-xs font-mono text-[#5E756B] hidden sm:inline">
+                  Últimos 6 meses
+                </span>
+              )}
+            </div>
+          }
           action={
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-2 text-xs font-bold text-[#10B981] font-mono">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shadow-[0_0_10px_#10B981]" /> Faturamento
-              </span>
-              <span className="flex items-center gap-2 text-xs font-bold text-[#8EB69B] font-mono">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#8EB69B]" /> Despesas
-              </span>
+            <div className="flex items-center">
+              {hoveredCashFlowIdx !== null ? (
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-[#070E0D] border border-[#10B981]/40 px-3.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.18)] transition-all">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#10B981] font-mono">
+                    <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]" />
+                    <span>Fat: R$ {CASH_FLOW_DATA[hoveredCashFlowIdx].revenue.toLocaleString('pt-BR')}</span>
+                  </div>
+                  <span className="text-[rgba(142,182,155,0.3)]">|</span>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#F59E0B] font-mono">
+                    <span className="w-2 h-2 rounded-full bg-[#F59E0B] shadow-[0_0_8px_#F59E0B]" />
+                    <span>Desp: R$ {CASH_FLOW_DATA[hoveredCashFlowIdx].expense.toLocaleString('pt-BR')}</span>
+                  </div>
+                  <span className="text-[rgba(142,182,155,0.3)] hidden md:inline">|</span>
+                  <div className="hidden md:flex items-center gap-1.5 text-xs font-extrabold text-[#34D399] font-mono">
+                    <span>Lucro: +R$ {(CASH_FLOW_DATA[hoveredCashFlowIdx].revenue - CASH_FLOW_DATA[hoveredCashFlowIdx].expense).toLocaleString('pt-BR')}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4 bg-[#070E0D]/60 px-3.5 py-1.5 rounded-xl border border-[rgba(142,182,155,0.1)]">
+                  <span className="flex items-center gap-2 text-xs font-bold text-[#10B981] font-mono">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shadow-[0_0_10px_#10B981]" /> Faturamento
+                  </span>
+                  <span className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] font-mono">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B] shadow-[0_0_8px_#F59E0B]" /> Despesas
+                  </span>
+                </div>
+              )}
             </div>
           }
         >
           {/* Main Chart Area with Animated Stripe Texture */}
-          <div className="relative h-80 w-full chart-grid-stripes rounded-2xl border border-[rgba(142,182,155,0.12)] p-4 overflow-hidden mt-2 bg-[#070E0D]/60">
+          <div className="relative h-80 w-full rounded-2xl border border-[rgba(142,182,155,0.12)] p-4 mt-2 bg-[#070E0D]/60">
+            {/* Background Animated Stripes (safely isolated and clipped) */}
+            <div className="absolute inset-0 chart-grid-stripes rounded-2xl overflow-hidden pointer-events-none" />
+
             {/* Horizontal Alternating Bands / Faixas de Nível */}
             <div className="absolute inset-x-0 top-4 bottom-10 flex flex-col justify-between pointer-events-none pl-3 pr-4">
               {[
@@ -176,62 +222,64 @@ export const Dashboard: React.FC = () => {
 
             {/* Vertical Columns & Bars Container */}
             <div className="relative z-10 flex items-end justify-between gap-3 h-full pt-4 pb-2 pl-14 pr-4">
-              {[
-                { month: 'Jan', fullMonth: 'Janeiro', revenue: 65, expense: 42 },
-                { month: 'Fev', fullMonth: 'Fevereiro', revenue: 72, expense: 48 },
-                { month: 'Mar', fullMonth: 'Março', revenue: 68, expense: 40 },
-                { month: 'Abr', fullMonth: 'Abril', revenue: 84, expense: 52 },
-                { month: 'Mai', fullMonth: 'Maio', revenue: 78, expense: 49 },
-                { month: 'Jun', fullMonth: 'Junho', revenue: 92, expense: 58 },
-              ].map((bar, idx) => (
-                <div key={idx} className="flex-1 flex flex-col items-center gap-2.5 h-full justify-end group relative cursor-pointer">
-                  {/* Animated Column Track Beam (Faixa Vertical no Hover) */}
-                  <div className="absolute inset-y-0 -inset-x-1 rounded-2xl bg-transparent group-hover:bg-[#10B981]/[0.06] group-hover:border-x group-hover:border-[#10B981]/25 group-hover:shadow-[inset_0_0_20px_rgba(16,185,129,0.08)] transition-all duration-300 pointer-events-none" />
-
-                  {/* Floating Glassmorphism HUD Tooltip */}
-                  <div className="opacity-0 group-hover:opacity-100 absolute -top-14 left-1/2 -translate-x-1/2 bg-[#0D1917]/95 backdrop-blur-xl px-3.5 py-2 rounded-xl text-xs text-[#F3FBF6] whitespace-nowrap border border-[#10B981]/40 font-mono shadow-[0_12px_30px_rgba(0,0,0,0.9),0_0_20px_rgba(16,185,129,0.25)] z-30 pointer-events-none transition-all duration-200 group-hover:-translate-y-1">
-                    <div className="text-[11px] font-bold text-[#DAF1DE] pb-1 border-b border-[rgba(142,182,155,0.15)] mb-1 flex items-center justify-between gap-4">
-                      <span>{bar.fullMonth}</span>
-                      <span className="text-[#10B981] font-extrabold">Lucro: +R$ {(bar.revenue - bar.expense) * 1000}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px]">
-                      <span className="text-[#10B981] font-bold flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" /> R$ {bar.revenue * 1000}
-                      </span>
-                      <span className="text-[#8EB69B] flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#8EB69B]" /> R$ {bar.expense * 1000}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Dual Bars */}
-                  <div className="w-full max-w-[56px] flex items-end justify-center gap-2 h-full pb-2">
-                    {/* Revenue Bar with Striped Texture & Glowing Neon Cap */}
+              {CASH_FLOW_DATA.map((bar, idx) => {
+                const isHovered = hoveredCashFlowIdx === idx;
+                return (
+                  <div
+                    key={idx}
+                    onMouseEnter={() => setHoveredCashFlowIdx(idx)}
+                    onMouseLeave={() => setHoveredCashFlowIdx(null)}
+                    className="flex-1 flex flex-col items-center gap-2.5 h-full justify-end group relative cursor-pointer"
+                  >
+                    {/* Animated Column Track Beam (Faixa Vertical no Hover) */}
                     <div
-                      style={{ height: `${bar.revenue}%` }}
-                      className="w-1/2 bg-gradient-to-t from-[#061C18] via-[#0B382F] to-[#10B981] rounded-t-lg transition-all duration-300 group-hover:scale-y-[1.03] origin-bottom relative shadow-md shadow-[#10B981]/15 overflow-hidden"
-                    >
-                      {/* Glowing Top Cap */}
-                      <div className="absolute top-0 inset-x-0 h-1.5 bg-[#34D399] rounded-t-lg shadow-[0_0_12px_#10B981]" />
-                      {/* Diagonal Pinstripe Texture */}
-                      <div className="absolute inset-0 bar-stripes-pattern opacity-50" />
+                      className={`absolute inset-y-0 -inset-x-1 rounded-2xl transition-all duration-300 pointer-events-none ${
+                        isHovered
+                          ? 'bg-[#10B981]/[0.08] border-x border-[#10B981]/30 shadow-[inset_0_0_24px_rgba(16,185,129,0.12)]'
+                          : 'bg-transparent'
+                      }`}
+                    />
+
+                    {/* Dual Bars */}
+                    <div className="w-full max-w-[56px] flex items-end justify-center gap-2 h-full pb-2">
+                      {/* Revenue Bar with Striped Texture & Glowing Neon Cap */}
+                      <div
+                        style={{ height: `${bar.revPct}%` }}
+                        className={`w-1/2 bg-gradient-to-t from-[#061C18] via-[#0B382F] to-[#10B981] rounded-t-lg transition-all duration-300 origin-bottom relative shadow-md shadow-[#10B981]/15 overflow-hidden ${
+                          isHovered ? 'scale-y-[1.03] shadow-[#10B981]/40' : ''
+                        }`}
+                      >
+                        {/* Glowing Top Cap */}
+                        <div className="absolute top-0 inset-x-0 h-1.5 bg-[#34D399] rounded-t-lg shadow-[0_0_12px_#10B981]" />
+                        {/* Diagonal Pinstripe Texture */}
+                        <div className="absolute inset-0 bar-stripes-pattern opacity-50" />
+                      </div>
+
+                      {/* Expense Bar with Amber Glow Cap */}
+                      <div
+                        style={{ height: `${bar.expPct}%` }}
+                        className={`w-1/2 bg-gradient-to-t from-[#1F1608] via-[#3D280A] to-[#F59E0B] rounded-t-lg transition-all duration-300 origin-bottom relative overflow-hidden ${
+                          isHovered ? 'scale-y-[1.03] shadow-[0_0_10px_rgba(245,158,11,0.3)]' : ''
+                        }`}
+                      >
+                        {/* Glowing Top Cap for Expense */}
+                        <div className="absolute top-0 inset-x-0 h-1.5 bg-[#FBBF24] rounded-t-lg shadow-[0_0_10px_#F59E0B]" />
+                      </div>
                     </div>
 
-                    {/* Expense Bar */}
-                    <div
-                      style={{ height: `${bar.expense}%` }}
-                      className="w-1/2 bg-gradient-to-t from-[#091513] to-[#8EB69B]/70 rounded-t-lg transition-all duration-300 group-hover:scale-y-[1.03] group-hover:bg-[#8EB69B] origin-bottom relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 inset-x-0 h-1 bg-[#DAF1DE]/40 rounded-t-lg" />
-                    </div>
+                    {/* Month Label with Active Glowing Badge */}
+                    {isHovered ? (
+                      <span className="text-xs font-bold font-mono text-[#070E0D] bg-[#10B981] px-2.5 py-0.5 rounded-lg shadow-[0_0_12px_#10B981] scale-105 transition-all duration-200">
+                        {bar.month}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-bold font-mono text-[#8EB69B] group-hover:text-[#DAF1DE] transition-all duration-200">
+                        {bar.month}
+                      </span>
+                    )}
                   </div>
-
-                  {/* Month Label */}
-                  <span className="text-xs md:text-sm font-bold font-mono text-[#DAF1DE] group-hover:text-[#10B981] group-hover:scale-110 transition-all">
-                    {bar.month}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </BentoCard>
