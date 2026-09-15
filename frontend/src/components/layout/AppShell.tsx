@@ -53,6 +53,9 @@ export const AppShell: React.FC = () => {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
+      {/* Top glowing laser indicator on route change */}
+      <div key={`progress-${location.pathname}`} className="route-progress" />
+
       {/* Main Content Area */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
@@ -65,7 +68,7 @@ export const AppShell: React.FC = () => {
         />
 
         <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          <div key={location.pathname} className="animate-fade-in-up">
+          <div key={location.pathname} className="page-enter">
             <Outlet />
           </div>
         </main>
