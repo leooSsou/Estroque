@@ -4,7 +4,6 @@ import {
   Search,
   LogOut,
   ChevronDown,
-  ShieldCheck,
   Building2,
   Menu,
 } from 'lucide-react';
@@ -107,14 +106,8 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
         </button>
       </div>
 
-      {/* Right: Status Pill, Notifications & User Profile */}
+      {/* Right: User Profile */}
       <div className="flex items-center gap-2.5 sm:gap-3.5">
-        {/* Ledger Status Pill */}
-        <div className="hidden xl:flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#163832]/60 border border-[rgba(142,182,155,0.18)] text-[11px] font-medium text-[#DAF1DE]">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
-          <span>Ledger Imutável</span>
-        </div>
-
 
         {/* User Dropdown */}
         <div className="relative">
