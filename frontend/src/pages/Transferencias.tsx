@@ -135,10 +135,11 @@ export const Transferencias: React.FC = () => {
 
         <button
           onClick={() => setNewModalOpen(true)}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
+          className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none"
         >
-          <Plus className="w-4 h-4" />
-          <span>+ Nova Solicitação</span>
+          <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
+          <span>Nova Solicitação</span>
         </button>
       </div>
 
@@ -251,11 +252,13 @@ export const Transferencias: React.FC = () => {
         <form onSubmit={handleCreateTransfer} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Loja de Origem</label>
+              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+                Loja de Origem
+              </label>
               <select
                 value={origemId}
                 onChange={(e) => setOrigemId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -266,11 +269,13 @@ export const Transferencias: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Loja de Destino</label>
+              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+                Loja de Destino
+              </label>
               <select
                 value={destinoId}
                 onChange={(e) => setDestinoId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -282,11 +287,13 @@ export const Transferencias: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#94A89E] mb-1">Produto</label>
+            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+              Produto
+            </label>
             <select
               value={produtoId}
               onChange={(e) => setProdutoId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
             >
               {Object.values(produtos).map((p) => (
                 <option key={p.id} value={p.id}>
@@ -297,14 +304,16 @@ export const Transferencias: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#94A89E] mb-1">Quantidade a Transferir</label>
+            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+              Quantidade a Transferir
+            </label>
             <input
               type="number"
               min="1"
               required
               value={quantidade}
               onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)}
-              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
             />
           </div>
 
@@ -312,15 +321,15 @@ export const Transferencias: React.FC = () => {
             <button
               type="button"
               onClick={() => setNewModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="px-5 py-2.5 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] transition-all btn-press cursor-pointer active:scale-95"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
+              className="px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald transition-all btn-press cursor-pointer active:scale-95 flex items-center gap-2"
             >
-              Emitir Solicitação
+              <span>Emitir Solicitação</span>
             </button>
           </div>
         </form>
@@ -334,17 +343,17 @@ export const Transferencias: React.FC = () => {
       >
         <form onSubmit={handleConfirmReceiving} className="space-y-4">
           <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)] space-y-2">
-            <div className="text-xs text-[#94A89E]">Manifesto de Envio:</div>
-            <div className="text-sm font-semibold text-[#F3FBF6]">
+            <div className="text-xs font-bold text-[#A2B89B] uppercase tracking-wider">Manifesto de Envio:</div>
+            <div className="text-base font-bold text-[#F3FBF6]">
               {produtos[activeTransfer?.produto_id || '']?.nome}
             </div>
-            <div className="text-xs font-mono text-[#8EB69B]">
-              Quantidade Despachada no Manifesto: <strong>{activeTransfer?.quantidade}</strong> un
+            <div className="text-sm font-mono text-[#8EB69B]">
+              Quantidade Despachada no Manifesto: <strong className="text-base text-[#10B981]">{activeTransfer?.quantidade}</strong> un
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#94A89E] mb-1">
+            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
               Quantidade Física Contada no Recebimento
             </label>
             <input
@@ -353,17 +362,17 @@ export const Transferencias: React.FC = () => {
               required
               value={scannedQty}
               onChange={(e) => setScannedQty(parseInt(e.target.value) || 0)}
-              className="w-full px-3 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-base font-mono font-bold text-[#10B981] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-base font-mono font-bold text-[#10B981] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
             />
           </div>
 
           {activeTransfer && scannedQty !== activeTransfer.quantidade && (
-            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 space-y-2">
+            <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold text-red-400">
                 <AlertTriangle className="w-4 h-4" />
                 <span>Divergência Detectada! (Diferença de {scannedQty - activeTransfer.quantidade} un)</span>
               </div>
-              <label className="block text-[11px] text-red-200">
+              <label className="block text-xs font-bold text-red-200">
                 Justificativa Obrigatória para Auditoria:
               </label>
               <textarea
@@ -372,7 +381,7 @@ export const Transferencias: React.FC = () => {
                 value={justificativa}
                 onChange={(e) => setJustificativa(e.target.value)}
                 placeholder="Ex: Caixa violada durante o transporte, faltou 1 unidade..."
-                className="w-full px-3 py-1.5 rounded-xl bg-[#070E0D] border border-red-500/30 text-xs text-red-100 focus:outline-none"
+                className="w-full px-3.5 py-2 rounded-xl bg-[#070E0D] border border-red-500/30 text-xs text-red-100 placeholder-red-300/40 focus:outline-none focus:border-red-500 transition-all"
               />
             </div>
           )}
@@ -381,15 +390,15 @@ export const Transferencias: React.FC = () => {
             <button
               type="button"
               onClick={() => setReceivingModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="px-5 py-2.5 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] transition-all btn-press cursor-pointer active:scale-95"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
+              className="px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald transition-all btn-press cursor-pointer active:scale-95 flex items-center gap-2"
             >
-              Confirmar Recebimento
+              <span>Confirmar Recebimento</span>
             </button>
           </div>
         </form>

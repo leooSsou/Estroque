@@ -118,9 +118,10 @@ export const Auditoria: React.FC = () => {
         <button
           onClick={handleApproveReconciliation}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
+          className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none disabled:opacity-50 disabled:pointer-events-none"
         >
-          <CheckCircle2 className="w-4 h-4" />
+          <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+          <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
           <span>Aprovar Ajuste de Estoque</span>
         </button>
       </div>
@@ -150,9 +151,10 @@ export const Auditoria: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald transition-all flex items-center justify-center gap-2 flex-shrink-0 btn-press cursor-pointer"
+            className="relative group overflow-hidden w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_24px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2 flex-shrink-0 active:scale-95 cursor-pointer select-none"
           >
-            <Sparkles className="w-4 h-4" />
+            <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+            <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
             <span>Bipar Item (+1)</span>
           </button>
         </form>
@@ -237,21 +239,21 @@ export const Auditoria: React.FC = () => {
                       <div className="inline-flex items-center gap-1.5">
                         <button
                           onClick={() => handleIncrement(idx, -1)}
-                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/40 transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
                           title="Subtrair 1"
                         >
                           -1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 1)}
-                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#10B981] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#10B981] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/50 transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
                           title="Somar 1"
                         >
                           +1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 5)}
-                          className="px-3 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#34D399] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          className="px-3 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#34D399] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/50 transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
                           title="Somar 5"
                         >
                           +5

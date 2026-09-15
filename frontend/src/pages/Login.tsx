@@ -183,10 +183,11 @@ export const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-6 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald transition-all flex items-center justify-center gap-2 group disabled:opacity-50 btn-press cursor-pointer"
+                className="relative group overflow-hidden w-full py-3.5 px-6 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 cursor-pointer select-none disabled:opacity-50 disabled:pointer-events-none"
               >
+                <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
                 <span>{loading ? 'Validando credenciais...' : 'Acessar Plataforma'}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
               </button>
             </div>
           </form>
@@ -205,9 +206,9 @@ export const Login: React.FC = () => {
             type="button"
             onClick={handleDemoLogin}
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-sm font-bold text-[#DAF1DE] transition-all flex items-center justify-center gap-2 btn-press cursor-pointer"
+            className="group w-full py-3.5 px-4 rounded-2xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-sm font-bold text-[#DAF1DE] hover:text-white transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 cursor-pointer select-none"
           >
-            <ShieldCheck className="w-4 h-4 text-[#10B981]" />
+            <ShieldCheck className="w-4 h-4 text-[#10B981] group-hover:scale-110 transition-transform duration-200" />
             <span>Entrar em Modo Demonstração (Dono da Rede)</span>
           </button>
         </div>

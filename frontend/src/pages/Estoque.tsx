@@ -92,10 +92,11 @@ export const Estoque: React.FC = () => {
 
         <button
           onClick={() => handleOpenMovement()}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
+          className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none"
         >
-          <Plus className="w-4 h-4" />
-          <span>+ Nova Movimentação</span>
+          <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
+          <span>Nova Movimentação</span>
         </button>
       </div>
 
@@ -246,13 +247,32 @@ export const Estoque: React.FC = () => {
             </select>
           </div>
 
+          <div>
+            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+              Produto
+            </label>
+            <select
+              value={movProdutoId}
+              onChange={(e) => setMovProdutoId(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
+            >
+              {produtos.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.sku} - {p.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Loja / Depósito</label>
+              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+                Loja / Depósito
+              </label>
               <select
                 value={movLojaId}
                 onChange={(e) => setMovLojaId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -263,30 +283,32 @@ export const Estoque: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Tipo</label>
+              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+                Tipo de Movimentação
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setMovTipo('ENTRADA')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 btn-press cursor-pointer select-none ${
                     movTipo === 'ENTRADA'
-                      ? 'bg-[#10B981] text-[#070E0D]'
-                      : 'bg-[#070E0D] text-[#94A89E] border border-[rgba(142,182,155,0.15)]'
+                      ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
+                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
                   }`}
                 >
-                  <ArrowDownRight className="w-3.5 h-3.5" />
+                  <ArrowDownRight className="w-4 h-4" />
                   <span>ENTRADA</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMovTipo('SAIDA')}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 btn-press cursor-pointer select-none ${
                     movTipo === 'SAIDA'
-                      ? 'bg-red-500 text-white'
-                      : 'bg-[#070E0D] text-[#94A89E] border border-[rgba(142,182,155,0.15)]'
+                      ? 'bg-red-500 text-white shadow-[0_2px_12px_rgba(239,68,68,0.4)]'
+                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
                   }`}
                 >
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <ArrowUpRight className="w-4 h-4" />
                   <span>SAÍDA</span>
                 </button>
               </div>
@@ -295,23 +317,27 @@ export const Estoque: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Quantidade</label>
+              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+                Quantidade
+              </label>
               <input
                 type="number"
                 min="1"
                 required
                 value={movQtd}
                 onChange={(e) => setMovQtd(parseInt(e.target.value) || 1)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1">Motivo / Razão</label>
+              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
+                Motivo / Justificativa
+              </label>
               <select
                 value={movMotivo}
                 onChange={(e) => setMovMotivo(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
               >
                 <option value="Ajuste de inventário rotativo">Ajuste de inventário rotativo</option>
                 <option value="Avaria ou dano em transporte">Avaria ou dano em transporte</option>
@@ -326,15 +352,15 @@ export const Estoque: React.FC = () => {
             <button
               type="button"
               onClick={() => setMovementModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="px-5 py-2.5 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] transition-all btn-press cursor-pointer active:scale-95"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
+              className="px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald transition-all btn-press cursor-pointer active:scale-95 flex items-center gap-2"
             >
-              Confirmar Movimentação
+              <span>Confirmar Movimentação</span>
             </button>
           </div>
         </form>

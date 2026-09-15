@@ -98,17 +98,18 @@ export const LedgerAuditoria: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-xs font-semibold text-[#DAF1DE] transition-all flex items-center gap-2"
+            className="group px-4 py-2.5 rounded-2xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-xs font-bold text-[#DAF1DE] hover:text-white transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
           >
-            <Download className="w-4 h-4 text-[#8EB69B]" />
+            <Download className="w-4 h-4 text-[#8EB69B] group-hover:text-[#10B981] group-hover:-translate-y-0.5 transition-transform duration-200" />
             <span>Exportar CSV</span>
           </button>
 
           <button
             onClick={() => navigate('/auditoria')}
-            className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald transition-all flex items-center gap-2"
+            className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-extrabold shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
           >
-            <ClipboardList className="w-4 h-4" />
+            <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+            <ClipboardList className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
             <span>Auditoria Física Cega</span>
           </button>
         </div>

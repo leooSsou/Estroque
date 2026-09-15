@@ -311,7 +311,7 @@ export const PDVVendas: React.FC = () => {
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => updateQuantity(item.produto.id, -1)}
-                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] btn-press"
+                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/40 active:scale-90 cursor-pointer select-none transition-all"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -320,7 +320,7 @@ export const PDVVendas: React.FC = () => {
                       </span>
                       <button
                         onClick={() => updateQuantity(item.produto.id, 1)}
-                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#10B981] border border-[rgba(142,182,155,0.2)] btn-press"
+                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#10B981] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/50 active:scale-90 cursor-pointer select-none transition-all"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -350,10 +350,10 @@ export const PDVVendas: React.FC = () => {
                       key={pm.id}
                       type="button"
                       onClick={() => setFormaPagamento(pm.id as FormaPagamento)}
-                      className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold btn-press ${
+                      className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold active:scale-95 cursor-pointer select-none ${
                         formaPagamento === pm.id
-                          ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
-                          : 'bg-[#070E0D] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522]'
+                          ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald font-extrabold'
+                          : 'bg-[#070E0D] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522] hover:border-[#10B981]/40'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -405,9 +405,10 @@ export const PDVVendas: React.FC = () => {
               <button
                 onClick={handleFinalizeSale}
                 disabled={cart.length === 0 || crediarioExcedido}
-                className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm md:text-base font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
+                className="relative group overflow-hidden w-full py-4 px-5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm md:text-base font-extrabold shadow-glow-emerald hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:pointer-events-none mt-2 active:scale-95 cursor-pointer select-none"
               >
-                <CheckCircle2 className="w-5 h-5" />
+                <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+                <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
                 <span>Finalizar Venda & Emitir Cupom</span>
               </button>
             </div>
@@ -466,7 +467,7 @@ export const PDVVendas: React.FC = () => {
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               onClick={() => setReceiptModalOpen(false)}
-              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
+              className="px-5 py-2.5 rounded-2xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] transition-all active:scale-95 cursor-pointer select-none"
             >
               Fechar
             </button>
@@ -474,9 +475,10 @@ export const PDVVendas: React.FC = () => {
               onClick={() => {
                 window.print();
               }}
-              className="px-6 py-2 rounded-full bg-[#10B981] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
+              className="relative group overflow-hidden px-6 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-extrabold shadow-glow-emerald hover:shadow-[0_0_24px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
             >
-              <Printer className="w-4 h-4" />
+              <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+              <Printer className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
               <span>Imprimir Comprovante</span>
             </button>
           </div>
