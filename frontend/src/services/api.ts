@@ -111,7 +111,7 @@ class ApiClient {
 
   // --- LOJAS ---
   async getLojas(): Promise<Loja[]> {
-    const res = await this.request<Loja[]>('/lojas');
+    const res = await this.request<Loja[]>('/lojas/');
     if (res.data && Array.isArray(res.data)) {
       return res.data;
     }
@@ -119,7 +119,7 @@ class ApiClient {
   }
 
   async createLoja(dados: Omit<Loja, 'id' | 'tenant_id'>): Promise<Loja> {
-    const res = await this.request<Loja>('/lojas', {
+    const res = await this.request<Loja>('/lojas/', {
       method: 'POST',
       body: JSON.stringify(dados),
     });
@@ -129,7 +129,7 @@ class ApiClient {
 
   // --- PRODUTOS ---
   async getProdutos(lojaId?: string): Promise<Produto[]> {
-    const endpoint = lojaId ? `/produtos?loja_id=${lojaId}` : '/produtos';
+    const endpoint = lojaId ? `/produtos/?loja_id=${lojaId}` : '/produtos/';
     const res = await this.request<Produto[]>(endpoint);
     if (res.data && Array.isArray(res.data)) {
       return res.data;
@@ -143,7 +143,7 @@ class ApiClient {
       loja_id?: string;
     }
   ): Promise<Produto> {
-    const res = await this.request<Produto>('/produtos', {
+    const res = await this.request<Produto>('/produtos/', {
       method: 'POST',
       body: JSON.stringify({
         nome: dados.nome,
@@ -195,7 +195,7 @@ class ApiClient {
 
   // --- CLIENTES ---
   async getClientes(): Promise<Cliente[]> {
-    const res = await this.request<Cliente[]>('/clientes');
+    const res = await this.request<Cliente[]>('/clientes/');
     if (res.data && Array.isArray(res.data)) {
       return res.data;
     }
@@ -203,7 +203,7 @@ class ApiClient {
   }
 
   async createCliente(dados: Omit<Cliente, 'id' | 'tenant_id' | 'saldo_devedor_crediario'>): Promise<Cliente> {
-    const res = await this.request<Cliente>('/clientes', {
+    const res = await this.request<Cliente>('/clientes/', {
       method: 'POST',
       body: JSON.stringify(dados),
     });
@@ -213,7 +213,7 @@ class ApiClient {
 
   // --- FORNECEDORES ---
   async getFornecedores(): Promise<Fornecedor[]> {
-    const res = await this.request<Fornecedor[]>('/fornecedores');
+    const res = await this.request<Fornecedor[]>('/fornecedores/');
     if (res.data && Array.isArray(res.data)) {
       return res.data;
     }
@@ -221,7 +221,7 @@ class ApiClient {
   }
 
   async createFornecedor(dados: Omit<Fornecedor, 'id' | 'tenant_id'>): Promise<Fornecedor> {
-    const res = await this.request<Fornecedor>('/fornecedores', {
+    const res = await this.request<Fornecedor>('/fornecedores/', {
       method: 'POST',
       body: JSON.stringify(dados),
     });
@@ -231,7 +231,7 @@ class ApiClient {
 
   // --- TRANSFERENCIAS ---
   async getTransferencias(): Promise<TransferenciaEstoque[]> {
-    const res = await this.request<TransferenciaEstoque[]>('/transferencias');
+    const res = await this.request<TransferenciaEstoque[]>('/estoque/transferencias');
     if (res.data && Array.isArray(res.data)) {
       return res.data;
     }
@@ -244,7 +244,7 @@ class ApiClient {
     produto_id: string;
     quantidade: number;
   }): Promise<TransferenciaEstoque> {
-    const res = await this.request<TransferenciaEstoque>('/transferencias/solicitar', {
+    const res = await this.request<TransferenciaEstoque>('/estoque/transferencias', {
       method: 'POST',
       body: JSON.stringify(dados),
     });
@@ -253,7 +253,7 @@ class ApiClient {
   }
 
   async despacharTransferencia(id: string): Promise<TransferenciaEstoque | null> {
-    const res = await this.request<TransferenciaEstoque>(`/transferencias/${id}/despachar`, {
+    const res = await this.request<TransferenciaEstoque>(`/estoque/transferencias/${id}/despachar`, {
       method: 'POST',
     });
     if (res.data) return res.data;
@@ -265,7 +265,7 @@ class ApiClient {
     quantidadeRecebida: number,
     justificativa?: string
   ): Promise<TransferenciaEstoque | null> {
-    const res = await this.request<TransferenciaEstoque>(`/transferencias/${id}/receber`, {
+    const res = await this.request<TransferenciaEstoque>(`/estoque/transferencias/${id}/receber`, {
       method: 'POST',
       body: JSON.stringify({ quantidade_recebida: quantidadeRecebida, justificativa }),
     });
