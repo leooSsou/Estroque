@@ -190,96 +190,123 @@ export const Dashboard: React.FC = () => {
           }
         >
           {/* Main Chart Area with Animated Stripe Texture */}
-          <div className="relative h-80 w-full rounded-2xl border border-[rgba(142,182,155,0.12)] p-4 mt-2 bg-[#070E0D]/60">
+          <div className="relative w-full rounded-2xl border border-[rgba(142,182,155,0.12)] p-5 mt-2 bg-[#070E0D]/60 select-none overflow-hidden">
             {/* Background Animated Stripes (safely isolated and clipped) */}
             <div className="absolute inset-0 chart-grid-stripes rounded-2xl overflow-hidden pointer-events-none" />
 
-            {/* Horizontal Alternating Bands / Faixas de Nível */}
-            <div className="absolute inset-x-0 top-4 bottom-10 flex flex-col justify-between pointer-events-none pl-3 pr-4">
-              {[
-                { label: 'R$ 100k', pct: 100 },
-                { label: 'R$ 75k', pct: 75 },
-                { label: 'R$ 50k', pct: 50 },
-                { label: 'R$ 25k', pct: 25 },
-                { label: 'R$ 0', pct: 0 },
-              ].map((lvl, i) => (
-                <div key={i} className="w-full flex items-center gap-3">
-                  <span className="text-[10px] font-mono text-[#5E756B] w-12 text-right font-semibold">
-                    {lvl.label}
-                  </span>
-                  <div className="flex-1 border-b border-dashed border-[rgba(142,182,155,0.15)] chart-grid-line" />
-                </div>
-              ))}
-            </div>
+            {/* 1. Main Plot Area: Y-Axis Labels + Grid/Bars Canvas */}
+            <div className="relative z-10 flex h-60 w-full">
+              {/* Y-Axis Currency Reference Labels */}
+              <div className="w-14 flex flex-col justify-between text-right pr-3.5 py-0.5 font-mono text-[10px] text-[#5E756B] font-semibold select-none flex-shrink-0">
+                <span>R$ 100k</span>
+                <span>R$ 75k</span>
+                <span>R$ 50k</span>
+                <span>R$ 25k</span>
+                <span>R$ 0</span>
+              </div>
 
-            {/* Alternating Horizontal Gradient Faixas */}
-            <div className="absolute inset-x-0 top-4 bottom-10 left-16 right-4 flex flex-col pointer-events-none">
-              <div className="flex-1 bg-[#10B981]/[0.015] border-b border-[rgba(142,182,155,0.06)]" />
-              <div className="flex-1 bg-transparent border-b border-[rgba(142,182,155,0.06)]" />
-              <div className="flex-1 bg-[#10B981]/[0.015] border-b border-[rgba(142,182,155,0.06)]" />
-              <div className="flex-1 bg-transparent" />
-            </div>
-
-            {/* Vertical Columns & Bars Container */}
-            <div className="relative z-10 flex items-end justify-between gap-3 h-full pt-4 pb-2 pl-14 pr-4">
-              {CASH_FLOW_DATA.map((bar, idx) => {
-                const isHovered = hoveredCashFlowIdx === idx;
-                return (
-                  <div
-                    key={idx}
-                    onMouseEnter={() => setHoveredCashFlowIdx(idx)}
-                    onMouseLeave={() => setHoveredCashFlowIdx(null)}
-                    className="flex-1 flex flex-col items-center gap-2.5 h-full justify-end group relative cursor-pointer"
-                  >
-                    {/* Animated Column Track Beam (Faixa Vertical no Hover) */}
+              {/* Grid & Bars Canvas Area */}
+              <div className="flex-1 relative h-full">
+                {/* Horizontal Dashed Reference Gridlines */}
+                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none py-0.5">
+                  {[100, 75, 50, 25, 0].map((val) => (
                     <div
-                      className={`absolute inset-y-0 -inset-x-1 rounded-2xl transition-all duration-300 pointer-events-none ${
-                        isHovered
-                          ? 'bg-[#10B981]/[0.08] border-x border-[#10B981]/30 shadow-[inset_0_0_24px_rgba(16,185,129,0.12)]'
-                          : 'bg-transparent'
-                      }`}
+                      key={val}
+                      className="w-full border-b border-dashed border-[rgba(142,182,155,0.14)] chart-grid-line"
                     />
+                  ))}
+                </div>
 
-                    {/* Dual Bars */}
-                    <div className="w-full max-w-[56px] flex items-end justify-center gap-2 h-full pb-2">
-                      {/* Revenue Bar with Striped Texture & Glowing Neon Cap */}
-                      <div
-                        style={{ height: `${bar.revPct}%` }}
-                        className={`w-1/2 bg-gradient-to-t from-[#061C18] via-[#0B382F] to-[#10B981] rounded-t-lg transition-all duration-300 origin-bottom relative shadow-md shadow-[#10B981]/15 overflow-hidden ${
-                          isHovered ? 'scale-y-[1.03] shadow-[#10B981]/40' : ''
-                        }`}
-                      >
-                        {/* Glowing Top Cap */}
-                        <div className="absolute top-0 inset-x-0 h-1.5 bg-[#34D399] rounded-t-lg shadow-[0_0_12px_#10B981]" />
-                        {/* Diagonal Pinstripe Texture */}
-                        <div className="absolute inset-0 bar-stripes-pattern opacity-50" />
-                      </div>
+                {/* Alternating Shaded Bands */}
+                <div className="absolute inset-0 flex flex-col pointer-events-none py-0.5">
+                  <div className="flex-1 bg-[#10B981]/[0.015]" />
+                  <div className="flex-1 bg-transparent" />
+                  <div className="flex-1 bg-[#10B981]/[0.015]" />
+                  <div className="flex-1 bg-transparent" />
+                </div>
 
-                      {/* Expense Bar with Amber Glow Cap */}
+                {/* The 6 Month Columns (Evenly Divided with grid-cols-6) */}
+                <div className="relative z-10 grid grid-cols-6 h-full gap-2 px-1">
+                  {CASH_FLOW_DATA.map((bar, idx) => {
+                    const isHovered = hoveredCashFlowIdx === idx;
+                    return (
                       <div
-                        style={{ height: `${bar.expPct}%` }}
-                        className={`w-1/2 bg-gradient-to-t from-[#1F1608] via-[#3D280A] to-[#F59E0B] rounded-t-lg transition-all duration-300 origin-bottom relative overflow-hidden ${
-                          isHovered ? 'scale-y-[1.03] shadow-[0_0_10px_rgba(245,158,11,0.3)]' : ''
-                        }`}
+                        key={idx}
+                        onMouseEnter={() => setHoveredCashFlowIdx(idx)}
+                        onMouseLeave={() => setHoveredCashFlowIdx(null)}
+                        className="relative flex items-end justify-center h-full cursor-pointer group py-0.5"
                       >
-                        {/* Glowing Top Cap for Expense */}
-                        <div className="absolute top-0 inset-x-0 h-1.5 bg-[#FBBF24] rounded-t-lg shadow-[0_0_10px_#F59E0B]" />
+                        {/* Column Hover Beam Track */}
+                        <div
+                          className={`absolute inset-y-0 inset-x-0.5 rounded-xl transition-all duration-300 pointer-events-none ${
+                            isHovered
+                              ? 'bg-[#10B981]/[0.08] border border-[#10B981]/30 shadow-[inset_0_0_20px_rgba(16,185,129,0.12)]'
+                              : 'bg-transparent'
+                          }`}
+                        />
+
+                        {/* Dual Bars: Revenue (Green) & Expense (Amber) */}
+                        <div className="relative z-10 w-full max-w-[48px] flex items-end justify-center gap-1.5 sm:gap-2 h-full">
+                          {/* Revenue Bar */}
+                          <div
+                            style={{ height: `${bar.revPct}%` }}
+                            className={`w-1/2 bg-gradient-to-t from-[#061C18] via-[#0B382F] to-[#10B981] rounded-t-md transition-all duration-300 origin-bottom relative shadow-md shadow-[#10B981]/15 overflow-hidden ${
+                              isHovered ? 'scale-y-[1.02] shadow-[#10B981]/40' : ''
+                            }`}
+                          >
+                            {/* Glowing Neon Cap */}
+                            <div className="absolute top-0 inset-x-0 h-1 bg-[#34D399] rounded-t-md shadow-[0_0_10px_#10B981]" />
+                            {/* Diagonal Pinstripe Texture */}
+                            <div className="absolute inset-0 bar-stripes-pattern opacity-40" />
+                          </div>
+
+                          {/* Expense Bar with Amber Glow Cap */}
+                          <div
+                            style={{ height: `${bar.expPct}%` }}
+                            className={`w-1/2 bg-gradient-to-t from-[#1F1608] via-[#3D280A] to-[#F59E0B] rounded-t-md transition-all duration-300 origin-bottom relative overflow-hidden ${
+                              isHovered ? 'scale-y-[1.02] shadow-[0_0_10px_rgba(245,158,11,0.3)]' : ''
+                            }`}
+                          >
+                            {/* Glowing Neon Cap */}
+                            <div className="absolute top-0 inset-x-0 h-1 bg-[#FBBF24] rounded-t-md shadow-[0_0_8px_#F59E0B]" />
+                          </div>
+                        </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* 2. X-Axis Month Labels Row (Aligned perfectly under each column) */}
+            <div className="relative z-10 flex w-full mt-3 pt-2.5 border-t border-[rgba(142,182,155,0.08)]">
+              {/* Spacer matching the Y-Axis width */}
+              <div className="w-14 flex-shrink-0" />
+
+              {/* Month Labels in grid-cols-6 matching columns */}
+              <div className="flex-1 grid grid-cols-6 gap-2 px-1">
+                {CASH_FLOW_DATA.map((bar, idx) => {
+                  const isHovered = hoveredCashFlowIdx === idx;
+                  return (
+                    <div
+                      key={idx}
+                      onMouseEnter={() => setHoveredCashFlowIdx(idx)}
+                      onMouseLeave={() => setHoveredCashFlowIdx(null)}
+                      className="flex items-center justify-center cursor-pointer py-0.5"
+                    >
+                      {isHovered ? (
+                        <span className="text-xs font-bold font-mono text-[#070E0D] bg-[#10B981] px-3 py-0.5 rounded-lg shadow-[0_0_14px_#10B981] scale-105 transition-all duration-200">
+                          {bar.month}
+                        </span>
+                      ) : (
+                        <span className="text-xs font-bold font-mono text-[#8EB69B] hover:text-[#DAF1DE] transition-all duration-200">
+                          {bar.month}
+                        </span>
+                      )}
                     </div>
-
-                    {/* Month Label with Active Glowing Badge */}
-                    {isHovered ? (
-                      <span className="text-xs font-bold font-mono text-[#070E0D] bg-[#10B981] px-2.5 py-0.5 rounded-lg shadow-[0_0_12px_#10B981] scale-105 transition-all duration-200">
-                        {bar.month}
-                      </span>
-                    ) : (
-                      <span className="text-xs font-bold font-mono text-[#8EB69B] group-hover:text-[#DAF1DE] transition-all duration-200">
-                        {bar.month}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </BentoCard>
