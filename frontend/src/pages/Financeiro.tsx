@@ -86,11 +86,8 @@ export const Financeiro: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-            Gestão Financeira & Fluxo de Caixa
+            Gestão Financeira
           </h1>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Controle de receitas do PDV, despesas operacionais e rotina de fechamento diário automatizada via Celery.
-          </p>
         </div>
 
         <button
@@ -105,27 +102,24 @@ export const Financeiro: React.FC = () => {
       {/* Financial KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          title="Receitas Consolidadas"
+          title="Receitas"
           value={`R$ ${totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={ArrowDownRight}
           badge={{ text: '+18.2%', trend: 'up' }}
-          subtitle="Vendas à vista & crediário"
         />
 
         <StatCard
-          title="Despesas Operacionais"
+          title="Despesas"
           value={`R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={ArrowUpRight}
           badge={{ text: 'Controlado', trend: 'neutral' }}
-          subtitle="Contas fixas & fornecedores"
         />
 
         <StatCard
-          title="Saldo Líquido em Caixa"
+          title="Saldo em Caixa"
           value={`R$ ${saldoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={DollarSign}
           badge={{ text: saldoLiquido >= 0 ? '+ Superávit' : 'Déficit', trend: saldoLiquido >= 0 ? 'up' : 'warning' }}
-          subtitle="Posição financeira em tempo real"
         />
       </div>
 
@@ -135,7 +129,6 @@ export const Financeiro: React.FC = () => {
         <div className="lg:col-span-8">
           <BentoCard
             title="Lançamentos & Extrato Contábil"
-            subtitle="Histórico de movimentações financeiras da filial"
           >
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -186,8 +179,7 @@ export const Financeiro: React.FC = () => {
         {/* Celery Automated Daily Close Widget (4 cols) */}
         <div className="lg:col-span-4 space-y-4">
           <BentoCard
-            title="Fechamento Diário Automatizado"
-            subtitle="Tarefa agendada Celery / Redis executada às 23:59"
+            title="Fechamento Diário"
           >
             <div className="space-y-4 pt-1">
               <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.15)] space-y-3">
@@ -223,7 +215,7 @@ export const Financeiro: React.FC = () => {
                 className="w-full py-2.5 px-4 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] flex items-center justify-center gap-2 transition-all"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>Simular Envio de Relatório Agora</span>
+                <span>Simular Envio de Relatório</span>
               </button>
             </div>
           </BentoCard>
@@ -235,7 +227,6 @@ export const Financeiro: React.FC = () => {
         isOpen={newExpenseModal}
         onClose={() => setNewExpenseModal(false)}
         title="Registrar Despesa Operacional"
-        subtitle="Lançamento no contas a pagar da loja ativa"
       >
         <form onSubmit={handleCreateExpense} className="space-y-4">
           <div>

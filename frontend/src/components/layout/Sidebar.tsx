@@ -26,16 +26,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
   const { activeLoja } = useAuth();
 
   const navItems = [
-    { to: '/', label: 'Visão Geral', icon: LayoutDashboard, badge: null },
-    { to: '/produtos', label: 'Produtos & Markup', icon: Package, badge: 'Bling' },
-    { to: '/estoque', label: 'Estoque & Saldos', icon: Boxes, badge: null },
-    { to: '/ledger', label: 'Ledger & Auditoria', icon: ScrollText, badge: 'Imutável' },
-    { to: '/nfe', label: 'Importar NF-e XML', icon: FileSpreadsheet, badge: 'v4.00' },
-    { to: '/transferencias', label: 'Transferências', icon: ArrowLeftRight, badge: null },
-    { to: '/pdv', label: 'Balcão / PDV', icon: ShoppingCart, badge: 'Crediário' },
-    { to: '/financeiro', label: 'Financeiro & Caixa', icon: Wallet, badge: null },
-    { to: '/contatos', label: 'Clientes & Contatos', icon: Users, badge: null },
-    { to: '/analytics', label: 'Curva ABC (Pareto)', icon: BarChart3, badge: 'BI' },
+    { to: '/', label: 'Visão Geral', icon: LayoutDashboard },
+    { to: '/produtos', label: 'Produtos', icon: Package },
+    { to: '/estoque', label: 'Estoque', icon: Boxes },
+    { to: '/ledger', label: 'Auditoria & Ledger', icon: ScrollText },
+    { to: '/nfe', label: 'Entrada NF-e', icon: FileSpreadsheet },
+    { to: '/transferencias', label: 'Transferências', icon: ArrowLeftRight },
+    { to: '/pdv', label: 'Frente de Caixa', icon: ShoppingCart },
+    { to: '/financeiro', label: 'Financeiro', icon: Wallet },
+    { to: '/contatos', label: 'Contatos', icon: Users },
+    { to: '/analytics', label: 'Curva ABC', icon: BarChart3 },
   ];
 
   return (
@@ -59,14 +59,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
             className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] flex-shrink-0`}
           />
           {!collapsed && (
-            <div className="flex flex-col min-w-0">
-              <span className="font-extrabold text-lg tracking-wider text-[#F3FBF6] uppercase leading-tight font-mono truncate">
-                ESTROQUE
-              </span>
-              <span className="text-[10px] text-[#10B981] font-semibold tracking-widest uppercase truncate">
-                ENTERPRISE ERP
-              </span>
-            </div>
+            <span className="font-extrabold text-lg tracking-wider text-[#F3FBF6] uppercase leading-tight font-mono truncate">
+              ESTROQUE
+            </span>
           )}
         </div>
 
@@ -121,14 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                   )}
                   <Icon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />
                   {!collapsed && (
-                    <div className="flex items-center justify-between flex-1 truncate">
-                      <span className="truncate">{item.label}</span>
-                      {item.badge && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#163832] text-[#8EB69B] border border-[rgba(142,182,155,0.15)] font-mono">
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
+                    <span className="truncate flex-1">{item.label}</span>
                   )}
                 </>
               )}

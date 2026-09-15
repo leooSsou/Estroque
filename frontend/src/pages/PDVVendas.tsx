@@ -171,15 +171,9 @@ export const PDVVendas: React.FC = () => {
       {/* POS Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-              Frente de Caixa (PDV) & Vendas
-            </h1>
-            <Badge variant="mint">Operação Balcão</Badge>
-          </div>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Lançamento ágil com validação em tempo real de limite de crediário por cliente.
-          </p>
+          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+            Frente de Caixa (PDV)
+          </h1>
         </div>
       </div>
 

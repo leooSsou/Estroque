@@ -109,15 +109,9 @@ export const Auditoria: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-              Auditoria Física & Inventário Rotativo
-            </h1>
-            <Badge variant="mint">Sessão Ativa #{Date.now().toString().slice(-4)}</Badge>
-          </div>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Contagem cega de inventário na loja com bipagem de código de barras e balanço contábil automático.
-          </p>
+          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+            Auditoria & Inventário Físico
+          </h1>
         </div>
 
         <button
@@ -126,7 +120,7 @@ export const Auditoria: React.FC = () => {
           className="px-6 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
         >
           <CheckCircle2 className="w-4 h-4" />
-          <span>Aprovar Ajuste e Conciliar no Ledger</span>
+          <span>Aprovar Ajuste de Estoque</span>
         </button>
       </div>
 
@@ -156,8 +150,7 @@ export const Auditoria: React.FC = () => {
 
       {/* Discrepancy Reconciliation Bento Card */}
       <BentoCard
-        title="Balanço & Comparativo: Sistema vs Contagem Física"
-        subtitle={`Total de impacto financeiro estimado na sessão: R$ ${totalDivergenciaFinanceira.toFixed(2)}`}
+        title="Balanço & Comparativo de Inventário"
       >
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">

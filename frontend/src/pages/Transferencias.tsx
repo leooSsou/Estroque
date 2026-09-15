@@ -129,11 +129,8 @@ export const Transferencias: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-            Logística & Transferências Entre Lojas
+            Transferências entre Lojas
           </h1>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Pipeline com bloqueio de trânsito e conferência cega no recebimento físico de filiais.
-          </p>
         </div>
 
         <button
@@ -236,7 +233,7 @@ export const Transferencias: React.FC = () => {
 
                 {(trf.status === 'RECEBIDO' || trf.status === 'DIVERGENTE') && (
                   <div className="text-center text-[11px] text-[#5E756B]">
-                    Processo finalizado e conciliado no ledger
+                    Transferência concluída
                   </div>
                 )}
               </div>
@@ -250,7 +247,6 @@ export const Transferencias: React.FC = () => {
         isOpen={newModalOpen}
         onClose={() => setNewModalOpen(false)}
         title="Solicitar Transferência Entre Lojas"
-        subtitle="Movimentação com garantia de estoque em trânsito"
       >
         <form onSubmit={handleCreateTransfer} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -334,8 +330,7 @@ export const Transferencias: React.FC = () => {
       <Modal
         isOpen={receivingModalOpen}
         onClose={() => setReceivingModalOpen(false)}
-        title="Conferência Cega de Recebimento"
-        subtitle="O operador deve contar e registrar as unidades físicas recebidas"
+        title="Conferência de Recebimento"
       >
         <form onSubmit={handleConfirmReceiving} className="space-y-4">
           <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)] space-y-2">

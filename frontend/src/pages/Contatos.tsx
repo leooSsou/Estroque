@@ -127,11 +127,8 @@ export const Contatos: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-            Gestão de Contatos & Crediário
+            Clientes & Fornecedores
           </h1>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Controle cadastral de clientes com análise de crédito e parceiros fornecedores.
-          </p>
         </div>
 
         <button
@@ -289,7 +286,6 @@ export const Contatos: React.FC = () => {
         isOpen={newClientModal}
         onClose={() => setNewClientModal(false)}
         title="Cadastrar Novo Cliente"
-        subtitle="Habilite limites de crediário para vendas a prazo no PDV"
       >
         <form onSubmit={handleCreateClient} className="space-y-4">
           <div>
@@ -379,7 +375,6 @@ export const Contatos: React.FC = () => {
         isOpen={newSupplierModal}
         onClose={() => setNewSupplierModal(false)}
         title="Cadastrar Novo Fornecedor"
-        subtitle="Parceiro distribuidor para conciliação em importação de NF-e"
       >
         <form onSubmit={handleCreateSupplier} className="space-y-4">
           <div>

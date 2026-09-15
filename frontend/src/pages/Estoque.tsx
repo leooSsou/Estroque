@@ -84,11 +84,8 @@ export const Estoque: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-            Controle de Estoque & Depósitos
+            Controle de Estoque
           </h1>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Visualização de saldos físicos por filial com trava pessimista e conciliação contábil.
-          </p>
         </div>
 
         <button
@@ -217,7 +214,6 @@ export const Estoque: React.FC = () => {
         isOpen={movementModalOpen}
         onClose={() => setMovementModalOpen(false)}
         title="Registrar Movimentação de Estoque"
-        subtitle="Entrada ou saída com auditoria imutável no livro-razão"
       >
         <form onSubmit={handleSubmitMovement} className="space-y-4">
           <div>

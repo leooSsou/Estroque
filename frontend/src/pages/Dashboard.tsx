@@ -60,9 +60,6 @@ export const Dashboard: React.FC = () => {
             <div className="text-3xl lg:text-4xl font-extrabold text-[#F3FBF6] font-mono tracking-tight">
               R$ {(metrics?.faturamento_liquido || 82300).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <p className="text-xs text-[#94A89E] mt-1.5 max-w-md">
-              Faturamento líquido acumulado com conciliação contábil em tempo real e cálculo automático de CMV.
-            </p>
           </div>
 
           {/* 4 Quick Action Pill Buttons */}
@@ -123,14 +120,12 @@ export const Dashboard: React.FC = () => {
           value={`${metrics?.ruptura_count ?? 1} itens`}
           icon={AlertTriangle}
           badge={{ text: 'Atenção Crítica', trend: 'warning' }}
-          subtitle="Saldo zerado em loja"
         />
         <StatCard
           title="Margem de Lucro"
           value={`${metrics?.margem_lucro ?? 43.8}%`}
           icon={TrendingUp}
           badge={{ text: 'Saudável', trend: 'up' }}
-          subtitle="Após abatimento de CMV"
         />
       </div>
 
@@ -139,15 +134,14 @@ export const Dashboard: React.FC = () => {
         {/* Central Chart: Dual-Tone Bar Visualization */}
         <BentoCard
           className="lg:col-span-2"
-          title="Fluxo de Vendas & Despesas Operacionais"
-          subtitle="Comparativo de entradas brutas vs saídas consolidadas por mês"
+          title="Fluxo de Caixa"
           action={
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1 text-[11px] text-[#10B981] font-mono">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" /> Faturamento
               </span>
               <span className="flex items-center gap-1 text-[11px] text-[#8EB69B] font-mono">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#8EB69B]" /> Despesas / CMV
+                <span className="w-2.5 h-2.5 rounded-full bg-[#8EB69B]" /> Despesas
               </span>
             </div>
           }
@@ -186,8 +180,7 @@ export const Dashboard: React.FC = () => {
 
         {/* ABC Curve Donut / Distribution */}
         <BentoCard
-          title="Classificação Curva ABC"
-          subtitle="Composição de Pareto da receita da rede"
+          title="Curva ABC"
           action={
             <button
               onClick={() => navigate('/analytics')}
@@ -201,20 +194,17 @@ export const Dashboard: React.FC = () => {
             <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)] space-y-3">
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-[#10B981]">Classe A (Alta Prioridade)</span>
+                  <span className="font-semibold text-[#10B981]">Classe A</span>
                   <span className="font-mono text-[#F3FBF6]">80.1%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-[#142522] overflow-hidden">
                   <div className="h-full bg-[#10B981] rounded-full" style={{ width: '80.1%' }} />
                 </div>
-                <p className="text-[10px] text-[#94A89E] mt-1">
-                  18 produtos responsáveis pelo grosso da lucratividade. Risco zero tolerado.
-                </p>
               </div>
 
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-[#8EB69B]">Classe B (Giro Médio)</span>
+                  <span className="font-semibold text-[#8EB69B]">Classe B</span>
                   <span className="font-mono text-[#F3FBF6]">15.0%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-[#142522] overflow-hidden">
@@ -224,7 +214,7 @@ export const Dashboard: React.FC = () => {
 
               <div>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-[#5E756B]">Classe C (Cauda Longa)</span>
+                  <span className="font-semibold text-[#5E756B]">Classe C</span>
                   <span className="font-mono text-[#F3FBF6]">4.9%</span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-[#142522] overflow-hidden">
@@ -248,20 +238,19 @@ export const Dashboard: React.FC = () => {
       <BentoCard
         title={
           <span className="flex items-center gap-2.5">
-            <span>Histórico Recente de Auditoria</span>
+            <span>Histórico de Auditoria</span>
             <span className="flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30 font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
               Ao Vivo
             </span>
           </span>
         }
-        subtitle="Últimos lançamentos com conciliação física automática e rastreabilidade"
         action={
           <button
             onClick={() => navigate('/ledger')}
             className="text-xs text-[#10B981] hover:underline font-semibold btn-press"
           >
-            Acessar Livro-Razão Completo →
+            Acessar Completo →
           </button>
         }
       >

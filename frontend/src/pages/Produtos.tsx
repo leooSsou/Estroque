@@ -156,11 +156,8 @@ export const Produtos: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-            Catálogo de Produtos & Precificação
+            Catálogo de Produtos
           </h1>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Gestão integrada com EAN-13, formação de preço por Markup e estoque multi-depósito (estilo Bling ERP).
-          </p>
         </div>
 
         <button
@@ -308,14 +305,14 @@ export const Produtos: React.FC = () => {
       <Modal
         isOpen={markupModalOpen}
         onClose={() => setMarkupModalOpen(false)}
-        title="Formação de Preço Inteligente (Markup)"
-        subtitle={`Ajuste dinâmico de margem para: ${selectedProduto?.nome}`}
+        title="Formação de Preço (Markup)"
+        subtitle={selectedProduto?.nome}
       >
         <div className="space-y-6">
           {/* Formula preview */}
           <div className="p-3.5 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.15)] flex items-center justify-between text-xs font-mono">
             <span className="text-[#94A89E]">Preço de Venda = Custo × (1 + Markup%)</span>
-            <span className="text-[#10B981] font-semibold">Bling Dynamic Engine</span>
+            <span className="text-[#10B981] font-semibold">Cálculo Automático</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -418,7 +415,6 @@ export const Produtos: React.FC = () => {
         isOpen={newProductModalOpen}
         onClose={() => setNewProductModalOpen(false)}
         title="Cadastrar Novo Produto"
-        subtitle="Adicione um item ao catálogo com código EAN-13 e estoque inicial"
       >
         <form onSubmit={handleCreateProduct} className="space-y-4">
           <div>

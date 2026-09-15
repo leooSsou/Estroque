@@ -47,15 +47,9 @@ export const Analytics: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-              Curva ABC (Pareto 80/15/5) & Diagnóstico
-            </h1>
-            <Badge variant="mint">Inteligência de Varejo</Badge>
-          </div>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Classificação matemática de produtos por contribuição de receita e velocidade de giro de estoque.
-          </p>
+          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+            Curva ABC & Pareto
+          </h1>
         </div>
       </div>
 
@@ -65,18 +59,15 @@ export const Analytics: React.FC = () => {
         <div className="bg-gradient-to-br from-[#0B2B26] to-[#0D1917] border border-[#10B981]/30 rounded-3xl p-5 shadow-bento-dark space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-[#10B981] uppercase tracking-wider font-mono">
-              Classe A • Vital
+              Classe A • Alta Relevância
             </span>
             <Badge variant="emerald">80.1% Receita</Badge>
           </div>
           <div className="text-3xl font-extrabold text-[#F3FBF6] font-mono">
             {classeA.length} Produtos
           </div>
-          <p className="text-xs text-[#94A89E]">
-            Gera mais de 80% do faturamento da rede. Ruptura de estoque nestes itens acarreta perda grave de receita.
-          </p>
           <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] text-[11px] text-[#DAF1DE]">
-            ✦ Ação: Manter estoque de segurança e recompra automática semanal.
+            ✦ Ação: Manter estoque de segurança e recompra prioritária.
           </div>
         </div>
 
@@ -84,18 +75,15 @@ export const Analytics: React.FC = () => {
         <div className="bg-gradient-to-br from-[#163832] to-[#0D1917] border border-[rgba(142,182,155,0.2)] rounded-3xl p-5 shadow-bento-dark space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-[#8EB69B] uppercase tracking-wider font-mono">
-              Classe B • Moderado
+              Classe B • Giro Médio
             </span>
             <Badge variant="sage">15.0% Receita</Badge>
           </div>
           <div className="text-3xl font-extrabold text-[#F3FBF6] font-mono">
             {classeB.length} Produtos
           </div>
-          <p className="text-xs text-[#94A89E]">
-            Giro moderado e fluxo equilibrado. Representa itens de conveniência ou margem média.
-          </p>
           <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] text-[11px] text-[#8EB69B]">
-            ✦ Ação: Acompanhar giro quinzenal e evitar compras excedentes.
+            ✦ Ação: Acompanhamento quinzenal e reposição sob demanda.
           </div>
         </div>
 
@@ -103,18 +91,15 @@ export const Analytics: React.FC = () => {
         <div className="bg-gradient-to-br from-[#142522] to-[#070E0D] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 shadow-bento-dark space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-[#5E756B] uppercase tracking-wider font-mono">
-              Classe C • Cauda Longa
+              Classe C • Baixo Giro
             </span>
             <Badge variant="neutral">4.9% Receita</Badge>
           </div>
           <div className="text-3xl font-extrabold text-[#F3FBF6] font-mono">
             {classeC.length} Produtos
           </div>
-          <p className="text-xs text-[#94A89E]">
-            Mais de 50% do catálogo gerando menos de 5% da receita líquida. Capital imobilizado.
-          </p>
           <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] text-[11px] text-amber-300">
-            ✦ Ação: Criar promoções para desovar estoque parado e liberar caixa.
+            ✦ Ação: Avaliar liquidação ou redução de lote para liberar capital.
           </div>
         </div>
       </div>
@@ -122,7 +107,6 @@ export const Analytics: React.FC = () => {
       {/* 2. Cumulative Pareto Curve Visualization */}
       <BentoCard
         title="Curva Acumulada de Pareto"
-        subtitle="Progressão do faturamento acumulado por ordem decrescente de receita"
       >
         <div className="space-y-3 pt-2">
           {curvaItems.map((item, idx) => (
@@ -166,8 +150,7 @@ export const Analytics: React.FC = () => {
 
       {/* 3. Action Triggers Table */}
       <BentoCard
-        title="Gatilhos de Decisão & Recomendações Automáticas"
-        subtitle="Ações sugeridas com base no giro de estoque e classe Pareto"
+        title="Recomendações de Giro & Estoque"
       >
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">

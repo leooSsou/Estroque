@@ -7,7 +7,6 @@ import { Badge } from '../components/common/Badge';
 import {
   FileSpreadsheet,
   UploadCloud,
-  ShieldCheck,
   CheckCircle2,
   Copy,
   Building2,
@@ -134,15 +133,9 @@ export const NFeImport: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-              Importação Inteligente de NF-e (XML v4.00)
-            </h1>
-            <Badge variant="mint">DefusedXML Safe</Badge>
-          </div>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Recepção automática com conciliação de catálogo, recálculo de custo médio ponderado e contas a pagar.
-          </p>
+          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+            Importação de NF-e
+          </h1>
         </div>
 
         <button
@@ -150,7 +143,7 @@ export const NFeImport: React.FC = () => {
           className="px-4 py-2 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] transition-all flex items-center gap-2"
         >
           <Sparkles className="w-4 h-4" />
-          <span>Carregar XML Exemplo (1-Clique)</span>
+          <span>Carregar XML Exemplo</span>
         </button>
       </div>
 
@@ -170,18 +163,8 @@ export const NFeImport: React.FC = () => {
                 Arraste o arquivo XML da NF-e aqui ou clique para selecionar
               </h3>
               <p className="text-xs text-[#94A89E] mt-1">
-                Suporte nativo ao layout SEFAZ NF-e v4.00 com proteção ativa contra XML Bomb / XXE.
+                Padrão nacional SEFAZ NF-e v4.00
               </p>
-            </div>
-
-            <div className="flex items-center gap-4 text-[11px] text-[#5E756B] mt-2">
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" /> Sanitização Automática
-              </span>
-              <span>•</span>
-              <span>Identificação de Fornecedor por CNPJ</span>
-              <span>•</span>
-              <span>Mapeamento EAN-13</span>
             </div>
           </div>
         </BentoCard>
@@ -243,8 +226,7 @@ export const NFeImport: React.FC = () => {
 
           {/* Item Conciliation Table */}
           <BentoCard
-            title="Conciliação de Itens & Atualização de Estoque"
-            subtitle="Validação entre produtos da nota e itens cadastrados no catálogo"
+            title="Conciliação de Itens"
           >
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">

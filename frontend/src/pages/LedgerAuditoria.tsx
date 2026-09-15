@@ -83,17 +83,9 @@ export const LedgerAuditoria: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
-              Ledger Imutável & Auditoria Contábil
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-[#163832] text-[#10B981] border border-[#10B981]/30 text-xs font-mono font-semibold">
-              Rastreabilidade 100%
-            </span>
-          </div>
-          <p className="text-xs text-[#94A89E] mt-1">
-            Registro cronológico append-only de todas as transações de inventário. Nenhum registro pode ser apagado ou alterado.
-          </p>
+          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+            Livro-Razão & Auditoria
+          </h1>
         </div>
 
         <div className="flex items-center gap-2.5">
