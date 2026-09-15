@@ -45,12 +45,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
       }`}
     >
       {/* Brand Header: Aligned h-20 with TopBar */}
-      <div className="h-20 flex items-center justify-between px-4 sm:px-5 border-b border-[rgba(142,182,155,0.12)] flex-shrink-0">
-        <div className="flex items-center gap-3 overflow-hidden">
+      <div
+        className={`h-20 flex items-center border-b border-[rgba(142,182,155,0.12)] flex-shrink-0 ${
+          collapsed
+            ? 'flex-col justify-center gap-1.5 px-2'
+            : 'justify-between px-4 sm:px-5'
+        }`}
+      >
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3 overflow-hidden'}`}>
           <img
             src="/favicon.png"
             alt="ESTROQUE"
-            className="w-9 h-9 object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] flex-shrink-0"
+            className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] flex-shrink-0`}
           />
           {!collapsed && (
             <div className="flex flex-col min-w-0">
@@ -67,11 +73,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
         {/* Collapse toggle button inside sidebar header */}
         <button
           onClick={onToggleCollapse}
-          className="p-1.5 rounded-lg text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors flex-shrink-0"
+          className={`${collapsed ? 'p-1' : 'p-1.5'} rounded-lg text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors flex-shrink-0`}
           title={collapsed ? 'Expandir Menu' : 'Recolher Menu'}
         >
           {collapsed ? (
-            <PanelLeftOpen className="w-4 h-4 text-[#8EB69B]" />
+            <PanelLeftOpen className="w-3.5 h-3.5 text-[#8EB69B]" />
           ) : (
             <PanelLeftClose className="w-4 h-4 text-[#8EB69B]" />
           )}
@@ -79,7 +85,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
       </div>
 
       {/* Navigation List */}
-      <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+      <div
+        className={`flex-1 overflow-y-auto py-4 space-y-1.5 ${
+          collapsed ? 'px-2 flex flex-col items-center' : 'px-3'
+        }`}
+      >
         {!collapsed && (
           <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5E756B]">
             Módulos Operacionais
@@ -92,7 +102,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative ${
+                `group flex items-center rounded-xl transition-all duration-200 relative ${
+                  collapsed
+                    ? 'w-11 h-11 justify-center'
+                    : 'w-full gap-3 px-3.5 py-2.5 text-sm font-medium'
+                } ${
                   isActive
                     ? 'bg-[#142522] text-[#10B981] shadow-sm border border-[rgba(16,185,129,0.25)]'
                     : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#0D1917]'
@@ -117,9 +131,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
       </div>
 
       {/* Active Store Indicator at Footer */}
-      <div className="p-3 border-t border-[rgba(142,182,155,0.12)] bg-[#0D1917]/70 flex-shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#142522] border border-[rgba(142,182,155,0.18)] flex items-center justify-center text-[#10B981] flex-shrink-0">
+      <div
+        className={`p-3 border-t border-[rgba(142,182,155,0.12)] bg-[#0D1917]/70 flex-shrink-0 ${
+          collapsed ? 'flex justify-center' : ''
+        }`}
+      >
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
+          <div
+            className="w-10 h-10 rounded-xl bg-[#142522] border border-[rgba(142,182,155,0.18)] flex items-center justify-center text-[#10B981] flex-shrink-0"
+            title={collapsed ? (activeLoja?.nome || 'Loja Matriz') : undefined}
+          >
             <Store className="w-4 h-4" />
           </div>
           {!collapsed && (
