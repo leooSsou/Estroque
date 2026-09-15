@@ -80,13 +80,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
 
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
-        <div
-          className={`px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5E756B] ${
-            collapsed ? 'text-center' : ''
-          }`}
-        >
-          {collapsed ? '•••' : 'Módulos Operacionais'}
-        </div>
+        {!collapsed && (
+          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5E756B]">
+            Módulos Operacionais
+          </div>
+        )}
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
