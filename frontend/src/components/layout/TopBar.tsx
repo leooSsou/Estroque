@@ -22,6 +22,8 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
   return (
     <header className="h-20 bg-[#070E0D]/95 backdrop-blur-md border-b border-[rgba(142,182,155,0.12)] sticky top-0 z-30 px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
       {/* Left: Mobile Toggle & Store Switcher */}
@@ -101,18 +103,19 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
         </div>
       </div>
 
-      {/* Center: Global Search Bar */}
+      {/* Center: Global Search Bar with dynamic animation */}
       <div className="hidden md:flex items-center flex-1 max-w-md mx-6 lg:mx-8">
         <button
           onClick={onOpenSearch}
-          className="h-10 w-full flex items-center justify-between px-4 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)] text-xs text-[#94A89E] hover:border-[rgba(142,182,155,0.3)] hover:text-[#F3FBF6] btn-press transition-all"
+          className="h-11 w-full flex items-center justify-between px-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] text-xs text-[#94A89E] hover:border-[#10B981]/50 hover:bg-[#142522]/50 hover:text-[#F3FBF6] hover:shadow-glow-emerald btn-press transition-all duration-300 group"
+          title={`Buscar em todo o sistema (${isMac ? '⌘K' : 'Ctrl+K'})`}
         >
           <div className="flex items-center gap-2.5 truncate">
-            <Search className="w-4 h-4 text-[#8EB69B] flex-shrink-0" />
+            <Search className="w-4 h-4 text-[#8EB69B] group-hover:text-[#10B981] group-hover:scale-110 transition-all duration-200 flex-shrink-0" />
             <span className="truncate">Buscar produtos, EAN, clientes, vendas...</span>
           </div>
-          <kbd className="hidden lg:inline-block px-2 py-0.5 text-[10px] font-mono rounded bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.18)] flex-shrink-0 ml-2">
-            ⌘K
+          <kbd className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono font-semibold rounded-lg bg-[#142522] text-[#8EB69B] group-hover:text-[#10B981] group-hover:bg-[#10B981]/15 group-hover:border-[#10B981]/40 border border-[rgba(142,182,155,0.18)] transition-all duration-200 flex-shrink-0 ml-2 shadow-sm">
+            {isMac ? '⌘K' : 'Ctrl K'}
           </kbd>
         </button>
       </div>

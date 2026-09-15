@@ -78,12 +78,12 @@ export const AppShell: React.FC = () => {
       {searchModalOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm animate-fade-in"
             onClick={() => setSearchModalOpen(false)}
           />
-          <div className="relative w-full max-w-xl rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.25)] shadow-bento-dark overflow-hidden z-10 animate-in fade-in zoom-in-95">
+          <div className="relative w-full max-w-xl rounded-2xl bg-[#0D1917]/95 backdrop-blur-xl border border-[rgba(142,182,155,0.25)] shadow-glow-emerald-lg overflow-hidden z-10 animate-scale-in">
             <div className="flex items-center gap-3 p-4 border-b border-[rgba(142,182,155,0.12)]">
-              <Search className="w-5 h-5 text-[#10B981]" />
+              <Search className="w-5 h-5 text-[#10B981] animate-pulse" />
               <input
                 type="text"
                 autoFocus
@@ -94,7 +94,7 @@ export const AppShell: React.FC = () => {
               />
               <button
                 onClick={() => setSearchModalOpen(false)}
-                className="p-1 rounded-lg text-[#94A89E] hover:text-[#F3FBF6]"
+                className="p-1.5 rounded-lg text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] btn-press transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -113,7 +113,7 @@ export const AppShell: React.FC = () => {
                     setSearchModalOpen(false);
                     navigate('/produtos');
                   }}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-[#142522] cursor-pointer group transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-[#142522] cursor-pointer group btn-press table-row-hover transition-all"
                 >
                   <div className="flex items-center gap-3 truncate">
                     <div className="w-9 h-9 rounded-lg bg-[#163832] flex items-center justify-center text-[#10B981] flex-shrink-0">
