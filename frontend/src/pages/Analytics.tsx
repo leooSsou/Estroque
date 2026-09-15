@@ -191,21 +191,21 @@ export const Analytics: React.FC = () => {
                     {item.classe === 'A' ? (
                       <button
                         onClick={() => handleAction(item, 'Emitir Pedido de Compra')}
-                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-xs shadow-glow-emerald hover:shadow-[0_0_18px_rgba(16,185,129,0.4)] transition-all active:scale-95 cursor-pointer select-none"
+                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all btn-press"
                       >
                         Comprar com Fornecedor
                       </button>
                     ) : item.classe === 'B' ? (
                       <button
                         onClick={() => handleAction(item, 'Acompanhar Giro')}
-                        className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/40 text-xs font-bold transition-all active:scale-95 cursor-pointer select-none"
+                        className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all btn-press"
                       >
                         Monitorar Giro
                       </button>
                     ) : (
                       <button
                         onClick={() => handleAction(item, 'Criar Promoção de Queima')}
-                        className="px-4 py-2 rounded-xl bg-[#2B2312] hover:bg-amber-900/60 text-amber-300 hover:text-amber-200 border border-amber-500/30 hover:border-amber-400/50 text-xs font-bold transition-all active:scale-95 cursor-pointer select-none"
+                        className="px-4 py-2 rounded-xl bg-[#2B2312] hover:bg-amber-900/60 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all btn-press"
                       >
                         Criar Desconto / Promoção
                       </button>

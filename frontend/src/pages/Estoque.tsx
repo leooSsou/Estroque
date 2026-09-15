@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
@@ -15,8 +15,9 @@ import {
   Package,
   Layers,
   Search,
-  X,
   Store,
+  X,
+  AlertTriangle,
 } from 'lucide-react';
 
 export const Estoque: React.FC = () => {
@@ -74,10 +75,39 @@ export const Estoque: React.FC = () => {
     }
   };
 
+  const [statusFilter, setStatusFilter] = useState<'TODOS' | 'BAIXO' | 'RUPTURA'>('TODOS');
+
+  // Compute status counts
+  const counts = useMemo(() => {
+    let baixo = 0;
+    let ruptura = 0;
+    for (const p of produtos) {
+      const stock = selectedLojaFilter === 'TODAS'
+        ? (p.estoque_total ?? 0)
+        : (p.estoque_por_loja?.[selectedLojaFilter] ?? 0);
+      const minStock = p.estoque_minimo || 5;
+      if (stock === 0) ruptura++;
+      else if (stock <= minStock) baixo++;
+    }
+    return {
+      todos: produtos.length,
+      baixo,
+      ruptura,
+    };
+  }, [produtos, selectedLojaFilter]);
+
   const filtered = produtos.filter((p) => {
     const matchSearch =
       p.nome.toLowerCase().includes(search.toLowerCase()) ||
       p.sku.toLowerCase().includes(search.toLowerCase());
+
+    const stock = selectedLojaFilter === 'TODAS'
+      ? (p.estoque_total ?? 0)
+      : (p.estoque_por_loja?.[selectedLojaFilter] ?? 0);
+    const minStock = p.estoque_minimo || 5;
+
+    if (statusFilter === 'RUPTURA') return matchSearch && stock === 0;
+    if (statusFilter === 'BAIXO') return matchSearch && stock > 0 && stock <= minStock;
     return matchSearch;
   });
 
@@ -92,52 +122,103 @@ export const Estoque: React.FC = () => {
 
         <button
           onClick={() => handleOpenMovement()}
-          className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none"
+          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
         >
-          <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
-          <span>Nova Movimentação</span>
+          <Plus className="w-4 h-4" />
+          <span>+ Nova Movimentação</span>
         </button>
       </div>
 
-      {/* Filter and Store Selector - High-Resolution Control */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
-        <div className="relative flex-1 max-w-full sm:max-w-md">
-          <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filtrar por nome do produto ou SKU..."
-            className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
+      {/* High-Resolution Filter & Store Bar */}
+      <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark space-y-3.5">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          {/* Search Input with Focus Ring & Clear Button */}
+          <div className="relative flex-1 max-w-xl group">
+            <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por descrição do item ou SKU..."
+              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                title="Limpar busca"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Quick Status Filter Pills */}
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+            {[
+              { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
+              { id: 'BAIXO', label: 'Estoque Baixo', count: counts.baixo },
+              { id: 'RUPTURA', label: 'Rupturas', count: counts.ruptura },
+            ].map((st) => {
+              const isActive = statusFilter === st.id;
+              return (
+                <button
+                  key={st.id}
+                  onClick={() => setStatusFilter(st.id as any)}
+                  className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                      : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                  }`}
+                >
+                  <span>{st.label}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                      isActive
+                        ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                        : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+                    }`}
+                  >
+                    {st.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)]">
-          <Store className="w-4 h-4 text-[#10B981] ml-2" />
-          <select
-            value={selectedLojaFilter}
-            onChange={(e) => setSelectedLojaFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.22)] text-xs md:text-sm font-semibold text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none cursor-pointer transition-all"
-          >
-            <option value="TODAS">Todas as Filiais (Visão Consolidada)</option>
-            {lojas.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.nome}
-              </option>
-            ))}
-          </select>
-          <span className="px-2.5 py-1 mr-1 rounded-lg bg-[#142522] text-[#8EB69B] font-mono text-xs font-bold border border-[rgba(142,182,155,0.15)]">
-            {filtered.length} itens
+        {/* Store Selection Segmented Bar */}
+        <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] flex items-center gap-2 overflow-x-auto table-scrollbar">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#8EB69B] flex items-center gap-1.5 mr-1 flex-shrink-0">
+            <Store className="w-3.5 h-3.5 text-[#10B981]" />
+            Filial:
           </span>
+          <button
+            onClick={() => setSelectedLojaFilter('TODAS')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+              selectedLojaFilter === 'TODAS'
+                ? 'bg-[#163832] text-[#10B981] border border-[#10B981]/50 font-bold shadow-glow-emerald'
+                : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
+            }`}
+          >
+            <span>Todas as Lojas (Consolidado)</span>
+          </button>
+          {lojas.map((l) => {
+            const isSelected = selectedLojaFilter === l.id;
+            return (
+              <button
+                key={l.id}
+                onClick={() => setSelectedLojaFilter(l.id)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                  isSelected
+                    ? 'bg-[#163832] text-[#10B981] border border-[#10B981]/50 font-bold shadow-glow-emerald'
+                    : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
+                }`}
+              >
+                <span>{l.nome}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -148,11 +229,24 @@ export const Estoque: React.FC = () => {
             <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
               <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
                 <th className="py-4 px-4">SKU & Item</th>
-                {lojas.map((loja) => (
-                  <th key={loja.id} className="py-4 px-4">
-                    {loja.nome}
-                  </th>
-                ))}
+                {lojas.map((loja) => {
+                  const isSelected = selectedLojaFilter === loja.id;
+                  return (
+                    <th
+                      key={loja.id}
+                      className={`py-4 px-4 transition-colors ${
+                        isSelected ? 'text-[#10B981] bg-[#163832]/40' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>{loja.nome}</span>
+                        {isSelected && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
                 <th className="py-4 px-4">Saldo Total Rede</th>
                 <th className="py-4 px-4">Valoração Total (Custo)</th>
                 <th className="py-4 px-4 text-right">Ação</th>
@@ -184,8 +278,14 @@ export const Estoque: React.FC = () => {
                     {/* Stock by store columns */}
                     {lojas.map((loja) => {
                       const stockInLoja = prod.estoque_por_loja?.[loja.id] ?? 0;
+                      const isSelected = selectedLojaFilter === loja.id;
                       return (
-                        <td key={loja.id} className="py-4 px-4 font-mono">
+                        <td
+                          key={loja.id}
+                          className={`py-4 px-4 font-mono transition-colors ${
+                            isSelected ? 'bg-[#163832]/20 font-bold' : ''
+                          }`}
+                        >
                           <span
                             className={`font-bold text-sm md:text-base ${
                               stockInLoja === 0
@@ -247,32 +347,13 @@ export const Estoque: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-              Produto
-            </label>
-            <select
-              value={movProdutoId}
-              onChange={(e) => setMovProdutoId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
-            >
-              {produtos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.sku} - {p.nome}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Loja / Depósito
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Loja / Depósito</label>
               <select
                 value={movLojaId}
                 onChange={(e) => setMovLojaId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -283,32 +364,30 @@ export const Estoque: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Tipo de Movimentação
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Tipo</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setMovTipo('ENTRADA')}
-                  className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 btn-press cursor-pointer select-none ${
+                  className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                     movTipo === 'ENTRADA'
-                      ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
-                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
+                      ? 'bg-[#10B981] text-[#070E0D]'
+                      : 'bg-[#070E0D] text-[#94A89E] border border-[rgba(142,182,155,0.15)]'
                   }`}
                 >
-                  <ArrowDownRight className="w-4 h-4" />
+                  <ArrowDownRight className="w-3.5 h-3.5" />
                   <span>ENTRADA</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMovTipo('SAIDA')}
-                  className={`py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 btn-press cursor-pointer select-none ${
+                  className={`py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                     movTipo === 'SAIDA'
-                      ? 'bg-red-500 text-white shadow-[0_2px_12px_rgba(239,68,68,0.4)]'
-                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
+                      ? 'bg-red-500 text-white'
+                      : 'bg-[#070E0D] text-[#94A89E] border border-[rgba(142,182,155,0.15)]'
                   }`}
                 >
-                  <ArrowUpRight className="w-4 h-4" />
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                   <span>SAÍDA</span>
                 </button>
               </div>
@@ -317,27 +396,23 @@ export const Estoque: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Quantidade
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Quantidade</label>
               <input
                 type="number"
                 min="1"
                 required
                 value={movQtd}
                 onChange={(e) => setMovQtd(parseInt(e.target.value) || 1)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Motivo / Justificativa
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Motivo / Razão</label>
               <select
                 value={movMotivo}
                 onChange={(e) => setMovMotivo(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               >
                 <option value="Ajuste de inventário rotativo">Ajuste de inventário rotativo</option>
                 <option value="Avaria ou dano em transporte">Avaria ou dano em transporte</option>
@@ -352,15 +427,15 @@ export const Estoque: React.FC = () => {
             <button
               type="button"
               onClick={() => setMovementModalOpen(false)}
-              className="px-5 py-2.5 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] transition-all btn-press cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald transition-all btn-press cursor-pointer active:scale-95 flex items-center gap-2"
+              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
             >
-              <span>Confirmar Movimentação</span>
+              Confirmar Movimentação
             </button>
           </div>
         </form>

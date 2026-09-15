@@ -136,33 +136,32 @@ export const Contatos: React.FC = () => {
           onClick={() =>
             activeTab === 'CLIENTES' ? setNewClientModal(true) : setNewSupplierModal(true)
           }
-          className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none"
+          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
         >
-          <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
-          <span>{activeTab === 'CLIENTES' ? 'Novo Cliente' : 'Novo Fornecedor'}</span>
+          <Plus className="w-4 h-4" />
+          <span>{activeTab === 'CLIENTES' ? '+ Novo Cliente' : '+ Novo Fornecedor'}</span>
         </button>
       </div>
 
-      {/* Tabs & Search - High-Resolution Control */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
-        {/* Segmented Tab Switcher */}
-        <div className="p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] flex items-center gap-1.5">
+      {/* High-Resolution Tabs & Search Bar */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+        {/* Modern Segmented Tab Switcher */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] shadow-inner">
           <button
             onClick={() => setActiveTab('CLIENTES')}
-            className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all duration-200 btn-press cursor-pointer select-none ${
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2.5 active:scale-95 ${
               activeTab === 'CLIENTES'
-                ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
-                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
             }`}
           >
             <Users className="w-4 h-4" />
             <span>Clientes</span>
             <span
-              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                 activeTab === 'CLIENTES'
-                  ? 'bg-black/20 text-current'
-                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
+                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
               }`}
             >
               {clientes.length}
@@ -171,19 +170,19 @@ export const Contatos: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('FORNECEDORES')}
-            className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all duration-200 btn-press cursor-pointer select-none ${
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2.5 active:scale-95 ${
               activeTab === 'FORNECEDORES'
-                ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
-                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
             }`}
           >
             <Building2 className="w-4 h-4" />
             <span>Fornecedores</span>
             <span
-              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
+              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                 activeTab === 'FORNECEDORES'
-                  ? 'bg-black/20 text-current'
-                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
+                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
               }`}
             >
               {fornecedores.length}
@@ -191,22 +190,23 @@ export const Contatos: React.FC = () => {
           </button>
         </div>
 
-        {/* Search */}
-        <div className="relative flex-1 max-w-full sm:max-w-md">
-          <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        {/* High-Resolution Search */}
+        <div className="relative flex-1 max-w-xl group">
+          <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Buscar por nome, documento ou e-mail...`}
-            className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+              className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+              title="Limpar busca"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -321,67 +321,57 @@ export const Contatos: React.FC = () => {
       >
         <form onSubmit={handleCreateClient} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-              Nome Completo
-            </label>
+            <label className="block text-xs font-medium text-[#94A89E] mb-1">Nome Completo</label>
             <input
               type="text"
               required
               value={cliNome}
               onChange={(e) => setCliNome(e.target.value)}
               placeholder="Ex: Carlos Eduardo Mendes"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                E-mail
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">E-mail</label>
               <input
                 type="email"
                 required
                 value={cliEmail}
                 onChange={(e) => setCliEmail(e.target.value)}
                 placeholder="cliente@email.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                CPF ou CNPJ
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">CPF ou CNPJ</label>
               <input
                 type="text"
                 required
                 value={cliDoc}
                 onChange={(e) => setCliDoc(e.target.value)}
                 placeholder="000.000.000-00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Telefone / WhatsApp
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Telefone / WhatsApp</label>
               <input
                 type="text"
                 value={cliTel}
                 onChange={(e) => setCliTel(e.target.value)}
                 placeholder="(11) 99999-9999"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Limite de Crédito (R$)
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Limite de Crédito (R$)</label>
               <input
                 type="number"
                 step="50"
@@ -389,7 +379,7 @@ export const Contatos: React.FC = () => {
                 required
                 value={cliLimite}
                 onChange={(e) => setCliLimite(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:outline-none"
               />
             </div>
           </div>
@@ -398,15 +388,15 @@ export const Contatos: React.FC = () => {
             <button
               type="button"
               onClick={() => setNewClientModal(false)}
-              className="px-5 py-2.5 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] transition-all btn-press cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald transition-all btn-press cursor-pointer active:scale-95 flex items-center gap-2"
+              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
             >
-              <span>Salvar Cliente</span>
+              Salvar Cliente
             </button>
           </div>
         </form>
@@ -420,45 +410,39 @@ export const Contatos: React.FC = () => {
       >
         <form onSubmit={handleCreateSupplier} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-              Nome Fantasia
-            </label>
+            <label className="block text-xs font-medium text-[#94A89E] mb-1">Nome Fantasia</label>
             <input
               type="text"
               required
               value={fornFantasia}
               onChange={(e) => setFornFantasia(e.target.value)}
               placeholder="Ex: TechDistribuidora Brasil"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Razão Social
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Razão Social</label>
               <input
                 type="text"
                 required
                 value={fornRazao}
                 onChange={(e) => setFornRazao(e.target.value)}
                 placeholder="Ex: TechDistribuidora Ltda"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                CNPJ
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">CNPJ</label>
               <input
                 type="text"
                 required
                 value={fornCnpj}
                 onChange={(e) => setFornCnpj(e.target.value)}
                 placeholder="00.000.000/0001-00"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
           </div>
@@ -467,15 +451,15 @@ export const Contatos: React.FC = () => {
             <button
               type="button"
               onClick={() => setNewSupplierModal(false)}
-              className="px-5 py-2.5 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] transition-all btn-press cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald transition-all btn-press cursor-pointer active:scale-95 flex items-center gap-2"
+              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
             >
-              <span>Salvar Fornecedor</span>
+              Salvar Fornecedor
             </button>
           </div>
         </form>

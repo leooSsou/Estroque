@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
@@ -22,6 +22,7 @@ import {
   Minus,
   Printer,
   Package,
+  X,
 } from 'lucide-react';
 
 interface CartItem {
@@ -157,14 +158,43 @@ export const PDVVendas: React.FC = () => {
     }
   };
 
-  const filteredProdutos = produtos.filter((p) => {
-    const q = search.toLowerCase();
-    return (
-      p.nome.toLowerCase().includes(q) ||
-      p.sku.toLowerCase().includes(q) ||
-      (p.codigo_barras && p.codigo_barras.includes(q))
-    );
-  });
+  const [catalogFilter, setCatalogFilter] = useState<'TODOS' | 'DISPONIVEL' | 'ESGOTADO'>('TODOS');
+
+  // Compute counts
+  const counts = useMemo(() => {
+    let disponivel = 0;
+    let esgotado = 0;
+    for (const p of produtos) {
+      const stock = activeLoja?.id
+        ? p.estoque_por_loja?.[activeLoja.id] ?? 0
+        : p.estoque_total ?? 0;
+      if (stock > 0) disponivel++;
+      else esgotado++;
+    }
+    return {
+      todos: produtos.length,
+      disponivel,
+      esgotado,
+    };
+  }, [produtos, activeLoja]);
+
+  const filteredProdutos = useMemo(() => {
+    return produtos.filter((p) => {
+      const q = search.toLowerCase();
+      const matchSearch =
+        p.nome.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q) ||
+        (p.codigo_barras && p.codigo_barras.includes(q));
+
+      const stock = activeLoja?.id
+        ? p.estoque_por_loja?.[activeLoja.id] ?? 0
+        : p.estoque_total ?? 0;
+
+      if (catalogFilter === 'DISPONIVEL') return matchSearch && stock > 0;
+      if (catalogFilter === 'ESGOTADO') return matchSearch && stock === 0;
+      return matchSearch;
+    });
+  }, [produtos, search, catalogFilter, activeLoja]);
 
   return (
     <div className="space-y-6">
@@ -181,16 +211,59 @@ export const PDVVendas: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left 65%: Product Selection */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="p-3.5 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.14)]">
-            <div className="relative">
-              <Search className="w-4 h-4 text-[#8EB69B] absolute left-3.5 top-3" />
+          {/* High-Resolution Barcode Scanner & Search Bar */}
+          <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark space-y-3">
+            <div className="relative group">
+              <Barcode className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Bipar leitor de código de barras ou pesquisar item..."
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none"
+                className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
               />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                  title="Limpar busca"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Quick Filter Pills */}
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+              {[
+                { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
+                { id: 'DISPONIVEL', label: 'Em Estoque', count: counts.disponivel },
+                { id: 'ESGOTADO', label: 'Esgotados', count: counts.esgotado },
+              ].map((tab) => {
+                const isActive = catalogFilter === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setCatalogFilter(tab.id as any)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                        : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-all ${
+                        isActive
+                          ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                          : 'bg-[#142522] text-[#8EB69B]'
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -311,7 +384,7 @@ export const PDVVendas: React.FC = () => {
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => updateQuantity(item.produto.id, -1)}
-                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/40 active:scale-90 cursor-pointer select-none transition-all"
+                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] btn-press"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -320,7 +393,7 @@ export const PDVVendas: React.FC = () => {
                       </span>
                       <button
                         onClick={() => updateQuantity(item.produto.id, 1)}
-                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#10B981] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/50 active:scale-90 cursor-pointer select-none transition-all"
+                        className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#10B981] border border-[rgba(142,182,155,0.2)] btn-press"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -350,10 +423,10 @@ export const PDVVendas: React.FC = () => {
                       key={pm.id}
                       type="button"
                       onClick={() => setFormaPagamento(pm.id as FormaPagamento)}
-                      className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold active:scale-95 cursor-pointer select-none ${
+                      className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold btn-press ${
                         formaPagamento === pm.id
-                          ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald font-extrabold'
-                          : 'bg-[#070E0D] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522] hover:border-[#10B981]/40'
+                          ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
+                          : 'bg-[#070E0D] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522]'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -405,10 +478,9 @@ export const PDVVendas: React.FC = () => {
               <button
                 onClick={handleFinalizeSale}
                 disabled={cart.length === 0 || crediarioExcedido}
-                className="relative group overflow-hidden w-full py-4 px-5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm md:text-base font-extrabold shadow-glow-emerald hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:pointer-events-none mt-2 active:scale-95 cursor-pointer select-none"
+                className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm md:text-base font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
               >
-                <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-                <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+                <CheckCircle2 className="w-5 h-5" />
                 <span>Finalizar Venda & Emitir Cupom</span>
               </button>
             </div>
@@ -467,7 +539,7 @@ export const PDVVendas: React.FC = () => {
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               onClick={() => setReceiptModalOpen(false)}
-              className="px-5 py-2.5 rounded-2xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] transition-all active:scale-95 cursor-pointer select-none"
+              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
             >
               Fechar
             </button>
@@ -475,10 +547,9 @@ export const PDVVendas: React.FC = () => {
               onClick={() => {
                 window.print();
               }}
-              className="relative group overflow-hidden px-6 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-extrabold shadow-glow-emerald hover:shadow-[0_0_24px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
+              className="px-6 py-2 rounded-full bg-[#10B981] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
             >
-              <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-              <Printer className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+              <Printer className="w-4 h-4" />
               <span>Imprimir Comprovante</span>
             </button>
           </div>

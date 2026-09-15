@@ -140,9 +140,9 @@ export const NFeImport: React.FC = () => {
 
         <button
           onClick={handleSimulateUpload}
-          className="group px-4 py-2.5 rounded-2xl bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 hover:border-[#10B981]/60 text-xs font-bold text-[#10B981] hover:text-[#34D399] transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
+          className="px-4 py-2 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] transition-all flex items-center gap-2"
         >
-          <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
+          <Sparkles className="w-4 h-4" />
           <span>Carregar XML Exemplo</span>
         </button>
       </div>
@@ -277,7 +277,7 @@ export const NFeImport: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-[rgba(142,182,155,0.12)]">
               <button
                 onClick={() => setParsed(false)}
-                className="px-5 py-2.5 rounded-2xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] transition-all active:scale-95 cursor-pointer select-none"
+                className="px-4 py-2 rounded-full bg-[#142522] hover:bg-[#163832] text-xs font-semibold text-[#94A89E]"
               >
                 Cancelar e Trocar XML
               </button>
@@ -285,10 +285,9 @@ export const NFeImport: React.FC = () => {
               <button
                 onClick={handleConfirmImport}
                 disabled={loading}
-                className="relative group overflow-hidden px-6 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none disabled:opacity-50 disabled:pointer-events-none"
+                className="px-6 py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
               >
-                <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-                <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+                <CheckCircle2 className="w-4 h-4" />
                 <span>
                   {loading ? 'Conciliando...' : 'Confirmar Entrada no Estoque & Conciliar Financeiro'}
                 </span>

@@ -66,34 +66,33 @@ export const Dashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => navigate('/pdv')}
-              className="relative group overflow-hidden px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-xs shadow-glow-emerald hover:shadow-[0_0_24px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
+              className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald btn-press hover-lift flex items-center gap-2"
             >
-              <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-              <PlusCircle className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
-              <span>Nova Venda (PDV)</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>+ Nova Venda (PDV)</span>
             </button>
 
             <button
               onClick={() => navigate('/nfe')}
-              className="group px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-[#DAF1DE] hover:text-white font-semibold text-xs active:scale-95 cursor-pointer select-none transition-all duration-200 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/40 text-[#DAF1DE] font-semibold text-xs btn-press hover-lift flex items-center gap-2"
             >
-              <FileSpreadsheet className="w-4 h-4 text-[#10B981] group-hover:scale-110 transition-transform duration-200" />
+              <FileSpreadsheet className="w-4 h-4 text-[#10B981]" />
               <span>Importar XML NF-e</span>
             </button>
 
             <button
               onClick={() => navigate('/transferencias')}
-              className="group px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-[#DAF1DE] hover:text-white font-semibold text-xs active:scale-95 cursor-pointer select-none transition-all duration-200 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/40 text-[#DAF1DE] font-semibold text-xs btn-press hover-lift flex items-center gap-2"
             >
-              <ArrowLeftRight className="w-4 h-4 text-[#8EB69B] group-hover:text-[#10B981] group-hover:rotate-180 transition-transform duration-300" />
+              <ArrowLeftRight className="w-4 h-4 text-[#8EB69B]" />
               <span>Transferir Estoque</span>
             </button>
 
             <button
               onClick={() => navigate('/ledger')}
-              className="group px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-[#DAF1DE] hover:text-white font-semibold text-xs active:scale-95 cursor-pointer select-none transition-all duration-200 flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/40 text-[#DAF1DE] font-semibold text-xs btn-press hover-lift flex items-center gap-2"
             >
-              <ClipboardCheck className="w-4 h-4 text-[#8EB69B] group-hover:text-[#10B981] group-hover:scale-110 transition-transform duration-200" />
+              <ClipboardCheck className="w-4 h-4 text-[#8EB69B]" />
               <span>Auditoria Física</span>
             </button>
           </div>

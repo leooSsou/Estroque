@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -69,6 +69,21 @@ export const LedgerAuditoria: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  // Compute counts for entry and exit transactions
+  const counts = useMemo(() => {
+    let entradas = 0;
+    let saidas = 0;
+    for (const m of ledger) {
+      if (m.tipo === 'ENTRADA') entradas++;
+      else if (m.tipo === 'SAIDA') saidas++;
+    }
+    return {
+      todos: ledger.length,
+      entradas,
+      saidas,
+    };
+  }, [ledger]);
+
   const filtered = ledger.filter((m) => {
     const prod = produtos[m.produto_id];
     const matchSearch =
@@ -79,12 +94,6 @@ export const LedgerAuditoria: React.FC = () => {
     if (tipoFilter !== 'TODOS' && m.tipo !== tipoFilter) return false;
     return matchSearch;
   });
-
-  const counts = {
-    TODOS: ledger.length,
-    ENTRADA: ledger.filter((m) => m.tipo === 'ENTRADA').length,
-    SAIDA: ledger.filter((m) => m.tipo === 'SAIDA').length,
-  };
 
   return (
     <div className="space-y-6">
@@ -98,79 +107,108 @@ export const LedgerAuditoria: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleExportCSV}
-            className="group px-4 py-2.5 rounded-2xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.25)] hover:border-[#10B981]/50 text-xs font-bold text-[#DAF1DE] hover:text-white transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
+            className="px-4 py-2.5 rounded-full bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-xs font-semibold text-[#DAF1DE] transition-all flex items-center gap-2 active:scale-95"
           >
-            <Download className="w-4 h-4 text-[#8EB69B] group-hover:text-[#10B981] group-hover:-translate-y-0.5 transition-transform duration-200" />
+            <Download className="w-4 h-4 text-[#8EB69B]" />
             <span>Exportar CSV</span>
           </button>
 
           <button
             onClick={() => navigate('/auditoria')}
-            className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-extrabold shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center gap-2 active:scale-95 cursor-pointer select-none"
+            className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald transition-all flex items-center gap-2 active:scale-95"
           >
-            <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-            <ClipboardList className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+            <ClipboardList className="w-4 h-4" />
             <span>Auditoria Física Cega</span>
           </button>
         </div>
       </div>
 
-      {/* Filter and Search Bar - High-Resolution Segmented Control */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
-        <div className="relative flex-1 max-w-full sm:max-w-md">
-          <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      {/* Filter and Search Bar in High Definition */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+        {/* Search Input */}
+        <div className="relative flex-1 max-w-xl group">
+          <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por produto, SKU ou motivo..."
-            className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+            placeholder="Buscar por produto, SKU ou motivo de movimentação..."
+            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+              className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+              title="Limpar busca"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Segmented Filter Pills */}
-        <div className="p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] flex items-center gap-1.5 overflow-x-auto table-scrollbar">
-          {(
-            [
-              { key: 'TODOS', label: 'Todas as Operações', count: counts.TODOS },
-              { key: 'ENTRADA', label: 'Entradas', count: counts.ENTRADA },
-              { key: 'SAIDA', label: 'Saídas', count: counts.SAIDA },
-            ] as const
-          ).map((item) => {
-            const isActive = tipoFilter === item.key;
-            return (
-              <button
-                key={item.key}
-                onClick={() => setTipoFilter(item.key)}
-                className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-2 whitespace-nowrap btn-press cursor-pointer select-none ${
-                  isActive
-                    ? item.key === 'SAIDA'
-                      ? 'bg-red-500 text-white shadow-[0_2px_12px_rgba(239,68,68,0.4)]'
-                      : 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
-                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80 border border-transparent'
-                }`}
-              >
-                <span>{item.label}</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
-                    isActive
-                      ? 'bg-black/20 text-current'
-                      : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
-                  }`}
-                >
-                  {item.count}
-                </span>
-              </button>
-            );
-          })}
+        {/* High-Resolution Segmented Control */}
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+          <button
+            onClick={() => setTipoFilter('TODOS')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
+              tipoFilter === 'TODOS'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+            }`}
+          >
+            <span>Todas as Operações</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                tipoFilter === 'TODOS'
+                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+              }`}
+            >
+              {counts.todos}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setTipoFilter('ENTRADA')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
+              tipoFilter === 'ENTRADA'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+            }`}
+          >
+            <ArrowUpRight className="w-4 h-4 text-emerald-300" />
+            <span>Entradas</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                tipoFilter === 'ENTRADA'
+                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+              }`}
+            >
+              {counts.entradas}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setTipoFilter('SAIDA')}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
+              tipoFilter === 'SAIDA'
+                ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] font-bold scale-[1.02]'
+                : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+            }`}
+          >
+            <ArrowDownRight className="w-4 h-4 text-rose-300" />
+            <span>Saídas</span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                tipoFilter === 'SAIDA'
+                  ? 'bg-black/30 text-white'
+                  : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+              }`}
+            >
+              {counts.saidas}
+            </span>
+          </button>
         </div>
       </div>
 

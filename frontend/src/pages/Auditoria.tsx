@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
@@ -100,6 +100,32 @@ export const Auditoria: React.FC = () => {
     }
   };
 
+  const [filterMode, setFilterMode] = useState<'TODOS' | 'DIVERGENTE' | 'CORRETO'>('TODOS');
+
+  // Compute counts
+  const counts = useMemo(() => {
+    let divergente = 0;
+    let correto = 0;
+    for (const it of items) {
+      if (it.contado !== it.sistema) divergente++;
+      else correto++;
+    }
+    return {
+      todos: items.length,
+      divergente,
+      correto,
+    };
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((it) => {
+      const diff = it.contado - it.sistema;
+      if (filterMode === 'DIVERGENTE') return diff !== 0;
+      if (filterMode === 'CORRETO') return diff === 0;
+      return true;
+    });
+  }, [items, filterMode]);
+
   const totalDivergenciaFinanceira = items.reduce((acc, it) => {
     const diff = it.contado - it.sistema;
     return acc + diff * it.produto.preco_custo;
@@ -118,31 +144,31 @@ export const Auditoria: React.FC = () => {
         <button
           onClick={handleApproveReconciliation}
           disabled={loading}
-          className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none disabled:opacity-50 disabled:pointer-events-none"
+          className="px-6 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
         >
-          <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-          <CheckCircle2 className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
+          <CheckCircle2 className="w-4 h-4" />
           <span>Aprovar Ajuste de Estoque</span>
         </button>
       </div>
 
-      {/* Barcode Scanner Bar - High-Resolution Dock */}
-      <div className="p-3.5 md:p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
-        <form onSubmit={handleBarcodeScan} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Barcode className="w-5 h-5 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      {/* Barcode Scanner Bar in High Definition */}
+      <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+        <form onSubmit={handleBarcodeScan} className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full group">
+            <Barcode className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
             <input
               type="text"
               value={barcodeQuery}
               onChange={(e) => setBarcodeQuery(e.target.value)}
               placeholder="Bipar código de barras (EAN-13) ou digitar SKU e pressionar Enter..."
-              className="w-full pl-11 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
             />
             {barcodeQuery && (
               <button
                 type="button"
                 onClick={() => setBarcodeQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+                className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                title="Limpar busca"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -151,10 +177,9 @@ export const Auditoria: React.FC = () => {
 
           <button
             type="submit"
-            className="relative group overflow-hidden w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_24px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2 flex-shrink-0 active:scale-95 cursor-pointer select-none"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#142522] hover:bg-[#163832] border border-[#10B981]/40 text-sm font-bold text-[#10B981] transition-all flex items-center justify-center gap-2 flex-shrink-0 active:scale-95 shadow-glow-emerald"
           >
-            <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-            <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform duration-200" />
+            <Sparkles className="w-4 h-4" />
             <span>Bipar Item (+1)</span>
           </button>
         </form>
@@ -163,6 +188,51 @@ export const Auditoria: React.FC = () => {
       {/* Discrepancy Reconciliation Bento Card */}
       <BentoCard
         title="Balanço & Comparativo de Inventário"
+        action={
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] shadow-inner">
+            <button
+              onClick={() => setFilterMode('TODOS')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+                filterMode === 'TODOS'
+                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                  : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
+              }`}
+            >
+              <span>Todos</span>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'TODOS' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                {counts.todos}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setFilterMode('DIVERGENTE')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+                filterMode === 'DIVERGENTE'
+                  ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold shadow-[0_0_15px_rgba(239,68,68,0.35)] scale-[1.02]'
+                  : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
+              }`}
+            >
+              <span>Divergentes</span>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'DIVERGENTE' ? 'bg-black/30 text-white' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                {counts.divergente}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setFilterMode('CORRETO')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+                filterMode === 'CORRETO'
+                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                  : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
+              }`}
+            >
+              <span>Bateu 100%</span>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'CORRETO' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                {counts.correto}
+              </span>
+            </button>
+          </div>
+        }
       >
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[1000px]">
@@ -177,7 +247,7 @@ export const Auditoria: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
-              {items.map((item, idx) => {
+              {filteredItems.map((item, idx) => {
                 const diff = item.contado - item.sistema;
                 const impact = diff * item.produto.preco_custo;
 
@@ -239,21 +309,21 @@ export const Auditoria: React.FC = () => {
                       <div className="inline-flex items-center gap-1.5">
                         <button
                           onClick={() => handleIncrement(idx, -1)}
-                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/40 transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
+                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
                           title="Subtrair 1"
                         >
                           -1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 1)}
-                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#10B981] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/50 transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
+                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#10B981] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
                           title="Somar 1"
                         >
                           +1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 5)}
-                          className="px-3 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#34D399] border border-[rgba(142,182,155,0.2)] hover:border-[#10B981]/50 transition-all active:scale-90 cursor-pointer select-none flex items-center justify-center"
+                          className="px-3 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#34D399] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
                           title="Somar 5"
                         >
                           +5

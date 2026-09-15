@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
@@ -27,8 +27,6 @@ export const Financeiro: React.FC = () => {
   const { toast } = useToast();
   const [lancamentos, setLancamentos] = useState<FinanceiroLancamento[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'RECEITA' | 'DESPESA'>('TODOS');
 
   // New expense modal
   const [newExpenseModal, setNewExpenseModal] = useState(false);
@@ -74,6 +72,35 @@ export const Financeiro: React.FC = () => {
     toast.success('Disparo Celery executado! Relatório enviado para dono@estroque.com.br.');
   };
 
+  const [search, setSearch] = useState('');
+  const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'RECEITA' | 'DESPESA'>('TODOS');
+
+  // Compute counts
+  const counts = useMemo(() => {
+    let receitas = 0;
+    let despesas = 0;
+    for (const l of lancamentos) {
+      if (l.tipo === 'RECEITA') receitas++;
+      else if (l.tipo === 'DESPESA') despesas++;
+    }
+    return {
+      todos: lancamentos.length,
+      receitas,
+      despesas,
+    };
+  }, [lancamentos]);
+
+  const filteredLancamentos = useMemo(() => {
+    return lancamentos.filter((l) => {
+      const q = search.toLowerCase();
+      const match =
+        (l.descricao || '').toLowerCase().includes(q) ||
+        (l.categoria || '').toLowerCase().includes(q);
+      if (tipoFilter !== 'TODOS' && l.tipo !== tipoFilter) return false;
+      return match;
+    });
+  }, [lancamentos, search, tipoFilter]);
+
   const totalReceitas = lancamentos
     .filter((l) => l.tipo === 'RECEITA')
     .reduce((acc, l) => acc + l.valor, 0);
@@ -83,21 +110,6 @@ export const Financeiro: React.FC = () => {
     .reduce((acc, l) => acc + l.valor, 0);
 
   const saldoLiquido = totalReceitas - totalDespesas;
-
-  const counts = {
-    TODOS: lancamentos.length,
-    RECEITA: lancamentos.filter((l) => l.tipo === 'RECEITA').length,
-    DESPESA: lancamentos.filter((l) => l.tipo === 'DESPESA').length,
-  };
-
-  const filteredLancamentos = lancamentos.filter((l) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      (l.descricao || '').toLowerCase().includes(q) ||
-      (l.categoria || '').toLowerCase().includes(q);
-    if (tipoFilter !== 'TODOS' && l.tipo !== tipoFilter) return false;
-    return matchSearch;
-  });
 
   return (
     <div className="space-y-6">
@@ -111,11 +123,10 @@ export const Financeiro: React.FC = () => {
 
         <button
           onClick={() => setNewExpenseModal(true)}
-          className="relative group overflow-hidden px-5 py-2.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-extrabold text-sm shadow-glow-emerald hover:shadow-[0_0_28px_rgba(16,185,129,0.5)] transition-all duration-200 flex items-center justify-center gap-2.5 active:scale-95 cursor-pointer select-none"
+          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
         >
-          <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
-          <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300 flex-shrink-0" />
-          <span>Nova Despesa</span>
+          <Plus className="w-4 h-4" />
+          <span>+ Nova Despesa</span>
         </button>
       </div>
 
@@ -147,61 +158,70 @@ export const Financeiro: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Entries Table (7 cols) */}
         <div className="lg:col-span-8 space-y-4">
-          {/* Segmented Filter & Search Bar - High-Resolution Control */}
+          {/* High-Resolution Filter and Search Bar */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#10B981] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="relative flex-1 group">
+              <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3 transition-colors duration-200 pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar lançamento por descrição ou categoria..."
-                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                placeholder="Buscar por descrição ou categoria..."
+                className="w-full pl-12 pr-10 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-[#7A9988] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors"
+                  className="absolute right-3.5 top-2.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                  title="Limpar busca"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            <div className="p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] flex items-center gap-1.5 overflow-x-auto table-scrollbar">
-              {(
-                [
-                  { key: 'TODOS', label: 'Todos', count: counts.TODOS },
-                  { key: 'RECEITA', label: 'Receitas', count: counts.RECEITA },
-                  { key: 'DESPESA', label: 'Despesas', count: counts.DESPESA },
-                ] as const
-              ).map((item) => {
-                const isActive = tipoFilter === item.key;
-                return (
-                  <button
-                    key={item.key}
-                    onClick={() => setTipoFilter(item.key)}
-                    className={`px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap btn-press cursor-pointer select-none ${
-                      isActive
-                        ? item.key === 'DESPESA'
-                          ? 'bg-red-500 text-white shadow-[0_2px_10px_rgba(239,68,68,0.4)]'
-                          : 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
-                        : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]/80 border border-transparent'
-                    }`}
-                  >
-                    <span>{item.label}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold ${
-                        isActive
-                          ? 'bg-black/20 text-current'
-                          : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.15)]'
-                      }`}
-                    >
-                      {item.count}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] shadow-inner">
+              <button
+                onClick={() => setTipoFilter('TODOS')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                  tipoFilter === 'TODOS'
+                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                }`}
+              >
+                <span>Todos</span>
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${tipoFilter === 'TODOS' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                  {counts.todos}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setTipoFilter('RECEITA')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                  tipoFilter === 'RECEITA'
+                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                }`}
+              >
+                <span>Receitas</span>
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${tipoFilter === 'RECEITA' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                  {counts.receitas}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setTipoFilter('DESPESA')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                  tipoFilter === 'DESPESA'
+                    ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] font-bold scale-[1.02]'
+                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                }`}
+              >
+                <span>Despesas</span>
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${tipoFilter === 'DESPESA' ? 'bg-black/30 text-white' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                  {counts.despesas}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -292,9 +312,9 @@ export const Financeiro: React.FC = () => {
 
               <button
                 onClick={handleResendDailyEmail}
-                className="w-full py-3 px-4 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 hover:border-[#10B981]/60 text-sm font-bold text-[#10B981] flex items-center justify-center gap-2.5 transition-all btn-press cursor-pointer active:scale-95"
+                className="w-full py-2.5 px-4 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] flex items-center justify-center gap-2 transition-all"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5" />
                 <span>Simular Envio de Relatório</span>
               </button>
             </div>
@@ -310,13 +330,11 @@ export const Financeiro: React.FC = () => {
       >
         <form onSubmit={handleCreateExpense} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-              Categoria
-            </label>
+            <label className="block text-xs font-medium text-[#94A89E] mb-1">Categoria</label>
             <select
               value={despesaCategoria}
               onChange={(e) => setDespesaCategoria(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
+              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
             >
               <option value="Aluguel & Condomínio">Aluguel & Condomínio</option>
               <option value="Energia Elétrica & Internet">Energia Elétrica & Internet</option>
@@ -328,24 +346,20 @@ export const Financeiro: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-              Descrição / Detalhes
-            </label>
+            <label className="block text-xs font-medium text-[#94A89E] mb-1">Descrição / Detalhes</label>
             <input
               type="text"
               required
               value={despesaDescricao}
               onChange={(e) => setDespesaDescricao(e.target.value)}
               placeholder="Ex: Pagamento da fatura de energia CPFL"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-medium text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+              className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Valor (R$)
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Valor (R$)</label>
               <input
                 type="number"
                 step="0.01"
@@ -353,18 +367,16 @@ export const Financeiro: React.FC = () => {
                 required
                 value={despesaValor}
                 onChange={(e) => setDespesaValor(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm font-mono text-[#F3FBF6] placeholder-[#7A9988] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#A2B89B] uppercase tracking-wider mb-1.5">
-                Status Pagamento
-              </label>
+              <label className="block text-xs font-medium text-[#94A89E] mb-1">Status Pagamento</label>
               <select
                 value={despesaStatus}
                 onChange={(e) => setDespesaStatus(e.target.value as 'PENDENTE' | 'PAGO')}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.22)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 focus:outline-none transition-all cursor-pointer"
+                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-xs text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               >
                 <option value="PAGO">Liquidado (Pago)</option>
                 <option value="PENDENTE">A Pagar (Pendente)</option>
@@ -376,15 +388,15 @@ export const Financeiro: React.FC = () => {
             <button
               type="button"
               onClick={() => setNewExpenseModal(false)}
-              className="px-5 py-2.5 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[rgba(142,182,155,0.2)] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] transition-all btn-press cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-full bg-[#142522] text-xs font-semibold text-[#94A89E]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm font-extrabold shadow-glow-emerald transition-all btn-press cursor-pointer active:scale-95 flex items-center gap-2"
+              className="px-6 py-2 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald"
             >
-              <span>Lançar Despesa</span>
+              Lançar Despesa
             </button>
           </div>
         </form>
