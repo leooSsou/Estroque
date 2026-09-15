@@ -135,3 +135,27 @@
   pointer-events: none;
 }
 
+/* Smooth Dropdown Enter Animations */
+@keyframes dropdownEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-enter {
+  animation: dropdownEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top right;
+  will-change: transform, opacity;
+}
+
+.dropdown-enter-left {
+  animation: dropdownEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top left;
+  will-change: transform, opacity;
+}
+
