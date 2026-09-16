@@ -67,7 +67,7 @@ export const Dashboard: React.FC = () => {
               <Store className="w-4 h-4 text-[#10B981]" />
               <span>Visão Consolidada • {activeLoja?.nome || 'Rede Inteira'}</span>
             </div>
-            <div className="text-3xl lg:text-4xl font-extrabold text-[#F3FBF6] font-mono tracking-tight">
+            <div className="text-3xl lg:text-4xl font-extrabold text-[#F3FBF6] font-mono tracking-tight whitespace-nowrap">
               R$ {(metrics?.faturamento_liquido || 82300).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </div>
