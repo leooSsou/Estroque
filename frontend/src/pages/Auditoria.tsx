@@ -235,15 +235,17 @@ export const Auditoria: React.FC = () => {
         }
       >
         <div className="overflow-x-auto table-scrollbar pb-2">
-          <table className="w-full text-left min-w-[1000px]">
+          <table className="w-full text-left min-w-[1050px]">
             <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
-                <th className="py-4 px-4">Produto / Identificação</th>
-                <th className="py-4 px-4 text-center">Estoque Sistema</th>
-                <th className="py-4 px-4 text-center">Contagem Física</th>
-                <th className="py-4 px-4 text-center">Divergência</th>
-                <th className="py-4 px-4 text-right">Impacto Financeiro</th>
-                <th className="py-4 px-4 text-right">Contador Rápido</th>
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <th className="py-3.5 px-4">Produto</th>
+                <th className="py-3.5 px-4">SKU</th>
+                <th className="py-3.5 px-4">EAN</th>
+                <th className="py-3.5 px-4 text-center">Estoque Sistema</th>
+                <th className="py-3.5 px-4 text-center">Contagem Física</th>
+                <th className="py-3.5 px-4 text-center">Divergência</th>
+                <th className="py-3.5 px-4 text-right">Impacto Financeiro</th>
+                <th className="py-3.5 px-4 text-right">Contador Rápido</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
@@ -252,21 +254,22 @@ export const Auditoria: React.FC = () => {
                 const impact = diff * item.produto.preco_custo;
 
                 return (
-                  <tr key={item.produto.id} className="hover:bg-[#142522]/50 transition-colors group">
-                    <td className="py-4 px-4">
-                      <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
-                        {item.produto.nome}
-                      </div>
-                      <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
-                        SKU: {item.produto.sku} • EAN: {item.produto.codigo_barras || 'N/A'}
-                      </div>
+                  <tr key={item.produto.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                      {item.produto.nome}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                      {item.produto.sku}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs text-[#DAF1DE] whitespace-nowrap">
+                      {item.produto.codigo_barras || '—'}
                     </td>
 
-                    <td className="py-4 px-4 font-mono text-base font-bold text-[#DAF1DE] text-center">
+                    <td className="py-3.5 px-4 font-mono text-sm font-bold text-[#DAF1DE] text-center whitespace-nowrap">
                       {item.sistema} un
                     </td>
 
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       <input
                         type="number"
                         min="0"
@@ -279,29 +282,29 @@ export const Auditoria: React.FC = () => {
                             return copy;
                           });
                         }}
-                        className="w-24 px-3 py-1.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.25)] font-mono text-center text-base text-[#10B981] font-extrabold focus:border-[#10B981] focus:outline-none"
+                        className="w-24 px-3 py-1.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.25)] font-mono text-center text-sm text-[#10B981] font-extrabold focus:border-[#10B981] focus:outline-none"
                       />
                     </td>
 
-                    <td className="py-4 px-4 text-center font-mono">
+                    <td className="py-3.5 px-4 text-center font-mono whitespace-nowrap">
                       {diff === 0 ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#163832] text-[#10B981] border border-[#10B981]/30 text-xs font-bold">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#163832] text-[#10B981] border border-[#10B981]/30 text-xs font-bold whitespace-nowrap">
                           0 (Conforme)
                         </span>
                       ) : diff > 0 ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-950/60 text-[#34D399] border border-emerald-500/30 text-xs font-bold">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-950/60 text-[#34D399] border border-emerald-500/30 text-xs font-bold whitespace-nowrap">
                           +{diff} un (Sobra)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-950/60 text-red-400 border border-red-500/30 text-xs font-bold">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-950/60 text-red-400 border border-red-500/30 text-xs font-bold whitespace-nowrap">
                           {diff} un (Falta)
                         </span>
                       )}
                     </td>
 
-                    <td className="py-4 px-4 font-mono text-base font-extrabold text-right">
+                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-right whitespace-nowrap">
                       <span className={impact < 0 ? 'text-red-400' : impact > 0 ? 'text-[#10B981]' : 'text-[#DAF1DE]'}>
-                        R$ {impact.toFixed(2)}
+                        {impact.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </span>
                     </td>
 

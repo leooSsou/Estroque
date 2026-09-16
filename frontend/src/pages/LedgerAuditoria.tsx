@@ -217,26 +217,27 @@ export const LedgerAuditoria: React.FC = () => {
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[1050px]">
             <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
-                <th className="py-4 px-4">Data / Hora</th>
-                <th className="py-4 px-4 text-center">Tipo</th>
-                <th className="py-4 px-4">SKU & Item</th>
-                <th className="py-4 px-4">Qtd Movimentada</th>
-                <th className="py-4 px-4">Saldo Anterior</th>
-                <th className="py-4 px-4">Saldo Resultante</th>
-                <th className="py-4 px-4">Responsável</th>
-                <th className="py-4 px-4">Motivo / Documento</th>
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <th className="py-3.5 px-4">Data / Hora</th>
+                <th className="py-3.5 px-4 text-center">Tipo</th>
+                <th className="py-3.5 px-4">Produto</th>
+                <th className="py-3.5 px-4">SKU</th>
+                <th className="py-3.5 px-4">Qtd Movimentada</th>
+                <th className="py-3.5 px-4">Saldo Anterior</th>
+                <th className="py-3.5 px-4">Saldo Resultante</th>
+                <th className="py-3.5 px-4">Responsável</th>
+                <th className="py-3.5 px-4">Motivo / Documento</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {filtered.map((mov) => {
                 const prod = produtos[mov.produto_id];
                 return (
-                  <tr key={mov.id} className="hover:bg-[#142522]/50 transition-colors group">
-                    <td className="py-4 px-4 font-mono text-xs font-semibold text-[#A2B89B]">
+                  <tr key={mov.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B] whitespace-nowrap">
                       {new Date(mov.data_movimentacao).toLocaleString('pt-BR')}
                     </td>
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       <Badge variant={mov.tipo === 'ENTRADA' ? 'mint' : 'danger'}>
                         {mov.tipo === 'ENTRADA' ? (
                           <span className="flex items-center gap-1.5 font-bold">
@@ -249,29 +250,27 @@ export const LedgerAuditoria: React.FC = () => {
                         )}
                       </Badge>
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
-                        {prod?.nome || 'Item do Catálogo'}
-                      </div>
-                      <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
-                        SKU: {prod?.sku || mov.produto_id.slice(0, 8)}
-                      </div>
+                    <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                      {prod?.nome || 'Item do Catálogo'}
                     </td>
-                    <td className="py-4 px-4 font-mono text-base font-extrabold">
+                    <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                      {prod?.sku || mov.produto_id.slice(0, 8)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold whitespace-nowrap">
                       <span className={mov.tipo === 'ENTRADA' ? 'text-[#10B981]' : 'text-red-400'}>
                         {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`} un
                       </span>
                     </td>
-                    <td className="py-4 px-4 font-mono text-sm font-semibold text-[#A2B89B]">
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B] whitespace-nowrap">
                       {mov.saldo_anterior ?? '—'} un
                     </td>
-                    <td className="py-4 px-4 font-mono text-base font-extrabold text-[#F3FBF6]">
+                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#F3FBF6] whitespace-nowrap">
                       {mov.saldo_resultante ?? '—'} un
                     </td>
-                    <td className="py-4 px-4 text-sm font-semibold text-[#DAF1DE]">
+                    <td className="py-3.5 px-4 text-sm font-semibold text-[#DAF1DE] whitespace-nowrap">
                       {mov.responsavel || 'Operador'}
                     </td>
-                    <td className="py-4 px-4 text-xs font-medium text-[#C1D7C8] max-w-xs">
+                    <td className="py-3.5 px-4 text-xs font-medium text-[#C1D7C8] whitespace-nowrap">
                       {mov.motivo}
                     </td>
                   </tr>

@@ -36,6 +36,13 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #235347;
   }
+
+  /* Table single-line and layout defaults (ERP standard) */
+  table th,
+  table td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
 }
 
 @layer utilities {

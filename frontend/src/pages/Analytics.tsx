@@ -155,43 +155,44 @@ export const Analytics: React.FC = () => {
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[960px]">
             <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
-                <th className="py-4 px-4">Produto</th>
-                <th className="py-4 px-4 text-center">Classe</th>
-                <th className="py-4 px-4">Faturamento</th>
-                <th className="py-4 px-4">Giro Médio</th>
-                <th className="py-4 px-4">Estoque Atual</th>
-                <th className="py-4 px-4 text-right">Ação Recomendada</th>
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <th className="py-3.5 px-4">Produto</th>
+                <th className="py-3.5 px-4">SKU</th>
+                <th className="py-3.5 px-4 text-center">Classe</th>
+                <th className="py-3.5 px-4">Faturamento</th>
+                <th className="py-3.5 px-4">Giro Médio</th>
+                <th className="py-3.5 px-4">Estoque Atual</th>
+                <th className="py-3.5 px-4 text-right">Ação Recomendada</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {curvaItems.map((item) => (
-                <tr key={item.produto_id} className="hover:bg-[#142522]/50 transition-colors group">
-                  <td className="py-4 px-4">
-                    <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
-                      {item.nome}
-                    </div>
-                    <div className="text-xs text-[#A2B89B] font-mono mt-0.5">SKU: {item.sku}</div>
+                <tr key={item.produto_id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                  <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                    {item.nome}
                   </td>
-                  <td className="py-4 px-4 text-center">
+                  <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                    {item.sku}
+                  </td>
+                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'sage' : 'neutral'}>
                       Classe {item.classe}
                     </Badge>
                   </td>
-                  <td className="py-4 px-4 font-mono text-base font-extrabold text-[#10B981]">
-                    R$ {item.faturamento.toFixed(2)}
+                  <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
+                    {item.faturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </td>
-                  <td className="py-4 px-4 font-mono text-sm font-semibold text-[#DAF1DE]">
+                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
                     {item.giro_dias || 25} dias
                   </td>
-                  <td className="py-4 px-4 font-mono text-base font-bold text-[#F3FBF6]">
+                  <td className="py-3.5 px-4 font-mono text-sm font-bold text-[#F3FBF6] whitespace-nowrap">
                     {item.estoque_atual ?? 12} un
                   </td>
-                  <td className="py-4 px-4 text-right">
+                  <td className="py-3.5 px-4 text-right whitespace-nowrap">
                     {item.classe === 'A' ? (
                       <button
                         onClick={() => handleAction(item, 'Emitir Pedido de Compra')}
-                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all btn-press"
+                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all btn-press whitespace-nowrap"
                       >
                         Comprar com Fornecedor
                       </button>

@@ -225,20 +225,22 @@ export const Estoque: React.FC = () => {
       {/* Multi-Store Balances Table */}
       <BentoCard>
         <div className="overflow-x-auto table-scrollbar pb-2">
-          <table className="w-full text-left min-w-[960px]">
+          <table className="w-full text-left min-w-[1050px]">
             <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
-                <th className="py-4 px-4">SKU & Item</th>
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <th className="py-3.5 px-4">Produto</th>
+                <th className="py-3.5 px-4">SKU</th>
+                <th className="py-3.5 px-4">Estoque Mínimo</th>
                 {lojas.map((loja) => {
                   const isSelected = selectedLojaFilter === loja.id;
                   return (
                     <th
                       key={loja.id}
-                      className={`py-4 px-4 transition-colors ${
+                      className={`py-3.5 px-4 transition-colors ${
                         isSelected ? 'text-[#10B981] bg-[#163832]/40' : ''
                       }`}
                     >
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 whitespace-nowrap">
                         <span>{loja.nome}</span>
                         {isSelected && (
                           <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
@@ -247,9 +249,9 @@ export const Estoque: React.FC = () => {
                     </th>
                   );
                 })}
-                <th className="py-4 px-4">Saldo Total Rede</th>
-                <th className="py-4 px-4">Valoração Total (Custo)</th>
-                <th className="py-4 px-4 text-right">Ação</th>
+                <th className="py-3.5 px-4">Saldo Total Rede</th>
+                <th className="py-3.5 px-4">Valoração Total (Custo)</th>
+                <th className="py-3.5 px-4 text-right">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
@@ -258,21 +260,22 @@ export const Estoque: React.FC = () => {
                 const totalCostVal = totalStock * prod.preco_custo;
 
                 return (
-                  <tr key={prod.id} className="hover:bg-[#142522]/50 transition-colors group">
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] flex-shrink-0">
-                          <Package className="w-5 h-5" />
+                  <tr key={prod.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] flex-shrink-0">
+                          <Package className="w-4 h-4" />
                         </div>
-                        <div>
-                          <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
-                            {prod.nome}
-                          </div>
-                          <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
-                            SKU: {prod.sku} • Mínimo: {prod.estoque_minimo || 5} un
-                          </div>
-                        </div>
+                        <span className="font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                          {prod.nome}
+                        </span>
                       </div>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                      {prod.sku}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                      {prod.estoque_minimo || 5} un
                     </td>
 
                     {/* Stock by store columns */}
@@ -282,12 +285,12 @@ export const Estoque: React.FC = () => {
                       return (
                         <td
                           key={loja.id}
-                          className={`py-4 px-4 font-mono transition-colors ${
+                          className={`py-3.5 px-4 font-mono transition-colors whitespace-nowrap ${
                             isSelected ? 'bg-[#163832]/20 font-bold' : ''
                           }`}
                         >
                           <span
-                            className={`font-bold text-sm md:text-base ${
+                            className={`font-bold text-sm ${
                               stockInLoja === 0
                                 ? 'text-red-400 font-extrabold'
                                 : stockInLoja <= (prod.estoque_minimo || 5)
@@ -301,18 +304,18 @@ export const Estoque: React.FC = () => {
                       );
                     })}
 
-                    <td className="py-4 px-4 font-mono text-base font-extrabold text-[#10B981]">
+                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
                       {totalStock} un
                     </td>
 
-                    <td className="py-4 px-4 font-mono text-sm md:text-base font-semibold text-[#DAF1DE]">
-                      R$ {totalCostVal.toFixed(2)}
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                      {totalCostVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
 
-                    <td className="py-4 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleOpenMovement(prod)}
-                        className="px-3.5 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm"
+                        className="px-3.5 py-1.5 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
                       >
                         Ajustar
                       </button>

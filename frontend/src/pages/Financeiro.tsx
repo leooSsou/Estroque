@@ -231,42 +231,43 @@ export const Financeiro: React.FC = () => {
             <div className="overflow-x-auto table-scrollbar pb-2">
               <table className="w-full text-left min-w-[900px]">
                 <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
-                    <th className="py-4 px-4">Data</th>
-                    <th className="py-4 px-4 text-center">Tipo</th>
-                    <th className="py-4 px-4">Descrição / Categoria</th>
-                    <th className="py-4 px-4 text-center">Status</th>
-                    <th className="py-4 px-4 text-right">Valor</th>
+                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                    <th className="py-3.5 px-4">Data</th>
+                    <th className="py-3.5 px-4 text-center">Tipo</th>
+                    <th className="py-3.5 px-4">Descrição</th>
+                    <th className="py-3.5 px-4">Categoria</th>
+                    <th className="py-3.5 px-4 text-center">Status</th>
+                    <th className="py-3.5 px-4 text-right">Valor</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
                   {filteredLancamentos.map((l) => (
-                    <tr key={l.id} className="hover:bg-[#142522]/50 transition-colors group">
-                      <td className="py-4 px-4 font-mono text-sm font-semibold text-[#A2B89B]">
+                    <tr key={l.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B] whitespace-nowrap">
                         {new Date(l.data_lancamento).toLocaleDateString('pt-BR')}
                       </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <Badge variant={l.tipo === 'RECEITA' ? 'mint' : 'danger'}>
                           {l.tipo}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
-                          {l.descricao || l.categoria}
-                        </div>
-                        <div className="text-xs text-[#A2B89B] font-mono mt-0.5">{l.categoria}</div>
+                      <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                        {l.descricao || l.categoria}
                       </td>
-                      <td className="py-4 px-4 text-center">
+                      <td className="py-3.5 px-4 text-xs font-mono text-[#A2B89B] whitespace-nowrap">
+                        {l.categoria}
+                      </td>
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'warning'}>
                           {l.status_pagamento}
                         </Badge>
                       </td>
                       <td
-                        className={`py-4 px-4 font-mono text-base font-extrabold text-right ${
+                        className={`py-3.5 px-4 font-mono text-sm font-extrabold text-right whitespace-nowrap ${
                           l.tipo === 'RECEITA' ? 'text-[#10B981]' : 'text-red-400'
                         }`}
                       >
-                        {l.tipo === 'RECEITA' ? '+' : '-'} R$ {l.valor.toFixed(2)}
+                        {l.tipo === 'RECEITA' ? '+' : '-'} {l.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </td>
                     </tr>
                   ))}

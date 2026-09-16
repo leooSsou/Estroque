@@ -390,7 +390,7 @@ export const Dashboard: React.FC = () => {
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[850px]">
             <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
                 <th className="py-3.5 px-4">Data & Hora</th>
                 <th className="py-3.5 px-4 text-center">Tipo</th>
                 <th className="py-3.5 px-4">Quantidade</th>
@@ -401,8 +401,8 @@ export const Dashboard: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
               {recentMovements.map((mov) => (
-                <tr key={mov.id} className="hover:bg-[#142522]/50 transition-colors group">
-                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B]">
+                <tr key={mov.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B] whitespace-nowrap">
                     {new Date(mov.data_movimentacao).toLocaleDateString('pt-BR', {
                       day: '2-digit',
                       month: '2-digit',
@@ -410,27 +410,27 @@ export const Dashboard: React.FC = () => {
                       minute: '2-digit',
                     })}
                   </td>
-                  <td className="py-3.5 px-4 text-center">
+                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <Badge variant={mov.tipo === 'ENTRADA' ? 'mint' : 'danger'}>
                       {mov.tipo === 'ENTRADA' ? (
-                        <span className="flex items-center gap-1.5 font-bold">
+                        <span className="flex items-center gap-1.5 font-bold whitespace-nowrap">
                           <ArrowDownRight className="w-4 h-4 text-[#10B981]" /> ENTRADA
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1.5 font-bold">
+                        <span className="flex items-center gap-1.5 font-bold whitespace-nowrap">
                           <ArrowUpRight className="w-4 h-4 text-red-400" /> SAÍDA
                         </span>
                       )}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-base font-extrabold">
+                  <td className="py-3.5 px-4 font-mono text-sm font-extrabold whitespace-nowrap">
                     <span className={mov.tipo === 'ENTRADA' ? 'text-[#10B981]' : 'text-red-400'}>
-                      {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`}
+                      {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`} un
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 text-sm font-bold text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">{mov.motivo}</td>
-                  <td className="py-3.5 px-4 text-sm font-semibold text-[#DAF1DE]">{mov.responsavel || 'Operador'}</td>
-                  <td className="py-3.5 px-4 font-mono text-base font-extrabold text-[#10B981] text-right">
+                  <td className="py-3.5 px-4 text-sm font-bold text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">{mov.motivo}</td>
+                  <td className="py-3.5 px-4 text-sm font-semibold text-[#DAF1DE] whitespace-nowrap">{mov.responsavel || 'Operador'}</td>
+                  <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] text-right whitespace-nowrap">
                     {mov.saldo_resultante ?? '—'} un
                   </td>
                 </tr>

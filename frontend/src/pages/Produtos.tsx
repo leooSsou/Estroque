@@ -251,18 +251,20 @@ export const Produtos: React.FC = () => {
       {/* Products Data Table (Bento Style) */}
       <BentoCard>
         <div className="overflow-x-auto table-scrollbar pb-2">
-          <table className="w-full text-left min-w-[1020px]">
+          <table className="w-full text-left min-w-[1100px]">
             <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B]">
-                <th className="py-4 px-4">Produto / Descrição</th>
-                <th className="py-4 px-4">EAN-13</th>
-                <th className="py-4 px-4">Custo</th>
-                <th className="py-4 px-4">Markup</th>
-                <th className="py-4 px-4">Preço Venda</th>
-                <th className="py-4 px-4">Margem</th>
-                <th className="py-4 px-4">Estoque ({activeLoja?.nome ? 'Loja' : 'Rede'})</th>
-                <th className="py-4 px-4 text-center">Status</th>
-                <th className="py-4 px-4 text-right">Ação</th>
+              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <th className="py-3.5 px-4">Produto</th>
+                <th className="py-3.5 px-4">SKU</th>
+                <th className="py-3.5 px-4">Categoria</th>
+                <th className="py-3.5 px-4">EAN-13</th>
+                <th className="py-3.5 px-4">Custo</th>
+                <th className="py-3.5 px-4">Markup</th>
+                <th className="py-3.5 px-4">Preço Venda</th>
+                <th className="py-3.5 px-4">Margem</th>
+                <th className="py-3.5 px-4">Estoque ({activeLoja?.nome ? 'Loja' : 'Rede'})</th>
+                <th className="py-3.5 px-4 text-center">Status</th>
+                <th className="py-3.5 px-4 text-right">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
@@ -277,23 +279,24 @@ export const Produtos: React.FC = () => {
                     : 0;
 
                 return (
-                  <tr key={prod.id} className="hover:bg-[#142522]/50 transition-colors group">
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] flex-shrink-0">
-                          <Package className="w-5 h-5" />
+                  <tr key={prod.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] flex-shrink-0">
+                          <Package className="w-4 h-4" />
                         </div>
-                        <div>
-                          <div className="font-bold text-sm md:text-base text-[#F3FBF6] group-hover:text-[#10B981] transition-colors">
-                            {prod.nome}
-                          </div>
-                          <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
-                            SKU: {prod.sku} • {prod.categoria || 'Geral'}
-                          </div>
-                        </div>
+                        <span className="font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                          {prod.nome}
+                        </span>
                       </div>
                     </td>
-                    <td className="py-4 px-4 font-mono text-xs font-semibold text-[#DAF1DE]">
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                      {prod.sku}
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-[#A2B89B] whitespace-nowrap">
+                      {prod.categoria || 'Geral'}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
                       {prod.codigo_barras ? (
                         <span className="flex items-center gap-1.5">
                           <Barcode className="w-4 h-4 text-[#8EB69B]" />
@@ -303,22 +306,22 @@ export const Produtos: React.FC = () => {
                         <span className="text-[#5E756B]">—</span>
                       )}
                     </td>
-                    <td className="py-4 px-4 font-mono text-sm font-semibold text-[#C1D7C8]">
-                      R$ {prod.preco_custo.toFixed(2)}
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#C1D7C8] whitespace-nowrap">
+                      {prod.preco_custo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
-                    <td className="py-4 px-4 font-mono text-sm font-bold text-[#34D399]">
+                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#34D399] whitespace-nowrap">
                       +{prod.markup.toFixed(1)}%
                     </td>
-                    <td className="py-4 px-4 font-mono text-base font-extrabold text-[#10B981]">
-                      R$ {prod.preco_venda.toFixed(2)}
+                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
+                      {prod.preco_venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
-                    <td className="py-4 px-4 font-mono text-sm font-semibold text-[#DAF1DE]">
+                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
                       {margemBruta.toFixed(1)}%
                     </td>
-                    <td className="py-4 px-4 font-mono text-base font-extrabold text-[#F3FBF6]">
+                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#F3FBF6] whitespace-nowrap">
                       {stock} un
                     </td>
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       {stock === 0 ? (
                         <Badge variant="danger">Ruptura</Badge>
                       ) : stock <= minStock ? (
@@ -327,10 +330,10 @@ export const Produtos: React.FC = () => {
                         <Badge variant="mint">Normal</Badge>
                       )}
                     </td>
-                    <td className="py-4 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => openMarkupModal(prod)}
-                        className="px-3.5 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm"
+                        className="px-3.5 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
                         title="Simular e Ajustar Markup"
                       >
                         <Calculator className="w-3.5 h-3.5 text-[#10B981]" />
