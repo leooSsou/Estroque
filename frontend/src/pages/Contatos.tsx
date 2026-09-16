@@ -139,7 +139,7 @@ export const Contatos: React.FC = () => {
           className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          <span>{activeTab === 'CLIENTES' ? '+ Novo Cliente' : '+ Novo Fornecedor'}</span>
+          <span>{activeTab === 'CLIENTES' ? 'Novo Cliente' : 'Novo Fornecedor'}</span>
         </button>
       </div>
 

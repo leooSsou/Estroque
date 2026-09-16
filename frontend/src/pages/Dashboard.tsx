@@ -79,7 +79,7 @@ export const Dashboard: React.FC = () => {
               className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald btn-press hover-lift flex items-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>+ Nova Venda (PDV)</span>
+              <span>Nova Venda (PDV)</span>
             </button>
 
             <button

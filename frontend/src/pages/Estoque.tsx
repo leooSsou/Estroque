@@ -125,7 +125,7 @@ export const Estoque: React.FC = () => {
           className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Nova Movimentação</span>
+          <span>Nova Movimentação</span>
         </button>
       </div>
 
