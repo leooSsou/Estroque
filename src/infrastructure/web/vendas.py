@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -118,18 +119,27 @@ def obter_venda_por_id(
 @router.get("", response_model=list[VendaResponse], status_code=status.HTTP_200_OK)
 def listar_vendas(
     loja_id: UUID | None = None,
+    data_inicio: datetime | None = None,
+    data_fim: datetime | None = None,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ) -> list[VendaResponse]:
     """
-    Lista as vendas do tenant, com filtros opcionais de loja.
+    Lista as vendas do tenant, com filtros opcionais de loja e período.
     """
     # Enforça restrição de gerente
     if current_user.role == "GERENTE":
         loja_id = current_user.loja_atribuida_id
+    elif loja_id:
+        exigir_acesso_loja(loja_id, current_user)
 
     venda_repo = RepositorioVendaSQLAlchemy(db)
-    vendas = venda_repo.listar_todas(current_user.tenant_id, loja_id=loja_id)
+    vendas = venda_repo.listar_todas(
+        current_user.tenant_id,
+        loja_id=loja_id,
+        data_inicio=data_inicio,
+        data_fim=data_fim
+    )
     return [VendaResponse.model_validate(v) for v in vendas]
 
 

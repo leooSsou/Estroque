@@ -229,4 +229,79 @@
   );
 }
 
+/* Print / PDF Report Formatting (ERP Standards) */
+@media print {
+  body, html, #root {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 11pt !important;
+  }
 
+  /* Hide screen chrome and navigation */
+  aside,
+  nav,
+  header,
+  .no-print,
+  button,
+  .modal-backdrop,
+  [data-no-print="true"] {
+    display: none !important;
+  }
+
+  /* Optimize printable report */
+  .printable-report {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 1cm !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .printable-report * {
+    color: #111827 !important;
+    border-color: #e5e7eb !important;
+    background-color: transparent !important;
+  }
+
+  .printable-report .print-bg-gray {
+    background-color: #f3f4f6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printable-report .print-border-bottom {
+    border-bottom: 1px solid #d1d5db !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 1cm;
+  }
+}

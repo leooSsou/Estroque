@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from uuid import UUID
 
 from src.domain.entities.venda import Venda
@@ -17,5 +18,11 @@ class VendaRepository(ABC):
         """Obtém uma venda pelo seu ID e tenant_id."""
 
     @abstractmethod
-    def listar_todas(self, tenant_id: UUID, loja_id: UUID | None = None) -> list[Venda]:
-        """Lista vendas de um determinado Tenant, opcionalmente filtradas por Loja."""
+    def listar_todas(
+        self,
+        tenant_id: UUID,
+        loja_id: UUID | None = None,
+        data_inicio: datetime | None = None,
+        data_fim: datetime | None = None
+    ) -> list[Venda]:
+        """Lista vendas de um determinado Tenant, opcionalmente filtradas por Loja e período."""

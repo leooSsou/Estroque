@@ -309,6 +309,86 @@ async function runTestSuite() {
     assert.equal(novoTurno.operacoes[0].tipo, 'ABERTURA');
   });
 
+  // =========================================================================
+  // ABA 5: RELATÓRIOS EXECUTIVOS DE VENDAS EM PDF (Diário & Consolidado Mensal)
+  // =========================================================================
+  console.log('\n--- ABA 5: RELATÓRIOS EXECUTIVOS DE VENDAS EM PDF (Diário & Mensal) ---');
+
+  await testCase('5.1: Deve filtrar e consolidar métricas de fechamento diário de vendas', () => {
+    const lojaId = storage.getLojas()[0].id;
+    const prod = storage.getProdutos()[0];
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    // Registra venda 1 em Dinheiro
+    storage.registrarVenda({
+      loja_id: lojaId,
+      forma_pagamento: 'DINHEIRO',
+      desconto: 10,
+      itens: [{ produto_id: prod.id, quantidade: 2, preco_unitario: 100.0, produto_nome: prod.nome }],
+    }); // valor_total = 190, bruto = 200
+
+    // Registra venda 2 no PIX
+    storage.registrarVenda({
+      loja_id: lojaId,
+      forma_pagamento: 'PIX',
+      desconto: 0,
+      itens: [{ produto_id: prod.id, quantidade: 1, preco_unitario: 150.0, produto_nome: prod.nome }],
+    }); // valor_total = 150, bruto = 150
+
+    // Filtra vendas do dia
+    const vendasDoDia = storage.getVendas(lojaId, `${hoje}T00:00:00.000Z`, `${hoje}T23:59:59.999Z`);
+    assert.equal(vendasDoDia.length, 2);
+
+    const faturamentoLiquido = vendasDoDia.reduce((acc, v) => acc + v.valor_total, 0);
+    const descontosTotal = vendasDoDia.reduce((acc, v) => acc + (v.desconto || 0), 0);
+    const faturamentoBruto = faturamentoLiquido + descontosTotal;
+    const ticketMedio = faturamentoLiquido / vendasDoDia.length;
+
+    assert.equal(faturamentoLiquido, 340.0);
+    assert.equal(descontosTotal, 10.0);
+    assert.equal(faturamentoBruto, 350.0);
+    assert.equal(ticketMedio, 170.0);
+  });
+
+  await testCase('5.2: Deve consolidar relatório mensal com evolução diária e ranking de produtos', () => {
+    const lojaId = storage.getLojas()[0].id;
+    const prods = storage.getProdutos();
+    const prodA = prods[0];
+    const prodB = prods[1];
+    const mesAtual = new Date().toISOString().slice(0, 7);
+
+    // Venda A
+    storage.registrarVenda({
+      loja_id: lojaId,
+      forma_pagamento: 'CARTAO_CREDITO',
+      desconto: 0,
+      itens: [{ produto_id: prodA.id, quantidade: 3, preco_unitario: 100.0, produto_nome: prodA.nome }],
+    });
+
+    // Venda B
+    storage.registrarVenda({
+      loja_id: lojaId,
+      forma_pagamento: 'CARTAO_DEBITO',
+      desconto: 0,
+      itens: [{ produto_id: prodB.id, quantidade: 1, preco_unitario: 50.0, produto_nome: prodB.nome }],
+    });
+
+    const todas = storage.getVendas(lojaId);
+    const vendasDoMes = todas.filter((v) => v.data_venda.startsWith(mesAtual));
+    assert.ok(vendasDoMes.length >= 2);
+
+    // Ranking de produtos
+    const contagemPorProduto: Record<string, number> = {};
+    for (const v of vendasDoMes) {
+      for (const it of v.itens) {
+        contagemPorProduto[it.produto_id] = (contagemPorProduto[it.produto_id] || 0) + it.quantidade;
+      }
+    }
+
+    assert.ok(contagemPorProduto[prodA.id] >= 3, 'Produto A deve ter pelo menos 3 unidades');
+    assert.ok(contagemPorProduto[prodB.id] >= 1, 'Produto B deve ter pelo menos 1 unidade');
+  });
+
   console.log('\n===============================================================');
   console.log(`  RESULTADO: ${passed} PASSADOS / ${failed} FALHOS`);
   console.log('===============================================================');

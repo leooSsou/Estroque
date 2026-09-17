@@ -583,8 +583,20 @@ class StorageService {
   }
 
   // Vendas (PDV)
-  getVendas(): Venda[] {
-    return this.get<Venda[]>('vendas', []);
+  getVendas(lojaId?: string, dataInicio?: string, dataFim?: string): Venda[] {
+    let vendas = this.get<Venda[]>('vendas', []);
+    if (lojaId) {
+      vendas = vendas.filter((v) => v.loja_id === lojaId);
+    }
+    if (dataInicio) {
+      const inicio = new Date(dataInicio).getTime();
+      vendas = vendas.filter((v) => new Date(v.data_venda).getTime() >= inicio);
+    }
+    if (dataFim) {
+      const fim = new Date(dataFim).getTime();
+      vendas = vendas.filter((v) => new Date(v.data_venda).getTime() <= fim);
+    }
+    return vendas;
   }
 
   registrarVenda(dados: {

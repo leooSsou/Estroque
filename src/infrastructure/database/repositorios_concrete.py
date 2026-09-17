@@ -973,11 +973,22 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
             return None
         return self._to_entity(model)
 
-    def listar_todas(self, tenant_id: UUID, loja_id: UUID | None = None) -> list[Venda]:
+    def listar_todas(
+        self,
+        tenant_id: UUID,
+        loja_id: UUID | None = None,
+        data_inicio: datetime | None = None,
+        data_fim: datetime | None = None
+    ) -> list[Venda]:
         self.db.info["tenant_id"] = tenant_id
         query = self.db.query(VendaModel)
         if loja_id:
             query = query.filter(VendaModel.loja_id == loja_id)
+        if data_inicio:
+            query = query.filter(VendaModel.data_venda >= data_inicio)
+        if data_fim:
+            query = query.filter(VendaModel.data_venda <= data_fim)
+        query = query.order_by(VendaModel.data_venda.desc())
         models = query.all()
         return [self._to_entity(m) for m in models]
 

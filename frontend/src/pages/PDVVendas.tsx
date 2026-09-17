@@ -13,6 +13,7 @@ import {
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { RelatorioVendasPDFModal } from '../components/pdv/RelatorioVendasPDFModal';
 import {
   ShoppingCart,
   Search,
@@ -50,7 +51,7 @@ interface CartItem {
 type PDVTab = 'CAIXA' | 'ESPERA' | 'HISTORICO' | 'OPERACAO_CAIXA';
 
 export const PDVVendas: React.FC = () => {
-  const { activeLoja } = useAuth();
+  const { activeLoja, user } = useAuth();
   const { toast } = useToast();
 
   // Active Tab
@@ -101,6 +102,9 @@ export const PDVVendas: React.FC = () => {
 
   const [aberturaModalOpen, setAberturaModalOpen] = useState(false);
   const [aberturaFundo, setAberturaFundo] = useState<number | ''>(200);
+
+  const [relatorioPDFModalOpen, setRelatorioPDFModalOpen] = useState(false);
+  const [relatorioPDFMode, setRelatorioPDFMode] = useState<'DIARIO' | 'MENSAL'>('DIARIO');
 
   // Load all initial data
   const loadInitialData = async () => {
@@ -1074,6 +1078,33 @@ export const PDVVendas: React.FC = () => {
                 </button>
               ))}
             </div>
+
+            {/* Ações de Relatório em PDF */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setRelatorioPDFMode('DIARIO');
+                  setRelatorioPDFModalOpen(true);
+                }}
+                className="h-10 px-4 rounded-xl bg-[#142522] hover:bg-[#1B332E] border border-[rgba(142,182,155,0.2)] text-xs font-bold text-[#DAF1DE] hover:text-[#F3FBF6] flex items-center gap-2 active:scale-95 transition-all shadow-sm cursor-pointer"
+                title="Gerar PDF com Fechamento Diário de Vendas"
+              >
+                <FileText className="w-3.5 h-3.5 text-[#10B981]" />
+                <span>PDF do Dia</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setRelatorioPDFMode('MENSAL');
+                  setRelatorioPDFModalOpen(true);
+                }}
+                className="h-10 px-4 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-xs font-bold flex items-center gap-2 shadow-glow-emerald active:scale-95 transition-all cursor-pointer"
+                title="Gerar PDF com Relatório Consolidado Mensal de Vendas"
+              >
+                <FileText className="w-3.5 h-3.5 text-[#070E0D]" />
+                <span>PDF do Mês</span>
+              </button>
+            </div>
           </div>
 
           {/* Single-Line ERP Table */}
@@ -1219,12 +1250,24 @@ export const PDVVendas: React.FC = () => {
               ) : (
                 <button
                   onClick={() => setAberturaModalOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald flex items-center gap-2 active:scale-95"
+                  className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald flex items-center gap-2 active:scale-95 cursor-pointer"
                 >
                   <Unlock className="w-4 h-4" />
                   <span>Abrir Novo Turno</span>
                 </button>
               )}
+
+              <button
+                onClick={() => {
+                  setRelatorioPDFMode('DIARIO');
+                  setRelatorioPDFModalOpen(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-[#DAF1DE] hover:text-[#F3FBF6] font-bold text-xs border border-[rgba(142,182,155,0.2)] flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                title="Gerar e Imprimir Relatório em PDF do Fechamento de Caixa"
+              >
+                <FileText className="w-4 h-4 text-[#10B981]" />
+                <span>PDF do Turno</span>
+              </button>
             </div>
           </div>
 
@@ -1727,6 +1770,18 @@ export const PDVVendas: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* 6. Relatório Executivo de Vendas em PDF (Fechamento Diário e Mensal) */}
+      <RelatorioVendasPDFModal
+        isOpen={relatorioPDFModalOpen}
+        onClose={() => setRelatorioPDFModalOpen(false)}
+        vendas={vendasHistorico}
+        turnoCaixa={caixaTurno}
+        lojaNome={activeLoja?.nome || 'Matriz Central'}
+        tenantNome="Estroque Comércio & Gestão"
+        usuarioNome={user?.nome || user?.email || 'Operador do Caixa'}
+        initialMode={relatorioPDFMode}
+      />
     </div>
   );
 };

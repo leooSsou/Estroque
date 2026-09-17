@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi.testclient import TestClient
 
 CNPJ_TENANT = "61.452.124/0001-00"
@@ -149,3 +151,61 @@ def test_fluxo_crediario_e_estorno_recompoem_limite(client: TestClient) -> None:
     res_cli_revert = client.get("/clientes/", headers=headers)
     cli_revert = next(c for c in res_cli_revert.json() if c["id"] == cli_id)
     assert cli_revert["saldo_devedor_crediario"] == 0.0
+
+
+def test_listar_vendas_com_filtro_periodo(client: TestClient) -> None:
+    token = registrar_e_autenticar(client, "PeriodoVendas", "45.723.174/0001-10")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # Loja e Produto
+    res_loja = client.post("/lojas/", json={
+        "nome": "Loja Matriz Periodo",
+        "cnpj": "52.843.729/0001-23",
+        "endereco": "Rua Comercial, 100"
+    }, headers=headers)
+    loja_id = res_loja.json()["id"]
+
+    res_prod = client.post("/produtos/", json={
+        "nome": "Teclado Mecânico RGB",
+        "sku": "TEC-RGB-01",
+        "preco_custo": 120.0,
+        "preco_venda": 250.0,
+        "markup": 108.33
+    }, headers=headers)
+    prod_id = res_prod.json()["id"]
+
+    # Estoque inicial
+    client.post("/estoque/movimentar", json={
+        "loja_id": loja_id,
+        "produto_id": prod_id,
+        "tipo": "ENTRADA",
+        "quantidade": 5,
+        "motivo": "Entrada de teste"
+    }, headers=headers)
+
+    # Realiza venda
+    agora = datetime.now(timezone.utc)
+    res_venda = client.post("/vendas", json={
+        "loja_id": loja_id,
+        "forma_pagamento": "DINHEIRO",
+        "desconto": 0.0,
+        "itens": [{"produto_id": prod_id, "quantidade": 2}]
+    }, headers=headers)
+    assert res_venda.status_code == 201
+
+    # 1. Filtro cobrindo o momento atual (deve retornar a venda)
+    inicio = (agora - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+    fim = (agora + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S")
+    res_com_filtro = client.get(f"/vendas?data_inicio={inicio}&data_fim={fim}", headers=headers)
+    assert res_com_filtro.status_code == 200
+    vendas = res_com_filtro.json()
+    assert len(vendas) == 1
+    assert vendas[0]["forma_pagamento"] == "DINHEIRO"
+
+    # 2. Filtro no passado distante (não deve retornar nenhuma venda)
+    passado_inicio = "2020-01-01T00:00:00"
+    passado_fim = "2020-01-02T00:00:00"
+    res_passado = client.get(f"/vendas?data_inicio={passado_inicio}&data_fim={passado_fim}", headers=headers)
+    assert res_passado.status_code == 200
+    assert len(res_passado.json()) == 0
+

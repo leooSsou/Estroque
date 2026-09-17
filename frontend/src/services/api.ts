@@ -277,12 +277,18 @@ class ApiClient {
   }
 
   // --- VENDAS (PDV) ---
-  async getVendas(): Promise<Venda[]> {
-    const res = await this.request<Venda[]>('/vendas');
+  async getVendas(lojaId?: string, dataInicio?: string, dataFim?: string): Promise<Venda[]> {
+    const params = new URLSearchParams();
+    if (lojaId) params.append('loja_id', lojaId);
+    if (dataInicio) params.append('data_inicio', dataInicio);
+    if (dataFim) params.append('data_fim', dataFim);
+    const query = params.toString() ? `?${params.toString()}` : '';
+
+    const res = await this.request<Venda[]>(`/vendas${query}`);
     if (res.data && Array.isArray(res.data)) {
       return res.data;
     }
-    return storage.getVendas();
+    return storage.getVendas(lojaId, dataInicio, dataFim);
   }
 
   async registrarVenda(dados: {
