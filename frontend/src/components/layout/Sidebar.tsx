@@ -11,11 +11,9 @@ import {
   Wallet,
   Users,
   BarChart3,
-  Store,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -23,7 +21,6 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse }) => {
-  const { activeLoja } = useAuth();
 
   const navItems = [
     { to: '/', label: 'Visão Geral', icon: LayoutDashboard },
@@ -123,30 +120,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
             </NavLink>
           );
         })}
-      </div>
-
-      {/* Active Store Indicator at Footer */}
-      <div
-        className={`p-3 border-t border-[rgba(142,182,155,0.12)] bg-[#0D1917]/70 flex-shrink-0 ${
-          collapsed ? 'flex justify-center' : ''
-        }`}
-      >
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2.5'}`}>
-          <div
-            className="w-10 h-10 rounded-xl bg-[#142522] border border-[rgba(142,182,155,0.18)] flex items-center justify-center text-[#10B981] flex-shrink-0"
-            title={collapsed ? (activeLoja?.nome || 'Loja Matriz') : undefined}
-          >
-            <Store className="w-4 h-4" />
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <div className="text-[11px] text-[#5E756B] uppercase font-semibold">Loja Ativa</div>
-              <div className="text-xs font-semibold text-[#F3FBF6] truncate">
-                {activeLoja?.nome || 'Loja Matriz'}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </aside>
   );
