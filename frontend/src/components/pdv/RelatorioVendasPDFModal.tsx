@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '../common/Modal';
 import { Venda, CaixaTurno } from '../../types';
 import {
@@ -7,7 +7,6 @@ import {
   CreditCard,
   Banknote,
   Receipt,
-  FileSpreadsheet,
   TrendingUp,
 } from 'lucide-react';
 
@@ -38,6 +37,13 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
   const [mode, setMode] = useState<'DIARIO' | 'MENSAL'>(initialMode);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [selectedMonth, setSelectedMonth] = useState<string>(thisMonthStr);
+
+  // Sincroniza o modo com base no botão clicado do lado de fora (PDF do Dia ou PDF do Mês)
+  useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    }
+  }, [initialMode, isOpen]);
 
   // Filtragem das vendas com base na data ou mês selecionado
   const filteredVendas = useMemo(() => {
@@ -196,73 +202,51 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Relatório Executivo de Vendas em PDF"
-      subtitle="Emissão de fechamento fiscal e contábil pronto para impressão e salvamento em arquivo PDF"
+      title={mode === 'DIARIO' ? 'Fechamento Diário de Vendas em PDF' : 'Consolidado Mensal de Vendas em PDF'}
+      subtitle={
+        mode === 'DIARIO'
+          ? 'Emissão do fechamento de caixa diário pronto para impressão e salvamento em arquivo PDF'
+          : 'Emissão do relatório consolidado mensal pronto para impressão e salvamento em arquivo PDF'
+      }
       maxWidth="4xl"
     >
       <div className="space-y-6">
         {/* Controles de Configuração e Exportação (Ocultos na Impressão) */}
         <div className="no-print bg-[#070E0D] border border-[rgba(142,182,155,0.18)] rounded-2xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mr-1">
-              Tipo de Relatório:
-            </span>
-            <button
-              onClick={() => setMode('DIARIO')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
-                mode === 'DIARIO'
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald'
-                  : 'bg-[#142522] text-[#94A89E] hover:text-[#F3FBF6]'
-              }`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Fechamento Diário</span>
-            </button>
-            <button
-              onClick={() => setMode('MENSAL')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
-                mode === 'MENSAL'
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald'
-                  : 'bg-[#142522] text-[#94A89E] hover:text-[#F3FBF6]'
-              }`}
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Consolidado Mensal</span>
-            </button>
-          </div>
-
           <div className="flex items-center gap-3">
             {mode === 'DIARIO' ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#8EB69B]">Data:</span>
+                <Calendar className="w-4 h-4 text-[#10B981]" />
+                <span className="text-xs font-semibold text-[#DAF1DE]">Data do Fechamento:</span>
                 <input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-3 py-1.5 bg-[#142522] border border-[rgba(142,182,155,0.2)] rounded-xl text-xs font-mono text-[#F3FBF6] focus:outline-none focus:border-[#10B981]"
+                  className="px-3 py-2 bg-[#142522] border border-[rgba(142,182,155,0.2)] rounded-xl text-xs font-mono text-[#F3FBF6] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[#8EB69B]">Mês:</span>
+                <Calendar className="w-4 h-4 text-[#10B981]" />
+                <span className="text-xs font-semibold text-[#DAF1DE]">Mês de Referência:</span>
                 <input
                   type="month"
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="px-3 py-1.5 bg-[#142522] border border-[rgba(142,182,155,0.2)] rounded-xl text-xs font-mono text-[#F3FBF6] focus:outline-none focus:border-[#10B981]"
+                  className="px-3 py-2 bg-[#142522] border border-[rgba(142,182,155,0.2)] rounded-xl text-xs font-mono text-[#F3FBF6] focus:outline-none focus:border-[#10B981]"
                 />
               </div>
             )}
-
-            <button
-              onClick={handlePrint}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-xs font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-              title="Acionar diálogo de impressão / Salvar PDF"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Salvar PDF / Imprimir</span>
-            </button>
           </div>
+
+          <button
+            onClick={handlePrint}
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-xs font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            title="Acionar diálogo de impressão / Salvar PDF"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Salvar PDF / Imprimir</span>
+          </button>
         </div>
 
         {/* ========================================================================= */}
