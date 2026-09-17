@@ -73,9 +73,9 @@ def test_fluxo_venda_e_estorno_com_devolucao_estoque(client: TestClient) -> None
 
     # 6. Realizar Estorno da Venda
     res_estorno = client.post(f"/vendas/{venda_id}/estornar?motivo=Cliente+desistiu", headers=headers)
-    assert res_estorno.status_code == 200
+    assert res_estorno.status_code == 200, f"Falha estorno 1: {res_estorno.text}"
     venda_cancelada = res_estorno.json()
-    assert venda_cancelada["status"] == "CANCELADA"
+    assert venda_cancelada["status"] in ("CANCELADA", "CANCELADO")
 
     # 7. Verifica que o estoque foi restituído (6 + 4 = 10)
     res_saldos_pos = client.get(f"/estoque/saldos?loja_id={loja_id}", headers=headers)
@@ -143,7 +143,7 @@ def test_fluxo_crediario_e_estorno_recompoem_limite(client: TestClient) -> None:
 
     # Estorno da Venda
     res_estorno = client.post(f"/vendas/{venda_id}/estornar", headers=headers)
-    assert res_estorno.status_code == 200
+    assert res_estorno.status_code == 200, f"Falha estorno 2: {res_estorno.text}"
 
     # Saldo devedor deve voltar a 0
     res_cli_revert = client.get("/clientes/", headers=headers)

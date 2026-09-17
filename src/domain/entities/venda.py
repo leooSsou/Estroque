@@ -27,7 +27,7 @@ class Venda:
             raise ValueError("O loja_id deve ser um UUID válido.")
         if not isinstance(self.usuario_id, UUID):
             raise ValueError("O usuario_id deve ser um UUID válido.")
-        if self.status not in ("PENDENTE", "PAGO", "CANCELADO"):
+        if self.status not in ("PENDENTE", "PAGO", "CANCELADO", "CANCELADA"):
             raise ValueError("Status inválido.")
         if self.forma_pagamento not in ("DINHEIRO", "CARTAO_CREDITO", "CARTAO_DEBITO", "PIX", "CREDIARIO"):
             raise ValueError("Forma de pagamento inválida.")

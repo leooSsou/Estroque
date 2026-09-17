@@ -51,7 +51,7 @@ class EstornarVenda:
         if not venda:
             raise ValueError(f"Venda com ID {input_data.venda_id} não encontrada.")
 
-        if venda.status in ("CANCELADA", "ESTORNADA"):
+        if venda.status in ("CANCELADA", "CANCELADO", "ESTORNADA"):
             raise ValueError(f"A venda #{venda.id} já se encontra {venda.status}.")
 
         # 1. Devolve os produtos ao estoque com lock pessimista
