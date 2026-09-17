@@ -181,3 +181,39 @@ export interface CurvaABCItem {
 export interface CurvaABCResponse {
   itens: CurvaABCItem[];
 }
+
+export interface VendaEmEspera {
+  id: string;
+  codigo: string;
+  cliente_id?: string | null;
+  cliente_nome?: string;
+  itens: {
+    produto: Produto;
+    quantidade: number;
+    preco_unitario: number;
+  }[];
+  desconto: number;
+  observacao?: string;
+  forma_pagamento: FormaPagamento;
+  valor_total: number;
+  criado_em: string;
+}
+
+export type TipoOperacaoCaixa = 'ABERTURA' | 'SANGRIA' | 'SUPRIMENTO' | 'FECHAMENTO';
+
+export interface OperacaoCaixa {
+  id: string;
+  tipo: TipoOperacaoCaixa;
+  valor: number;
+  motivo: string;
+  data_hora: string;
+  operador_nome: string;
+}
+
+export interface CaixaTurno {
+  aberto: boolean;
+  operador_nome: string;
+  data_abertura: string;
+  fundo_inicial: number;
+  operacoes: OperacaoCaixa[];
+}

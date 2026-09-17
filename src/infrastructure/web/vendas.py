@@ -24,6 +24,7 @@ from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import exigir_acesso_loja
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import RegistrarVendaRequest, VendaResponse
+from src.use_cases.estoque.estornar_venda import EstornarVenda, EstornarVendaInput
 from src.use_cases.estoque.registrar_venda import (
     RegistrarVendaAdministrativa,
     RegistrarVendaAdministrativaInput,
@@ -130,3 +131,41 @@ def listar_vendas(
     venda_repo = RepositorioVendaSQLAlchemy(db)
     vendas = venda_repo.listar_todas(current_user.tenant_id, loja_id=loja_id)
     return [VendaResponse.model_validate(v) for v in vendas]
+
+
+@router.post("/{id}/estornar", response_model=VendaResponse, status_code=status.HTTP_200_OK)
+def estornar_venda(
+    id: UUID,
+    motivo: str = "Estorno no caixa",
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> VendaResponse:
+    """
+    Estorna uma venda realizada, cancelando o status, devolvendo produtos ao estoque
+    com lock pessimista e recompondo saldo de crediário.
+    """
+    venda_repo = RepositorioVendaSQLAlchemy(db)
+    venda = venda_repo.obter_por_id(id, current_user.tenant_id)
+    if not venda:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venda não encontrada.")
+
+    # Enforça isolamento de loja física para GERENTE
+    exigir_acesso_loja(venda.loja_id, current_user)
+
+    use_case = EstornarVenda(
+        venda_repo=venda_repo,
+        financeiro_repo=RepositorioFinanceiroLancamentoSQLAlchemy(db),
+        cliente_repo=RepositorioClienteSQLAlchemy(db),
+        saldo_repo=RepositorioEstoqueSaldoSQLAlchemy(db),
+        movimentacao_repo=RepositorioEstoqueMovimentacaoSQLAlchemy(db),
+    )
+
+    try:
+        resultado = use_case.executar(EstornarVendaInput(
+            venda_id=id,
+            tenant_id=current_user.tenant_id,
+            motivo=motivo
+        ))
+        return VendaResponse.model_validate(resultado.venda)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

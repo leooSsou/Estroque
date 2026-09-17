@@ -11,6 +11,9 @@ import {
   FinanceiroLancamento,
   DashboardAnalytics,
   CurvaABCItem,
+  VendaEmEspera,
+  OperacaoCaixa,
+  CaixaTurno,
 } from '../types';
 
 const STORAGE_PREFIX = 'estroque_saas_';
@@ -658,6 +661,206 @@ class StorageService {
     vendas.unshift(novaVenda);
     this.set('vendas', vendas);
     return novaVenda;
+  }
+
+  estornarVenda(vendaId: string): Venda {
+    const vendas = this.getVendas();
+    const index = vendas.findIndex((v) => v.id === vendaId);
+    if (index === -1) throw new Error('Venda não encontrada.');
+
+    const venda = vendas[index];
+    if (venda.status === 'CANCELADA') return venda;
+
+    // 1. Devolve os produtos ao estoque
+    for (const item of venda.itens) {
+      this.addMovimentacao({
+        loja_id: venda.loja_id,
+        produto_id: item.produto_id,
+        tipo: 'ENTRADA',
+        quantidade: item.quantidade,
+        motivo: `Estorno de venda #${venda.id.slice(0, 8)}`,
+      });
+    }
+
+    // 2. Se foi crediário, recompõe o saldo devedor do cliente
+    if (venda.forma_pagamento === 'CREDIARIO' && venda.cliente_id) {
+      const clientes = this.getClientes();
+      const cli = clientes.find((c) => c.id === venda.cliente_id);
+      if (cli) {
+        cli.saldo_devedor_crediario = Math.max(0, cli.saldo_devedor_crediario - venda.valor_total);
+        this.set('clientes', clientes);
+      }
+    }
+
+    // 3. Registra estorno no financeiro
+    this.addLancamentoFinanceiro({
+      loja_id: venda.loja_id,
+      tipo: 'DESPESA',
+      valor: venda.valor_total,
+      categoria: 'Estorno de Venda PDV',
+      status_pagamento: 'PAGO',
+      descricao: `Estorno da venda #${venda.id.slice(0, 8)}`,
+    });
+
+    const vendaAtualizada: Venda = {
+      ...venda,
+      status: 'CANCELADA',
+    };
+    vendas[index] = vendaAtualizada;
+    this.set('vendas', vendas);
+    return vendaAtualizada;
+  }
+
+  // Vendas em Espera (Hold)
+  getVendasEspera(): VendaEmEspera[] {
+    return this.get<VendaEmEspera[]>('vendas_espera', []);
+  }
+
+  salvarVendaEspera(dados: Omit<VendaEmEspera, 'id' | 'codigo' | 'criado_em'>): VendaEmEspera {
+    const lista = this.getVendasEspera();
+    const count = lista.length + 1;
+    const nova: VendaEmEspera = {
+      ...dados,
+      id: crypto.randomUUID ? crypto.randomUUID() : `esp-${Date.now()}`,
+      codigo: `ESP-${String(count).padStart(3, '0')}`,
+      criado_em: new Date().toISOString(),
+    };
+    lista.unshift(nova);
+    this.set('vendas_espera', lista);
+    return nova;
+  }
+
+  removerVendaEspera(id: string): void {
+    const lista = this.getVendasEspera().filter((v) => v.id !== id);
+    this.set('vendas_espera', lista);
+  }
+
+  // Operações de Caixa (Turno)
+  getCaixaTurno(): CaixaTurno {
+    return this.get<CaixaTurno>('caixa_turno', {
+      aberto: true,
+      operador_nome: this.getUser().nome || 'Operador Padrão',
+      data_abertura: new Date(Date.now() - 3600000 * 4).toISOString(),
+      fundo_inicial: 200.0,
+      operacoes: [
+        {
+          id: 'op-init-1',
+          tipo: 'ABERTURA',
+          valor: 200.0,
+          motivo: 'Fundo de troco inicial do turno',
+          data_hora: new Date(Date.now() - 3600000 * 4).toISOString(),
+          operador_nome: this.getUser().nome || 'Operador Padrão',
+        },
+      ],
+    });
+  }
+
+  abrirCaixa(fundoInicial: number): CaixaTurno {
+    const novoTurno: CaixaTurno = {
+      aberto: true,
+      operador_nome: this.getUser().nome || 'Operador Padrão',
+      data_abertura: new Date().toISOString(),
+      fundo_inicial: fundoInicial,
+      operacoes: [
+        {
+          id: `op-${Date.now()}`,
+          tipo: 'ABERTURA',
+          valor: fundoInicial,
+          motivo: 'Abertura de caixa e fundo de troco inicial',
+          data_hora: new Date().toISOString(),
+          operador_nome: this.getUser().nome || 'Operador Padrão',
+        },
+      ],
+    };
+    this.set('caixa_turno', novoTurno);
+    return novoTurno;
+  }
+
+  registrarSangria(valor: number, motivo: string): OperacaoCaixa {
+    const caixa = this.getCaixaTurno();
+    const op: OperacaoCaixa = {
+      id: `op-sangria-${Date.now()}`,
+      tipo: 'SANGRIA',
+      valor,
+      motivo,
+      data_hora: new Date().toISOString(),
+      operador_nome: caixa.operador_nome,
+    };
+    caixa.operacoes.unshift(op);
+    this.set('caixa_turno', caixa);
+
+    // Lança no financeiro como despesa
+    this.addLancamentoFinanceiro({
+      loja_id: this.getLojas()[0]?.id || '11111111-1111-1111-1111-111111111111',
+      tipo: 'DESPESA',
+      valor,
+      categoria: 'Sangria de Caixa (Cofre)',
+      status_pagamento: 'PAGO',
+      descricao: `Sangria de caixa: ${motivo}`,
+    });
+
+    return op;
+  }
+
+  registrarSuprimento(valor: number, motivo: string): OperacaoCaixa {
+    const caixa = this.getCaixaTurno();
+    const op: OperacaoCaixa = {
+      id: `op-suprimento-${Date.now()}`,
+      tipo: 'SUPRIMENTO',
+      valor,
+      motivo,
+      data_hora: new Date().toISOString(),
+      operador_nome: caixa.operador_nome,
+    };
+    caixa.operacoes.unshift(op);
+    this.set('caixa_turno', caixa);
+
+    // Lança no financeiro como receita/aporte
+    this.addLancamentoFinanceiro({
+      loja_id: this.getLojas()[0]?.id || '11111111-1111-1111-1111-111111111111',
+      tipo: 'RECEITA',
+      valor,
+      categoria: 'Suprimento de Caixa (Troco)',
+      status_pagamento: 'PAGO',
+      descricao: `Reforço de troco: ${motivo}`,
+    });
+
+    return op;
+  }
+
+  fecharCaixa(valorContado: number, observacao?: string): { diferenca: number; resumo: CaixaTurno } {
+    const caixa = this.getCaixaTurno();
+    const vendas = this.getVendas();
+    const vendasDinheiro = vendas
+      .filter((v) => v.status === 'CONCLUIDA' && v.forma_pagamento === 'DINHEIRO')
+      .reduce((acc, v) => acc + v.valor_total, 0);
+
+    const suprimentos = caixa.operacoes
+      .filter((o) => o.tipo === 'SUPRIMENTO')
+      .reduce((acc, o) => acc + o.valor, 0);
+
+    const sangrias = caixa.operacoes
+      .filter((o) => o.tipo === 'SANGRIA')
+      .reduce((acc, o) => acc + o.valor, 0);
+
+    const esperadoGaveta = caixa.fundo_inicial + vendasDinheiro + suprimentos - sangrias;
+    const diferenca = valorContado - esperadoGaveta;
+
+    const obsText = observacao ? ` • Obs: ${observacao}` : '';
+    const opFechamento: OperacaoCaixa = {
+      id: `op-fechamento-${Date.now()}`,
+      tipo: 'FECHAMENTO',
+      valor: valorContado,
+      motivo: `Fechamento de turno. Esperado: R$ ${esperadoGaveta.toFixed(2)}. Diferença: R$ ${diferenca.toFixed(2)}${obsText}`,
+      data_hora: new Date().toISOString(),
+      operador_nome: caixa.operador_nome,
+    };
+
+    caixa.operacoes.unshift(opFechamento);
+    caixa.aberto = false;
+    this.set('caixa_turno', caixa);
+
+    return { diferenca, resumo: caixa };
   }
 
   // Financeiro

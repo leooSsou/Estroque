@@ -7,6 +7,9 @@ import {
   Fornecedor,
   TransferenciaEstoque,
   Venda,
+  VendaEmEspera,
+  CaixaTurno,
+  OperacaoCaixa,
   FinanceiroLancamento,
   DashboardAnalytics,
   CurvaABCItem,
@@ -301,6 +304,48 @@ class ApiClient {
     });
     if (res.data) return res.data;
     return storage.registrarVenda(dados);
+  }
+
+  async estornarVenda(id: string): Promise<Venda> {
+    const res = await this.request<Venda>(`/vendas/${id}/estornar`, {
+      method: 'POST',
+    });
+    if (res.data) return res.data;
+    return storage.estornarVenda(id);
+  }
+
+  // --- VENDAS EM ESPERA (HOLD) ---
+  async getVendasEspera(): Promise<VendaEmEspera[]> {
+    return storage.getVendasEspera();
+  }
+
+  async salvarVendaEspera(dados: Omit<VendaEmEspera, 'id' | 'codigo' | 'criado_em'>): Promise<VendaEmEspera> {
+    return storage.salvarVendaEspera(dados);
+  }
+
+  async removerVendaEspera(id: string): Promise<void> {
+    storage.removerVendaEspera(id);
+  }
+
+  // --- OPERAÇÕES DE CAIXA (TURNO) ---
+  async getCaixaTurno(): Promise<CaixaTurno> {
+    return storage.getCaixaTurno();
+  }
+
+  async abrirCaixa(fundoInicial: number): Promise<CaixaTurno> {
+    return storage.abrirCaixa(fundoInicial);
+  }
+
+  async registrarSangria(valor: number, motivo: string): Promise<OperacaoCaixa> {
+    return storage.registrarSangria(valor, motivo);
+  }
+
+  async registrarSuprimento(valor: number, motivo: string): Promise<OperacaoCaixa> {
+    return storage.registrarSuprimento(valor, motivo);
+  }
+
+  async fecharCaixa(saldoInformado: number, observacao?: string): Promise<{ diferenca: number; resumo: CaixaTurno }> {
+    return storage.fecharCaixa(saldoInformado, observacao);
   }
 
   // --- FINANCEIRO ---
