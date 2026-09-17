@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
 
-CNPJ_TENANT = "14.887.319/0001-85"
-CNPJ_LOJA = "83.746.192/0001-38"
+CNPJ_TENANT = "61.452.124/0001-00"
+CNPJ_LOJA = "81.681.861/0001-84"
 
 def registrar_e_autenticar(client: TestClient, prefix: str, cnpj: str) -> str:
-    client.post("/auth/register", json={
+    res_reg = client.post("/auth/register", json={
         "nome_fantasia": f"{prefix} Rede",
         "razao_social": f"{prefix} Razao Social S/A",
         "cnpj": cnpj,
@@ -12,11 +12,13 @@ def registrar_e_autenticar(client: TestClient, prefix: str, cnpj: str) -> str:
         "dono_email": f"{prefix.lower()}@email.com",
         "dono_senha": "senha_segura_123"
     })
-    
+    assert res_reg.status_code == 201, f"Falha no registro: {res_reg.text}"
+
     login = client.post("/auth/login", json={
         "email": f"{prefix.lower()}@email.com",
         "senha": "senha_segura_123"
     })
+    assert login.status_code == 200, f"Falha no login: {login.text}"
     return login.json()["access_token"]
 
 
@@ -86,13 +88,13 @@ def test_fluxo_venda_e_estorno_com_devolucao_estoque(client: TestClient) -> None
 
 
 def test_fluxo_crediario_e_estorno_recompoem_limite(client: TestClient) -> None:
-    token = registrar_e_autenticar(client, "CrediarioEstorno", "52.846.103/0001-92")
+    token = registrar_e_autenticar(client, "CrediarioEstorno", "34.453.367/0001-82")
     headers = {"Authorization": f"Bearer {token}"}
 
     # Loja e Produto
     res_loja = client.post("/lojas/", json={
         "nome": "Loja Filial Sul",
-        "cnpj": "19.382.746/0001-55",
+        "cnpj": "09.218.022/0001-05",
         "endereco": "Av Central, 500"
     }, headers=headers)
     loja_id = res_loja.json()["id"]
@@ -118,7 +120,7 @@ def test_fluxo_crediario_e_estorno_recompoem_limite(client: TestClient) -> None:
     res_cli = client.post("/clientes/", json={
         "nome": "Marcos Silveira",
         "email": "marcos@teste.com",
-        "documento": "11144477735",
+        "documento": "52998224725",
         "limite_credito": 1500.0
     }, headers=headers)
     cli_id = res_cli.json()["id"]
