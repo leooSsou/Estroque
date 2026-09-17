@@ -40,8 +40,9 @@ env/
 # Config
 .env
 
-# Pytest / Coverage
+# Pytest / Coverage / Linter
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 

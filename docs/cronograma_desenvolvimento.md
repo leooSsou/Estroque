@@ -1,6 +1,6 @@
 # Cronograma de Desenvolvimento: Estroque (Fase 1)
 
-Este documento registra o planejamento técnico macro, as ondas de entrega e o progresso das tarefas concluídas e pendentes para a construção da Fase 1 da plataforma.
+> ℹ️ **Registro Histórico**: Este documento contém o planejamento e o checklist das ondas iniciais de construção (Fase 1). Para o estado e visão atual do ecossistema, consulte o [README.md](../README.md) e [docs/contexto_ia.md](contexto_ia.md).
 
 ---
 
