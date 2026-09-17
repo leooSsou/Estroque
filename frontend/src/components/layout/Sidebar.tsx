@@ -53,6 +53,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
           <img
             src="/favicon.png"
             alt="ESTROQUE"
+            width="36"
+            height="36"
             className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] flex-shrink-0`}
           />
           {!collapsed && (

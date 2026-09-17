@@ -50,6 +50,8 @@ export const Login: React.FC = () => {
           <img
             src="/favicon.png"
             alt="ESTROQUE"
+            width="48"
+            height="48"
             className="w-12 h-12 object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]"
           />
           <span className="font-extrabold text-2xl tracking-widest text-[#F3FBF6] uppercase font-mono">
