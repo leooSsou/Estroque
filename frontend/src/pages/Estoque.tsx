@@ -122,7 +122,7 @@ export const Estoque: React.FC = () => {
 
         <button
           onClick={() => handleOpenMovement()}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nova Movimentação</span>
@@ -140,7 +140,7 @@ export const Estoque: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por descrição do item ou SKU..."
-              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
             />
             {search && (
               <button
@@ -154,7 +154,7 @@ export const Estoque: React.FC = () => {
           </div>
 
           {/* Quick Status Filter Pills */}
-          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
             {[
               { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
               { id: 'BAIXO', label: 'Estoque Baixo', count: counts.baixo },
@@ -167,7 +167,7 @@ export const Estoque: React.FC = () => {
                   onClick={() => setStatusFilter(st.id as any)}
                   className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
                       : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
                   }`}
                 >
@@ -175,7 +175,7 @@ export const Estoque: React.FC = () => {
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                       isActive
-                        ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                        ? 'bg-[#000000]/30 text-[#000000]'
                         : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
                     }`}
                   >
@@ -198,7 +198,7 @@ export const Estoque: React.FC = () => {
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
               selectedLojaFilter === 'TODAS'
                 ? 'bg-[#163832] text-[#10B981] border border-[#10B981]/50 font-bold shadow-glow-emerald'
-                : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
+                : 'bg-[#000000] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
             }`}
           >
             <span>Todas as Lojas (Consolidado)</span>
@@ -212,7 +212,7 @@ export const Estoque: React.FC = () => {
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                   isSelected
                     ? 'bg-[#163832] text-[#10B981] border border-[#10B981]/50 font-bold shadow-glow-emerald'
-                    : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
+                    : 'bg-[#000000] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
                 }`}
               >
                 <span>{l.nome}</span>
@@ -342,7 +342,7 @@ export const Estoque: React.FC = () => {
             <select
               value={movProdutoId}
               onChange={(e) => setMovProdutoId(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             >
               {produtos.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -360,7 +360,7 @@ export const Estoque: React.FC = () => {
               <select
                 value={movLojaId}
                 onChange={(e) => setMovLojaId(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -380,8 +380,8 @@ export const Estoque: React.FC = () => {
                   onClick={() => setMovTipo('ENTRADA')}
                   className={`h-11 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
                     movTipo === 'ENTRADA'
-                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-extrabold'
-                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
+                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-extrabold'
+                      : 'bg-[#000000] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
                   }`}
                 >
                   <ArrowDownRight className="w-4 h-4" />
@@ -393,7 +393,7 @@ export const Estoque: React.FC = () => {
                   className={`h-11 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
                     movTipo === 'SAIDA'
                       ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/20 font-extrabold'
-                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
+                      : 'bg-[#000000] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
                   }`}
                 >
                   <ArrowUpRight className="w-4 h-4" />
@@ -414,7 +414,7 @@ export const Estoque: React.FC = () => {
                 required
                 value={movQtd}
                 onChange={(e) => setMovQtd(parseInt(e.target.value) || 1)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
@@ -425,7 +425,7 @@ export const Estoque: React.FC = () => {
               <select
                 value={movMotivo}
                 onChange={(e) => setMovMotivo(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               >
                 <option value="Ajuste de inventário rotativo">Ajuste de inventário rotativo</option>
                 <option value="Avaria ou dano em transporte">Avaria ou dano em transporte</option>
@@ -446,7 +446,7 @@ export const Estoque: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
             >
               Confirmar Movimentação
             </button>

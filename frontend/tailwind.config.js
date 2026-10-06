@@ -13,7 +13,7 @@ export default {
       },
       colors: {
         estroque: {
-          canvas: '#070E0D',
+          canvas: '#000000',
           card: '#0D1917',
           elevated: '#142522',
           modal: '#1B332E',

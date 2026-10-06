@@ -38,9 +38,9 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#070E0D] text-[#F3FBF6] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#000000] text-[#F3FBF6] flex flex-col lg:flex-row">
       {/* Left Column: Brand Hero Showcase */}
-      <div className="lg:w-1/2 bg-gradient-to-br from-[#070E0D] via-[#0B2B26] to-[#163832] p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-[rgba(142,182,155,0.15)]">
+      <div className="lg:w-1/2 bg-gradient-to-br from-[#000000] via-[#0B2B26] to-[#163832] p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-[rgba(142,182,155,0.15)]">
         {/* Glow Effects */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#10B981]/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#0B2B26]/60 rounded-full blur-3xl pointer-events-none" />
@@ -137,7 +137,7 @@ export const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@loja.com.br"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -157,7 +157,7 @@ export const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -166,7 +166,7 @@ export const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-6 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-sm shadow-glow-emerald transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                className="w-full py-3 px-6 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-sm shadow-glow-emerald transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
               >
                 <span>{loading ? 'Validando...' : 'Acessar Plataforma'}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

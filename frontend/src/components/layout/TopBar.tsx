@@ -25,7 +25,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
   const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 
   return (
-    <header className="h-20 bg-[#070E0D]/95 backdrop-blur-md border-b border-[rgba(142,182,155,0.12)] sticky top-0 z-30 px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
+    <header className="h-20 bg-[#000000]/95 backdrop-blur-md border-b border-[rgba(142,182,155,0.12)] sticky top-0 z-30 px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
       {/* Left: Mobile Toggle & Store Switcher */}
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Only visible on mobile/tablet screens */}

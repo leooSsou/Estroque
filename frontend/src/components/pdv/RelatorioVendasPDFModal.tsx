@@ -212,7 +212,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
     >
       <div className="space-y-6">
         {/* Controles de Configuração e Exportação (Ocultos na Impressão) */}
-        <div className="no-print bg-[#070E0D] border border-[rgba(142,182,155,0.18)] rounded-2xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="no-print bg-[#000000] border border-[rgba(142,182,155,0.18)] rounded-2xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {mode === 'DIARIO' ? (
               <div className="flex items-center gap-2">
@@ -241,7 +241,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
 
           <button
             onClick={handlePrint}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-xs font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-xs font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
             title="Acionar diálogo de impressão / Salvar PDF"
           >
             <Printer className="w-4 h-4" />
@@ -295,7 +295,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
 
           {/* Cards de Resumo Executivo / KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:grid-cols-4 print:gap-2">
-            <div className="p-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.15)] print:border-gray-300 print:bg-gray-50">
+            <div className="p-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.15)] print:border-gray-300 print:bg-gray-50">
               <span className="text-[10px] uppercase font-bold text-[#8EB69B] font-mono tracking-wider block print:text-gray-600">
                 Faturamento Bruto
               </span>
@@ -307,7 +307,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.15)] print:border-gray-300 print:bg-gray-50">
+            <div className="p-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.15)] print:border-gray-300 print:bg-gray-50">
               <span className="text-[10px] uppercase font-bold text-[#8EB69B] font-mono tracking-wider block print:text-gray-600">
                 Descontos Aplicados
               </span>
@@ -319,7 +319,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#10B981]/15 to-[#070E0D] border border-[#10B981]/35 print:border-gray-300 print:bg-gray-100">
+            <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#10B981]/15 to-[#000000] border border-[#10B981]/35 print:border-gray-300 print:bg-gray-100">
               <span className="text-[10px] uppercase font-bold text-[#10B981] font-mono tracking-wider block print:text-black">
                 Faturamento Líquido
               </span>
@@ -331,7 +331,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.15)] print:border-gray-300 print:bg-gray-50">
+            <div className="p-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.15)] print:border-gray-300 print:bg-gray-50">
               <span className="text-[10px] uppercase font-bold text-[#8EB69B] font-mono tracking-wider block print:text-gray-600">
                 Ticket Médio
               </span>
@@ -347,7 +347,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
           {/* Seção 2: Formas de Pagamento & Operações de Caixa */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 print:grid-cols-2">
             {/* Tabela de Formas de Pagamento */}
-            <div className="bg-[#070E0D] border border-[rgba(142,182,155,0.15)] rounded-xl p-4 print:border-gray-300 print:bg-transparent">
+            <div className="bg-[#000000] border border-[rgba(142,182,155,0.15)] rounded-xl p-4 print:border-gray-300 print:bg-transparent">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] mb-3 flex items-center gap-1.5 print:text-black">
                 <CreditCard className="w-3.5 h-3.5 text-[#10B981] print:text-black" />
                 <span>Desdobramento por Meio de Pagamento</span>
@@ -395,7 +395,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
 
             {/* Turno / Caixa (Modo Diário) OU Top Produtos (Modo Mensal) */}
             {mode === 'DIARIO' ? (
-              <div className="bg-[#070E0D] border border-[rgba(142,182,155,0.15)] rounded-xl p-4 print:border-gray-300 print:bg-transparent">
+              <div className="bg-[#000000] border border-[rgba(142,182,155,0.15)] rounded-xl p-4 print:border-gray-300 print:bg-transparent">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] mb-3 flex items-center gap-1.5 print:text-black">
                   <Banknote className="w-3.5 h-3.5 text-[#10B981] print:text-black" />
                   <span>Conferência de Caixa (Gaveta Física)</span>
@@ -440,7 +440,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
                 )}
               </div>
             ) : (
-              <div className="bg-[#070E0D] border border-[rgba(142,182,155,0.15)] rounded-xl p-4 print:border-gray-300 print:bg-transparent">
+              <div className="bg-[#000000] border border-[rgba(142,182,155,0.15)] rounded-xl p-4 print:border-gray-300 print:bg-transparent">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] mb-3 flex items-center gap-1.5 print:text-black">
                   <TrendingUp className="w-3.5 h-3.5 text-[#10B981] print:text-black" />
                   <span>Top Produtos Mais Vendidos no Mês</span>
@@ -531,7 +531,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
                           {v.cliente_nome || 'Consumidor Final'}
                         </td>
                         <td className="py-2 px-3 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded bg-[#070E0D] border border-[rgba(142,182,155,0.15)] font-mono text-[10px] text-[#8EB69B] print:border-gray-300 print:text-black print:bg-transparent">
+                          <span className="px-2 py-0.5 rounded bg-[#000000] border border-[rgba(142,182,155,0.15)] font-mono text-[10px] text-[#8EB69B] print:border-gray-300 print:text-black print:bg-transparent">
                             {v.forma_pagamento}
                           </span>
                         </td>

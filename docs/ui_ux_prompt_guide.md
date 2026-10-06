@@ -23,7 +23,7 @@ O sistema adota **Modo Escuro Nativo** com fundo em Obsidiana Esmeralda, preserv
 
 | Token CSS / Tailwind | Código HEX | Nome | Função / Aplicação no Modo Escuro |
 | :--- | :--- | :--- | :--- |
-| `estroque-canvas` | `#070E0D` | **Obsidian Emerald** | **Fundo geral da tela** (quase preto enriquecido com nuance esmeralda profunda). |
+| `estroque-canvas` | `#000000` | **Obsidian Emerald** | **Fundo geral da tela** (quase preto enriquecido com nuance esmeralda profunda). |
 | `estroque-card` | `#0D1917` | **Deep Emerald Card** | Fundo dos cards Bento elevados, tabelas e contêineres principais. |
 | `estroque-elevated` | `#142522` | **Elevated Surface** | Estado de hover em cards, linhas selecionadas de tabelas e campos de busca. |
 | `estroque-modal` | `#1B332E` | **Floating Overlay** | Fundo de modais suspensos, dropdowns de filial e menus de contexto. |
@@ -62,7 +62,7 @@ module.exports = {
     extend: {
       colors: {
         estroque: {
-          canvas: '#070E0D',
+          canvas: '#000000',
           card: '#0D1917',
           elevated: '#142522',
           modal: '#1B332E',
@@ -108,7 +108,7 @@ BRAND & LOGO GUIDELINES:
 DESIGN SYSTEM GUIDELINES (DARK MODE):
 - Layout Style: Ultra-clean, modern Dark Bento Grid inspired by contemporary fintech & analytics dashboards (Coinest & Linear style). Generous spacing, highly readable data hierarchy.
 - Color Palette:
-  * Obsidian Emerald Canvas (#070E0D) as the main page background.
+  * Obsidian Emerald Canvas (#000000) as the main page background.
   * Deep Emerald Cards (#0D1917) for elevated Bento cards with 1px borders (rgba(142, 182, 155, 0.12)).
   * Elevated & Hover Surfaces (#142522) for interactive elements, search bars, and inputs.
   * Floating Modals & Overlays (#1B332E) for dialogs and store dropdowns.
@@ -144,8 +144,8 @@ Generate modular, responsive, accessible and beautifully crafted components adhe
 ```text
 Create a modern, elegant Dark Mode authentication and tenant/store selection screen for "ESTROQUE".
 Layout: Split-screen desktop layout (50/50).
-Left side: Deep obsidian & emerald gradient background (#070E0D to #0B2B26) with a prominent 3D isometric green folding 'E' logo, bold white typography "ESTROQUE" (no subtitle), and a card highlighting key features (Real-time Ledger, Smart Markup Pricing, Multi-store Sync).
-Right side: Clean dark card (#0D1917) on #070E0D canvas with email and password inputs (with soft borders and inner icon badges), "Remember my store" checkbox, and a full-width pill button in #10B981 reading "Acessar Plataforma".
+Left side: Deep obsidian & emerald gradient background (#000000 to #0B2B26) with a prominent 3D isometric green folding 'E' logo, bold white typography "ESTROQUE" (no subtitle), and a card highlighting key features (Real-time Ledger, Smart Markup Pricing, Multi-store Sync).
+Right side: Clean dark card (#0D1917) on #000000 canvas with email and password inputs (with soft borders and inner icon badges), "Remember my store" checkbox, and a full-width pill button in #10B981 reading "Acessar Plataforma".
 Include a Store Selection dropdown preview for multi-store users ("Loja Matriz - São Paulo", "Filial 01 - Campinas").
 ```
 

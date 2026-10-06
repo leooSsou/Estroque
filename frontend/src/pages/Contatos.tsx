@@ -136,7 +136,7 @@ export const Contatos: React.FC = () => {
           onClick={() =>
             activeTab === 'CLIENTES' ? setNewClientModal(true) : setNewSupplierModal(true)
           }
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
+          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           <span>{activeTab === 'CLIENTES' ? 'Novo Cliente' : 'Novo Fornecedor'}</span>
@@ -146,12 +146,12 @@ export const Contatos: React.FC = () => {
       {/* High-Resolution Tabs & Search Bar */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
         {/* Modern Segmented Tab Switcher */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] shadow-inner">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] shadow-inner">
           <button
             onClick={() => setActiveTab('CLIENTES')}
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2.5 active:scale-95 ${
               activeTab === 'CLIENTES'
-                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
                 : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
             }`}
           >
@@ -160,7 +160,7 @@ export const Contatos: React.FC = () => {
             <span
               className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                 activeTab === 'CLIENTES'
-                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  ? 'bg-[#000000]/30 text-[#000000]'
                   : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
               }`}
             >
@@ -172,7 +172,7 @@ export const Contatos: React.FC = () => {
             onClick={() => setActiveTab('FORNECEDORES')}
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2.5 active:scale-95 ${
               activeTab === 'FORNECEDORES'
-                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
                 : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
             }`}
           >
@@ -181,7 +181,7 @@ export const Contatos: React.FC = () => {
             <span
               className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                 activeTab === 'FORNECEDORES'
-                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  ? 'bg-[#000000]/30 text-[#000000]'
                   : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
               }`}
             >
@@ -198,7 +198,7 @@ export const Contatos: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Buscar por nome, documento ou e-mail...`}
-            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
           />
           {search && (
             <button
@@ -329,7 +329,7 @@ export const Contatos: React.FC = () => {
               value={cliNome}
               onChange={(e) => setCliNome(e.target.value)}
               placeholder="Ex: Carlos Eduardo Mendes"
-              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             />
           </div>
 
@@ -344,7 +344,7 @@ export const Contatos: React.FC = () => {
                 value={cliEmail}
                 onChange={(e) => setCliEmail(e.target.value)}
                 placeholder="cliente@email.com"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
@@ -358,7 +358,7 @@ export const Contatos: React.FC = () => {
                 value={cliDoc}
                 onChange={(e) => setCliDoc(e.target.value)}
                 placeholder="000.000.000-00"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
           </div>
@@ -373,7 +373,7 @@ export const Contatos: React.FC = () => {
                 value={cliTel}
                 onChange={(e) => setCliTel(e.target.value)}
                 placeholder="(11) 99999-9999"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
@@ -388,7 +388,7 @@ export const Contatos: React.FC = () => {
                 required
                 value={cliLimite}
                 onChange={(e) => setCliLimite(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
           </div>
@@ -403,7 +403,7 @@ export const Contatos: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
             >
               Salvar Cliente
             </button>
@@ -428,7 +428,7 @@ export const Contatos: React.FC = () => {
               value={fornFantasia}
               onChange={(e) => setFornFantasia(e.target.value)}
               placeholder="Ex: TechDistribuidora Brasil"
-              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             />
           </div>
 
@@ -443,7 +443,7 @@ export const Contatos: React.FC = () => {
                 value={fornRazao}
                 onChange={(e) => setFornRazao(e.target.value)}
                 placeholder="Ex: TechDistribuidora Ltda"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
@@ -457,7 +457,7 @@ export const Contatos: React.FC = () => {
                 value={fornCnpj}
                 onChange={(e) => setFornCnpj(e.target.value)}
                 placeholder="00.000.000/0001-00"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
           </div>
@@ -472,7 +472,7 @@ export const Contatos: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
             >
               Salvar Fornecedor
             </button>

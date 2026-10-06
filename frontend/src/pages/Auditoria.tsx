@@ -144,7 +144,7 @@ export const Auditoria: React.FC = () => {
         <button
           onClick={handleApproveReconciliation}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="px-6 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>Aprovar Ajuste de Estoque</span>
@@ -161,7 +161,7 @@ export const Auditoria: React.FC = () => {
               value={barcodeQuery}
               onChange={(e) => setBarcodeQuery(e.target.value)}
               placeholder="Bipar código de barras (EAN-13) ou digitar SKU e pressionar Enter..."
-              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
             />
             {barcodeQuery && (
               <button
@@ -189,17 +189,17 @@ export const Auditoria: React.FC = () => {
       <BentoCard
         title="Balanço & Comparativo de Inventário"
         action={
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] shadow-inner">
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] shadow-inner">
             <button
               onClick={() => setFilterMode('TODOS')}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
                 filterMode === 'TODOS'
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
                   : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
               }`}
             >
               <span>Todos</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'TODOS' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'TODOS' ? 'bg-[#000000]/30 text-[#000000]' : 'bg-[#142522] text-[#8EB69B]'}`}>
                 {counts.todos}
               </span>
             </button>
@@ -222,12 +222,12 @@ export const Auditoria: React.FC = () => {
               onClick={() => setFilterMode('CORRETO')}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
                 filterMode === 'CORRETO'
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
                   : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
               }`}
             >
               <span>Bateu 100%</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'CORRETO' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'CORRETO' ? 'bg-[#000000]/30 text-[#000000]' : 'bg-[#142522] text-[#8EB69B]'}`}>
                 {counts.correto}
               </span>
             </button>
@@ -282,7 +282,7 @@ export const Auditoria: React.FC = () => {
                             return copy;
                           });
                         }}
-                        className="w-24 px-3 py-1.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.25)] font-mono text-center text-sm text-[#10B981] font-extrabold focus:border-[#10B981] focus:outline-none"
+                        className="w-24 px-3 py-1.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.25)] font-mono text-center text-sm text-[#10B981] font-extrabold focus:border-[#10B981] focus:outline-none"
                       />
                     </td>
 

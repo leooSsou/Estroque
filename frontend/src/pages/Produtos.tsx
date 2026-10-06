@@ -183,7 +183,7 @@ export const Produtos: React.FC = () => {
 
         <button
           onClick={() => setNewProductModalOpen(true)}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
+          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           <span>Novo Produto</span>
@@ -200,7 +200,7 @@ export const Produtos: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por descrição, SKU ou código de barras..."
-            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
           />
           {search && (
             <button
@@ -214,7 +214,7 @@ export const Produtos: React.FC = () => {
         </div>
 
         {/* High-Resolution Segmented Control with Real-Time Counters */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
           {[
             { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
             { id: 'NORMAL', label: 'Estoque Normal', count: counts.normal },
@@ -228,7 +228,7 @@ export const Produtos: React.FC = () => {
                 onClick={() => setStatusFilter(tab.id as any)}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
                     : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
                 }`}
               >
@@ -236,7 +236,7 @@ export const Produtos: React.FC = () => {
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                     isActive
-                      ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                      ? 'bg-[#000000]/30 text-[#000000]'
                       : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
                   }`}
                 >
@@ -372,7 +372,7 @@ export const Produtos: React.FC = () => {
                 step="0.01"
                 value={costPrice}
                 onChange={(e) => handleCostPriceChange(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
               />
             </div>
 
@@ -385,7 +385,7 @@ export const Produtos: React.FC = () => {
                 step="0.5"
                 value={markupPercent}
                 onChange={(e) => handleMarkupChange(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:outline-none"
               />
             </div>
 
@@ -398,7 +398,7 @@ export const Produtos: React.FC = () => {
                 step="0.01"
                 value={sellingPrice}
                 onChange={(e) => handleSellingPriceChange(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
               />
             </div>
           </div>
@@ -448,7 +448,7 @@ export const Produtos: React.FC = () => {
             </button>
             <button
               onClick={handleSaveMarkup}
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Novo Preço</span>
@@ -474,7 +474,7 @@ export const Produtos: React.FC = () => {
               value={newNome}
               onChange={(e) => setNewNome(e.target.value)}
               placeholder="Ex: Teclado Sem Fio Bluetooth"
-              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
             />
           </div>
 
@@ -489,7 +489,7 @@ export const Produtos: React.FC = () => {
                 value={newSku}
                 onChange={(e) => setNewSku(e.target.value)}
                 placeholder="Ex: TEC-BLU-07"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all uppercase"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all uppercase"
               />
             </div>
 
@@ -502,7 +502,7 @@ export const Produtos: React.FC = () => {
                 value={newBarcode}
                 onChange={(e) => setNewBarcode(e.target.value)}
                 placeholder="Ex: 7891234560074"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
           </div>
@@ -518,7 +518,7 @@ export const Produtos: React.FC = () => {
                 required
                 value={newCusto}
                 onChange={(e) => setNewCusto(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
@@ -532,7 +532,7 @@ export const Produtos: React.FC = () => {
                 required
                 value={newMarkup}
                 onChange={(e) => setNewMarkup(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
 
@@ -545,7 +545,7 @@ export const Produtos: React.FC = () => {
                 required
                 value={newEstoqueInicial}
                 onChange={(e) => setNewEstoqueInicial(parseInt(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
               />
             </div>
           </div>
@@ -567,7 +567,7 @@ export const Produtos: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
             >
               Salvar Produto
             </button>

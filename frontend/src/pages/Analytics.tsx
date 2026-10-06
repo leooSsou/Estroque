@@ -88,7 +88,7 @@ export const Analytics: React.FC = () => {
         </div>
 
         {/* Class C Card */}
-        <div className="bg-gradient-to-br from-[#142522] to-[#070E0D] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 shadow-bento-dark space-y-3">
+        <div className="bg-gradient-to-br from-[#142522] to-[#000000] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 shadow-bento-dark space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-[#5E756B] uppercase tracking-wider font-mono">
               Classe C • Baixo Giro
@@ -131,7 +131,7 @@ export const Analytics: React.FC = () => {
                 </div>
               </div>
 
-              <div className="w-full h-3.5 rounded-full bg-[#070E0D] border border-[rgba(142,182,155,0.1)] overflow-hidden p-0.5">
+              <div className="w-full h-3.5 rounded-full bg-[#000000] border border-[rgba(142,182,155,0.1)] overflow-hidden p-0.5">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     item.classe === 'A'
@@ -192,7 +192,7 @@ export const Analytics: React.FC = () => {
                     {item.classe === 'A' ? (
                       <button
                         onClick={() => handleAction(item, 'Emitir Pedido de Compra')}
-                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all btn-press whitespace-nowrap"
+                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all btn-press whitespace-nowrap"
                       >
                         Comprar com Fornecedor
                       </button>

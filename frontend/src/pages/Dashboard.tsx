@@ -76,7 +76,7 @@ export const Dashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => navigate('/pdv')}
-              className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald btn-press hover-lift flex items-center gap-2"
+              className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald btn-press hover-lift flex items-center gap-2"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Nova Venda (PDV)</span>
@@ -161,7 +161,7 @@ export const Dashboard: React.FC = () => {
           action={
             <div className="flex items-center">
               {hoveredCashFlowIdx !== null ? (
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-[#070E0D] border border-[#10B981]/40 px-3.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.18)] transition-all">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 bg-[#000000] border border-[#10B981]/40 px-3.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.18)] transition-all">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#10B981] font-mono">
                     <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]" />
                     <span>Fat: R$ {CASH_FLOW_DATA[hoveredCashFlowIdx].revenue.toLocaleString('pt-BR')}</span>
@@ -177,7 +177,7 @@ export const Dashboard: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-4 bg-[#070E0D]/60 px-3.5 py-1.5 rounded-xl border border-[rgba(142,182,155,0.1)]">
+                <div className="flex items-center gap-4 bg-[#000000]/60 px-3.5 py-1.5 rounded-xl border border-[rgba(142,182,155,0.1)]">
                   <span className="flex items-center gap-2 text-xs font-bold text-[#10B981] font-mono">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shadow-[0_0_10px_#10B981]" /> Faturamento
                   </span>
@@ -190,7 +190,7 @@ export const Dashboard: React.FC = () => {
           }
         >
           {/* Main Chart Area with Animated Stripe Texture */}
-          <div className="relative w-full rounded-2xl border border-[rgba(142,182,155,0.12)] p-5 mt-2 bg-[#070E0D]/60 select-none overflow-hidden">
+          <div className="relative w-full rounded-2xl border border-[rgba(142,182,155,0.12)] p-5 mt-2 bg-[#000000]/60 select-none overflow-hidden">
             {/* Background Animated Stripes (safely isolated and clipped) */}
             <div className="absolute inset-0 chart-grid-stripes rounded-2xl overflow-hidden pointer-events-none" />
 
@@ -295,7 +295,7 @@ export const Dashboard: React.FC = () => {
                       className="flex items-center justify-center cursor-pointer py-0.5"
                     >
                       {isHovered ? (
-                        <span className="text-xs font-bold font-mono text-[#070E0D] bg-[#10B981] px-3 py-0.5 rounded-lg shadow-[0_0_14px_#10B981] scale-105 transition-all duration-200">
+                        <span className="text-xs font-bold font-mono text-[#000000] bg-[#10B981] px-3 py-0.5 rounded-lg shadow-[0_0_14px_#10B981] scale-105 transition-all duration-200">
                           {bar.month}
                         </span>
                       ) : (
@@ -324,7 +324,7 @@ export const Dashboard: React.FC = () => {
           }
         >
           <div className="space-y-4 pt-2">
-            <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)] space-y-3.5">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.14)] space-y-3.5">
               <div>
                 <div className="flex items-center justify-between text-sm mb-1.5">
                   <span className="font-bold text-[#10B981]">Classe A</span>

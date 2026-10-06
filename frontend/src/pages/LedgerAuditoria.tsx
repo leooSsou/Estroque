@@ -115,7 +115,7 @@ export const LedgerAuditoria: React.FC = () => {
 
           <button
             onClick={() => navigate('/auditoria')}
-            className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald transition-all flex items-center gap-2 active:scale-95"
+            className="px-4 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] text-xs font-bold shadow-glow-emerald transition-all flex items-center gap-2 active:scale-95"
           >
             <ClipboardList className="w-4 h-4" />
             <span>Auditoria Física Cega</span>
@@ -133,7 +133,7 @@ export const LedgerAuditoria: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por produto, SKU ou motivo de movimentação..."
-            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
           />
           {search && (
             <button
@@ -147,12 +147,12 @@ export const LedgerAuditoria: React.FC = () => {
         </div>
 
         {/* High-Resolution Segmented Control */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
           <button
             onClick={() => setTipoFilter('TODOS')}
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
               tipoFilter === 'TODOS'
-                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
                 : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
             }`}
           >
@@ -160,7 +160,7 @@ export const LedgerAuditoria: React.FC = () => {
             <span
               className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                 tipoFilter === 'TODOS'
-                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  ? 'bg-[#000000]/30 text-[#000000]'
                   : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
               }`}
             >
@@ -172,7 +172,7 @@ export const LedgerAuditoria: React.FC = () => {
             onClick={() => setTipoFilter('ENTRADA')}
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
               tipoFilter === 'ENTRADA'
-                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
                 : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
             }`}
           >
@@ -181,7 +181,7 @@ export const LedgerAuditoria: React.FC = () => {
             <span
               className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                 tipoFilter === 'ENTRADA'
-                  ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                  ? 'bg-[#000000]/30 text-[#000000]'
                   : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
               }`}
             >

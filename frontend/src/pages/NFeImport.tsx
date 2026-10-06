@@ -174,14 +174,14 @@ export const NFeImport: React.FC = () => {
           {/* Invoice Header Card */}
           <BentoCard title="Dados do Documento Fiscal">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
+              <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.12)]">
                 <span className="text-[11px] text-[#94A89E]">Número & Série</span>
                 <div className="text-base font-bold text-[#F3FBF6] font-mono mt-0.5">
                   NF-e {nfeHeader.numero} / S.{nfeHeader.serie}
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
+              <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.12)]">
                 <span className="text-[11px] text-[#94A89E]">Fornecedor</span>
                 <div className="text-sm font-semibold text-[#F3FBF6] truncate mt-0.5">
                   {nfeHeader.fornecedor}
@@ -189,14 +189,14 @@ export const NFeImport: React.FC = () => {
                 <div className="text-[10px] text-[#94A89E] font-mono">{nfeHeader.cnpjFornecedor}</div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
+              <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.12)]">
                 <span className="text-[11px] text-[#94A89E]">Data de Emissão</span>
                 <div className="text-sm font-medium text-[#F3FBF6] mt-0.5">
                   {nfeHeader.dataEmissao}
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
+              <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.12)]">
                 <span className="text-[11px] text-[#94A89E]">Valor Total da Nota</span>
                 <div className="text-lg font-bold text-[#10B981] font-mono mt-0.5">
                   R$ {nfeHeader.valorTotal.toFixed(2)}
@@ -205,7 +205,7 @@ export const NFeImport: React.FC = () => {
             </div>
 
             {/* Chave de Acesso bar */}
-            <div className="mt-4 p-3 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)] flex items-center justify-between gap-2">
+            <div className="mt-4 p-3 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.14)] flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 truncate">
                 <span className="text-[11px] text-[#94A89E] font-semibold flex-shrink-0">
                   Chave 44d:
@@ -283,7 +283,7 @@ export const NFeImport: React.FC = () => {
               <button
                 onClick={handleConfirmImport}
                 disabled={loading}
-                className="px-6 py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
+                className="px-6 py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>

@@ -22,7 +22,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070E0D] flex items-center justify-center text-[#10B981]">
+      <div className="min-h-screen bg-[#000000] flex items-center justify-center text-[#10B981]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-[#10B981] border-t-transparent animate-spin" />
           <span className="text-xs text-[#94A89E] font-mono">Iniciando ESTROQUE...</span>

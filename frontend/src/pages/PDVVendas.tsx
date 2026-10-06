@@ -550,7 +550,7 @@ export const PDVVendas: React.FC = () => {
               onClick={() => setActiveTab(tab.id as PDVTab)}
               className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2.5 whitespace-nowrap active:scale-95 ${
                 isActive
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald scale-[1.02]'
+                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
                   : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
               }`}
             >
@@ -560,7 +560,7 @@ export const PDVVendas: React.FC = () => {
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
                     isActive
-                      ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                      ? 'bg-[#000000]/30 text-[#000000]'
                       : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
                   }`}
                 >
@@ -588,7 +588,7 @@ export const PDVVendas: React.FC = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Bipar leitor de código de barras ou pesquisar item..."
-                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
                 />
                 {search && (
                   <button
@@ -602,7 +602,7 @@ export const PDVVendas: React.FC = () => {
               </div>
 
               {/* Quick Filter Pills */}
-              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
                 {[
                   { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
                   { id: 'DISPONIVEL', label: 'Em Estoque', count: counts.disponivel },
@@ -615,7 +615,7 @@ export const PDVVendas: React.FC = () => {
                       onClick={() => setCatalogFilter(pill.id as any)}
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                         isActive
-                          ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
+                          ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
                           : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
                       }`}
                     >
@@ -623,7 +623,7 @@ export const PDVVendas: React.FC = () => {
                       <span
                         className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-all ${
                           isActive
-                            ? 'bg-[#070E0D]/30 text-[#070E0D]'
+                            ? 'bg-[#000000]/30 text-[#000000]'
                             : 'bg-[#142522] text-[#8EB69B]'
                         }`}
                       >
@@ -668,7 +668,7 @@ export const PDVVendas: React.FC = () => {
                       <span className="text-base font-extrabold text-[#10B981] font-mono">
                         R$ {prod.preco_venda.toFixed(2)}
                       </span>
-                      <button className="w-8 h-8 rounded-xl bg-[#142522] group-hover:bg-[#10B981] group-hover:text-[#070E0D] flex items-center justify-center text-[#DAF1DE] transition-transform group-hover:scale-110">
+                      <button className="w-8 h-8 rounded-xl bg-[#142522] group-hover:bg-[#10B981] group-hover:text-[#000000] flex items-center justify-center text-[#DAF1DE] transition-transform group-hover:scale-110">
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -704,7 +704,7 @@ export const PDVVendas: React.FC = () => {
               </div>
 
               {/* Customer Selector & Credit Limit Widget */}
-              <div className="space-y-2 p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)]">
+              <div className="space-y-2 p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.14)]">
                 <label className="flex items-center gap-1.5 text-xs font-semibold text-[#DAF1DE]">
                   <UserCheck className="w-4 h-4 text-[#10B981]" />
                   <span>Cliente / Titular do Crediário</span>
@@ -806,8 +806,8 @@ export const PDVVendas: React.FC = () => {
                         onClick={() => setFormaPagamento(pm.id as FormaPagamento)}
                         className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold btn-press ${
                           formaPagamento === pm.id
-                            ? 'bg-[#10B981] text-[#070E0D] shadow-glow-emerald'
-                            : 'bg-[#070E0D] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522]'
+                            ? 'bg-[#10B981] text-[#000000] shadow-glow-emerald'
+                            : 'bg-[#000000] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522]'
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -820,7 +820,7 @@ export const PDVVendas: React.FC = () => {
 
               {/* Dinheiro Change Calculator */}
               {formaPagamento === 'DINHEIRO' && (
-                <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-amber-400/25 space-y-3">
+                <div className="p-3.5 rounded-2xl bg-[#000000] border border-amber-400/25 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                       <Banknote className="w-4 h-4 text-amber-400" />
@@ -897,7 +897,7 @@ export const PDVVendas: React.FC = () => {
                       min="0"
                       value={desconto}
                       onChange={(e) => setDesconto(parseFloat(e.target.value) || 0)}
-                      className="w-24 px-2.5 py-1 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] font-mono text-right text-sm text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
+                      className="w-24 px-2.5 py-1 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] font-mono text-right text-sm text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -911,7 +911,7 @@ export const PDVVendas: React.FC = () => {
                 <button
                   onClick={handleFinalizeSale}
                   disabled={cart.length === 0 || crediarioExcedido || Boolean(dinheiroInsuficiente)}
-                  className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-sm md:text-base font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
+                  className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] text-sm md:text-base font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
                 >
                   <CheckCircle2 className="w-5 h-5" />
                   <span>Finalizar Venda & Emitir Cupom</span>
@@ -980,7 +980,7 @@ export const PDVVendas: React.FC = () => {
                     </div>
 
                     {esp.observacao && (
-                      <div className="p-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.1)] text-xs text-[#DAF1DE] italic">
+                      <div className="p-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.1)] text-xs text-[#DAF1DE] italic">
                         "{esp.observacao}"
                       </div>
                     )}
@@ -1022,7 +1022,7 @@ export const PDVVendas: React.FC = () => {
 
                       <button
                         onClick={() => handleRetomarVendaEspera(esp)}
-                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
                       >
                         <PlayCircle className="w-4 h-4" />
                         <span>Retomar no Caixa</span>
@@ -1050,7 +1050,7 @@ export const PDVVendas: React.FC = () => {
                 value={searchHistorico}
                 onChange={(e) => setSearchHistorico(e.target.value)}
                 placeholder="Buscar venda por código, cliente ou forma de pagamento..."
-                className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+                className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
               />
               {searchHistorico && (
                 <button
@@ -1063,14 +1063,14 @@ export const PDVVendas: React.FC = () => {
             </div>
 
             {/* Quick Status Filter */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] shadow-inner">
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] shadow-inner">
               {(['TODAS', 'CONCLUIDA', 'CANCELADA'] as const).map((st) => (
                 <button
                   key={st}
                   onClick={() => setStatusFilterHistorico(st)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95 ${
                     statusFilterHistorico === st
-                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] font-bold shadow-glow-emerald'
+                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald'
                       : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
                   }`}
                 >
@@ -1098,10 +1098,10 @@ export const PDVVendas: React.FC = () => {
                   setRelatorioPDFMode('MENSAL');
                   setRelatorioPDFModalOpen(true);
                 }}
-                className="h-10 px-4 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-xs font-bold flex items-center gap-2 shadow-glow-emerald active:scale-95 transition-all cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-xs font-bold flex items-center gap-2 shadow-glow-emerald active:scale-95 transition-all cursor-pointer"
                 title="Gerar PDF com Relatório Consolidado Mensal de Vendas"
               >
-                <FileText className="w-3.5 h-3.5 text-[#070E0D]" />
+                <FileText className="w-3.5 h-3.5 text-[#000000]" />
                 <span>PDF do Mês</span>
               </button>
             </div>
@@ -1250,7 +1250,7 @@ export const PDVVendas: React.FC = () => {
               ) : (
                 <button
                   onClick={() => setAberturaModalOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald flex items-center gap-2 active:scale-95 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald flex items-center gap-2 active:scale-95 cursor-pointer"
                 >
                   <Unlock className="w-4 h-4" />
                   <span>Abrir Novo Turno</span>
@@ -1308,7 +1308,7 @@ export const PDVVendas: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#070E0D] border border-[#10B981]/40 shadow-glow-emerald space-y-1">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-[#10B981]/40 shadow-glow-emerald space-y-1">
               <span className="text-[11px] font-bold text-[#10B981]">Esperado na Gaveta</span>
               <div className="font-mono text-xl font-extrabold text-[#10B981]">
                 R$ {drawerStats.saldoEsperadoGaveta.toFixed(2)}
@@ -1393,7 +1393,7 @@ export const PDVVendas: React.FC = () => {
               value={pauseObservacao}
               onChange={(e) => setPauseObservacao(e.target.value)}
               placeholder="Ex: Foi buscar o cartão no carro, aguardando aprovação..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
             />
           </div>
 
@@ -1408,7 +1408,7 @@ export const PDVVendas: React.FC = () => {
             <button
               type="button"
               onClick={handleConfirmPauseSale}
-              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
             >
               <PauseCircle className="w-4 h-4" />
               <span>Confirmar e Pausar</span>
@@ -1478,7 +1478,7 @@ export const PDVVendas: React.FC = () => {
               value={sangriaValor}
               onChange={(e) => setSangriaValor(e.target.value === '' ? '' : parseFloat(e.target.value))}
               placeholder="0,00"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
             />
           </div>
 
@@ -1490,7 +1490,7 @@ export const PDVVendas: React.FC = () => {
               value={sangriaMotivo}
               onChange={(e) => setSangriaMotivo(e.target.value)}
               placeholder="Ex: Recolhimento para cofre central"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
             />
           </div>
 
@@ -1504,7 +1504,7 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
             >
               <ArrowDownRight className="w-4 h-4" />
               <span>Registrar Sangria</span>
@@ -1531,7 +1531,7 @@ export const PDVVendas: React.FC = () => {
               value={suprimentoValor}
               onChange={(e) => setSuprimentoValor(e.target.value === '' ? '' : parseFloat(e.target.value))}
               placeholder="0,00"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
             />
           </div>
 
@@ -1543,7 +1543,7 @@ export const PDVVendas: React.FC = () => {
               value={suprimentoMotivo}
               onChange={(e) => setSuprimentoMotivo(e.target.value)}
               placeholder="Ex: Troco inicial extra em moedas e notas"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
             />
           </div>
 
@@ -1557,7 +1557,7 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
             >
               <ArrowUpRight className="w-4 h-4" />
               <span>Registrar Suprimento</span>
@@ -1574,7 +1574,7 @@ export const PDVVendas: React.FC = () => {
         subtitle="Auditoria e encerramento do turno de trabalho"
       >
         <form onSubmit={handleFecharTurno} className="space-y-4">
-          <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)] space-y-2 text-xs">
+          <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.14)] space-y-2 text-xs">
             <div className="flex justify-between text-[#A2B89B]">
               <span>Saldo Calculado pelo Sistema:</span>
               <span className="font-mono font-bold text-[#F3FBF6]">
@@ -1612,7 +1612,7 @@ export const PDVVendas: React.FC = () => {
               value={saldoContado}
               onChange={(e) => setSaldoContado(e.target.value === '' ? '' : parseFloat(e.target.value))}
               placeholder="Informe o total apurado em dinheiro"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-red-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-red-400 focus:outline-none"
             />
           </div>
 
@@ -1623,7 +1623,7 @@ export const PDVVendas: React.FC = () => {
               value={fechamentoObservacao}
               onChange={(e) => setFechamentoObservacao(e.target.value)}
               placeholder="Justificativa para divergência ou recados para o próximo turno..."
-              className="w-full px-3.5 py-2 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-xs text-[#F3FBF6] focus:border-red-400 focus:outline-none"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-xs text-[#F3FBF6] focus:border-red-400 focus:outline-none"
             />
           </div>
 
@@ -1663,7 +1663,7 @@ export const PDVVendas: React.FC = () => {
               required
               value={aberturaFundo}
               onChange={(e) => setAberturaFundo(e.target.value === '' ? '' : parseFloat(e.target.value))}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
             />
           </div>
 
@@ -1677,7 +1677,7 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
             >
               <Unlock className="w-4 h-4" />
               <span>Abrir Caixa</span>
@@ -1694,7 +1694,7 @@ export const PDVVendas: React.FC = () => {
         subtitle={`Transação #${receiptSale?.id.slice(0, 8)}`}
       >
         <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.15)] font-mono text-xs space-y-3">
+          <div className="p-6 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.15)] font-mono text-xs space-y-3">
             <div className="text-center border-b border-[rgba(142,182,155,0.1)] pb-3">
               <div className="text-sm font-extrabold text-[#F3FBF6]">ESTROQUE ENTERPRISE</div>
               <div className="text-[11px] text-[#94A89E]">{activeLoja?.nome || 'Loja Matriz'}</div>
@@ -1762,7 +1762,7 @@ export const PDVVendas: React.FC = () => {
               onClick={() => {
                 window.print();
               }}
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Comprovante</span>

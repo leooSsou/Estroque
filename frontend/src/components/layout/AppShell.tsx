@@ -47,7 +47,7 @@ export const AppShell: React.FC = () => {
   }, [searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#070E0D] text-[#F3FBF6] flex">
+    <div className="min-h-screen bg-[#000000] text-[#F3FBF6] flex">
       {/* Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
