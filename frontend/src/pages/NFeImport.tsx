@@ -230,29 +230,29 @@ export const NFeImport: React.FC = () => {
           >
             <div className="overflow-x-auto table-scrollbar pb-2">
               <table className="w-full text-left min-w-[950px]">
-                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.25)]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-[#DAF1DE] whitespace-nowrap">
                     <th className="py-3.5 px-4">Descrição no XML</th>
                     <th className="py-3.5 px-4">EAN / NCM</th>
                     <th className="py-3.5 px-4">Quantidade</th>
                     <th className="py-3.5 px-4">Custo Unitário</th>
-                    <th className="py-3.5 px-4">Subtotal</th>
+                    <th className="py-3.5 px-4 text-[#10B981]">Subtotal</th>
                     <th className="py-3.5 px-4 text-center">Ação no Catálogo</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+                <tbody className="divide-y divide-[rgba(142,182,155,0.18)]">
                   {nfeItens.map((item) => (
                     <tr key={item.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
                       <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
                         {item.descricao}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B] whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
                         {item.ean} • {item.ncm}
                       </td>
                       <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#DAF1DE] whitespace-nowrap">
                         +{item.quantidade} un
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#C1D7C8] whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#F3FBF6] whitespace-nowrap">
                         {item.valor_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </td>
                       <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">

@@ -745,7 +745,7 @@ export const PDVVendas: React.FC = () => {
               </div>
 
               {/* Cart Items List */}
-              <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 divide-y divide-[rgba(142,182,155,0.08)] table-scrollbar">
+              <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 divide-y divide-[rgba(142,182,155,0.2)] table-scrollbar">
                 {cart.length === 0 ? (
                   <div className="text-center py-8 text-sm text-[#5E756B]">
                     Nenhum item adicionado ao carrinho ainda.
@@ -757,7 +757,7 @@ export const PDVVendas: React.FC = () => {
                         <div className="text-sm font-bold text-[#F3FBF6] truncate">
                           {item.produto.nome}
                         </div>
-                        <div className="text-xs text-[#A2B89B] font-mono mt-0.5">
+                        <div className="text-xs text-[#DAF1DE] font-mono font-medium mt-0.5">
                           R$ {item.preco_unitario.toFixed(2)} un
                         </div>
                       </div>
@@ -855,8 +855,8 @@ export const PDVVendas: React.FC = () => {
                   </div>
 
                   {/* Troco Result */}
-                  <div className="pt-2 border-t border-[rgba(142,182,155,0.12)] flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#A2B89B]">Troco a Devolver:</span>
+                  <div className="pt-2 border-t border-[rgba(142,182,155,0.25)] flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#F3FBF6]">Troco a Devolver:</span>
                     <span className="text-base font-mono font-extrabold text-[#10B981]">
                       R$ {troco.toFixed(2)}
                     </span>
@@ -883,29 +883,31 @@ export const PDVVendas: React.FC = () => {
               )}
 
               {/* Totals & Final Action Button */}
-              <div className="pt-3 border-t border-[rgba(142,182,155,0.12)] space-y-2.5">
-                <div className="flex items-center justify-between text-sm text-[#A2B89B]">
-                  <span>Subtotal:</span>
-                  <span className="font-mono font-semibold text-[#DAF1DE]">R$ {subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-[#A2B89B]">
-                  <span>Desconto Aplicado:</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-mono text-[#8EB69B]">R$</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={desconto}
-                      onChange={(e) => setDesconto(parseFloat(e.target.value) || 0)}
-                      className="w-24 px-2.5 py-1 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] font-mono text-right text-sm text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
-                    />
+              <div className="pt-3.5 border-t border-[rgba(142,182,155,0.28)] space-y-3">
+                <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.22)] space-y-2.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-[#F3FBF6]">Subtotal:</span>
+                    <span className="font-mono text-base font-bold text-[#F3FBF6]">R$ {subtotal.toFixed(2)}</span>
                   </div>
-                </div>
-                <div className="flex items-center justify-between text-base font-bold text-[#F3FBF6] pt-1">
-                  <span>Total a Pagar:</span>
-                  <span className="text-3xl font-mono font-extrabold text-[#10B981]">
-                    R$ {valorTotal.toFixed(2)}
-                  </span>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-[#DAF1DE]">Desconto Aplicado:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-mono text-[#8EB69B]">R$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={desconto}
+                        onChange={(e) => setDesconto(parseFloat(e.target.value) || 0)}
+                        className="w-24 px-2.5 py-1 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.25)] font-mono text-right text-sm text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="pt-2.5 border-t border-[rgba(142,182,155,0.25)] flex items-center justify-between text-base font-bold text-[#F3FBF6]">
+                    <span>Total a Pagar:</span>
+                    <span className="text-3xl font-mono font-extrabold text-[#10B981] drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                      R$ {valorTotal.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
 
                 <button
@@ -986,15 +988,15 @@ export const PDVVendas: React.FC = () => {
                     )}
 
                     {/* Items preview */}
-                    <div className="space-y-1 pt-2 border-t border-[rgba(142,182,155,0.08)]">
-                      <div className="text-xs font-semibold text-[#8EB69B]">Itens no Pedido:</div>
+                    <div className="space-y-1 pt-2 border-t border-[rgba(142,182,155,0.2)]">
+                      <div className="text-xs font-semibold text-[#DAF1DE]">Itens no Pedido:</div>
                       <div className="text-xs text-[#DAF1DE] space-y-0.5 max-h-24 overflow-y-auto table-scrollbar">
                         {esp.itens.map((it, idx) => (
                           <div key={idx} className="flex justify-between">
                             <span className="truncate pr-2">
                               {it.quantidade}x {it.produto.nome}
                             </span>
-                            <span className="font-mono text-[#8EB69B]">
+                            <span className="font-mono text-[#DAF1DE] font-semibold">
                               R$ {(it.quantidade * it.preco_unitario).toFixed(2)}
                             </span>
                           </div>
@@ -1003,9 +1005,9 @@ export const PDVVendas: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-[rgba(142,182,155,0.12)] space-y-3">
+                  <div className="pt-3 border-t border-[rgba(142,182,155,0.25)] space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-[#A2B89B]">Valor Total:</span>
+                      <span className="text-xs font-bold text-[#F3FBF6]">Valor Total:</span>
                       <span className="text-xl font-mono font-extrabold text-[#10B981]">
                         R$ {esp.valor_total.toFixed(2)}
                       </span>
@@ -1694,8 +1696,8 @@ export const PDVVendas: React.FC = () => {
         subtitle={`Transação #${receiptSale?.id.slice(0, 8)}`}
       >
         <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.15)] font-mono text-xs space-y-3">
-            <div className="text-center border-b border-[rgba(142,182,155,0.1)] pb-3">
+          <div className="p-6 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.25)] font-mono text-xs space-y-3">
+            <div className="text-center border-b border-[rgba(142,182,155,0.2)] pb-3">
               <div className="text-sm font-extrabold text-[#F3FBF6]">ESTROQUE ENTERPRISE</div>
               <div className="text-[11px] text-[#94A89E]">{activeLoja?.nome || 'Loja Matriz'}</div>
               <div className="text-[10px] text-[#5E756B]">{activeLoja?.cnpj || '12.345.678/0001-90'}</div>
@@ -1704,35 +1706,42 @@ export const PDVVendas: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-1 divide-y divide-[rgba(142,182,155,0.06)]">
+            <div className="space-y-1 divide-y divide-[rgba(142,182,155,0.18)]">
               {receiptSale?.itens?.map((it) => (
-                <div key={it.id} className="pt-1.5 flex justify-between">
+                <div key={it.id} className="pt-1.5 flex justify-between text-[#F3FBF6]">
                   <span>
                     {it.quantidade}x {it.produto_nome || it.sku}
                   </span>
-                  <span className="text-[#10B981]">
+                  <span className="text-[#10B981] font-bold">
                     R$ {(it.quantidade * it.preco_unitario).toFixed(2)}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-[rgba(142,182,155,0.1)] pt-2 space-y-1">
+            <div className="border-t border-[rgba(142,182,155,0.25)] pt-2.5 space-y-1.5">
+              <div className="flex justify-between text-[#F3FBF6]">
+                <span>Subtotal:</span>
+                <span className="font-semibold text-[#F3FBF6]">
+                  R$ {((receiptSale?.valor_total || 0) + (receiptSale?.desconto || 0)).toFixed(2)}
+                </span>
+              </div>
+
               {receiptSale?.desconto ? (
-                <div className="flex justify-between text-amber-400">
-                  <span>Desconto:</span>
+                <div className="flex justify-between text-amber-400 font-medium">
+                  <span>Desconto Aplicado:</span>
                   <span>- R$ {receiptSale.desconto.toFixed(2)}</span>
                 </div>
               ) : null}
 
-              <div className="flex justify-between">
+              <div className="flex justify-between text-[#DAF1DE]">
                 <span>Forma de Pagamento:</span>
-                <span className="font-bold text-[#DAF1DE]">{receiptSale?.forma_pagamento}</span>
+                <span className="font-bold text-[#F3FBF6]">{receiptSale?.forma_pagamento}</span>
               </div>
 
-              <div className="flex justify-between text-sm font-bold text-[#F3FBF6] pt-1">
+              <div className="flex justify-between text-sm font-bold text-[#F3FBF6] pt-1.5 border-t border-[rgba(142,182,155,0.2)]">
                 <span>TOTAL:</span>
-                <span className="text-[#10B981]">
+                <span className="text-[#10B981] font-mono font-extrabold text-base">
                   R$ {receiptSale?.valor_total.toFixed(2)}
                 </span>
               </div>

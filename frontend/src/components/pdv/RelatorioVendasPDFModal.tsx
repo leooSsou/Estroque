@@ -354,14 +354,14 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
               </h4>
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-[rgba(142,182,155,0.12)] text-[#8EB69B] print:border-gray-400 print:text-black">
+                  <tr className="border-b border-[rgba(142,182,155,0.22)] text-[#DAF1DE] font-semibold print:border-gray-400 print:text-black">
                     <th className="py-1.5 text-left whitespace-nowrap">Modalidade</th>
                     <th className="py-1.5 text-center whitespace-nowrap">Qtd</th>
                     <th className="py-1.5 text-right whitespace-nowrap">Total</th>
                     <th className="py-1.5 text-right whitespace-nowrap">%</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.06)] print:divide-gray-200">
+                <tbody className="divide-y divide-[rgba(142,182,155,0.16)] print:divide-gray-200">
                   {Object.entries(kpis.porForma).map(([forma, dados]) => {
                     const perc = kpis.liquido > 0 ? (dados.total / kpis.liquido) * 100 : 0;
                     if (dados.count === 0 && dados.total === 0) return null;
@@ -370,7 +370,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
                         <td className="py-2 text-[#DAF1DE] font-semibold whitespace-nowrap print:text-black">
                           {forma.replace('_', ' ')}
                         </td>
-                        <td className="py-2 text-center font-mono text-[#8EB69B] whitespace-nowrap print:text-black">
+                        <td className="py-2 text-center font-mono text-[#DAF1DE] whitespace-nowrap print:text-black">
                           {dados.count}
                         </td>
                         <td className="py-2 text-right font-mono font-bold text-[#F3FBF6] whitespace-nowrap print:text-black">
@@ -402,32 +402,32 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
                 </h4>
                 {caixaSummary ? (
                   <div className="space-y-2 text-xs">
-                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.08)] print:border-gray-200">
-                      <span className="text-[#8EB69B] print:text-gray-700">Fundo de Abertura:</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.16)] print:border-gray-200">
+                      <span className="text-[#DAF1DE] print:text-gray-700">Fundo de Abertura:</span>
                       <span className="font-mono font-bold text-[#F3FBF6] print:text-black">
                         {formatCurrency(caixaSummary.abertura)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.08)] print:border-gray-200">
-                      <span className="text-[#8EB69B] print:text-gray-700">(+) Suprimentos de Troco:</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.16)] print:border-gray-200">
+                      <span className="text-[#DAF1DE] print:text-gray-700">(+) Suprimentos de Troco:</span>
                       <span className="font-mono font-bold text-[#10B981] print:text-black">
                         + {formatCurrency(caixaSummary.suprimentos)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.08)] print:border-gray-200">
-                      <span className="text-[#8EB69B] print:text-gray-700">(+) Vendas em Dinheiro:</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.16)] print:border-gray-200">
+                      <span className="text-[#DAF1DE] print:text-gray-700">(+) Vendas em Dinheiro:</span>
                       <span className="font-mono font-bold text-[#10B981] print:text-black">
                         + {formatCurrency(caixaSummary.vendasDinheiro)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.08)] print:border-gray-200">
-                      <span className="text-[#8EB69B] print:text-gray-700">(-) Sangrias Realizadas:</span>
+                    <div className="flex items-center justify-between py-1 border-b border-[rgba(142,182,155,0.16)] print:border-gray-200">
+                      <span className="text-[#DAF1DE] print:text-gray-700">(-) Sangrias Realizadas:</span>
                       <span className="font-mono font-bold text-[#F87171] print:text-black">
                         - {formatCurrency(caixaSummary.sangrias)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between pt-2 border-t-2 border-[rgba(142,182,155,0.2)] print:border-gray-400">
-                      <span className="font-bold text-[#DAF1DE] print:text-black">Saldo Esperado na Gaveta:</span>
+                    <div className="flex items-center justify-between pt-2 border-t-2 border-[rgba(142,182,155,0.3)] print:border-gray-400">
+                      <span className="font-bold text-[#F3FBF6] print:text-black">Saldo Esperado na Gaveta:</span>
                       <span className="font-mono text-sm font-black text-[#10B981] print:text-black">
                         {formatCurrency(caixaSummary.saldoEsperado)}
                       </span>
@@ -494,8 +494,8 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
 
             <div className="overflow-x-auto border border-[rgba(142,182,155,0.15)] rounded-xl print:border-gray-300">
               <table className="w-full text-left text-xs min-w-[700px] print:min-w-full">
-                <thead className="bg-[#142522] border-b border-[rgba(142,182,155,0.18)] print:bg-gray-100 print:border-gray-300">
-                  <tr className="text-[#A2B89B] uppercase font-bold text-[10px] tracking-wider print:text-black whitespace-nowrap">
+                <thead className="bg-[#142522] border-b border-[rgba(142,182,155,0.25)] print:bg-gray-100 print:border-gray-300">
+                  <tr className="text-[#DAF1DE] uppercase font-bold text-[10px] tracking-wider print:text-black whitespace-nowrap">
                     <th className="py-2 px-3 whitespace-nowrap">Hora/Data</th>
                     <th className="py-2 px-3 whitespace-nowrap">Cupom</th>
                     <th className="py-2 px-3 whitespace-nowrap">Cliente</th>
@@ -505,7 +505,7 @@ export const RelatorioVendasPDFModal: React.FC<RelatorioVendasPDFModalProps> = (
                     <th className="py-2 px-3 text-center whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.06)] print:divide-gray-200">
+                <tbody className="divide-y divide-[rgba(142,182,155,0.18)] print:divide-gray-200">
                   {filteredVendas.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-8 text-center text-xs text-[#5E756B] print:text-gray-500 whitespace-nowrap">
