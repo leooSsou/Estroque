@@ -52,14 +52,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3 overflow-hidden'}`}>
           <img
             src="/favicon.png"
-            alt="ESTROQUE"
+            alt="Estroque"
             width="36"
             height="36"
             className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain flex-shrink-0`}
           />
           {!collapsed && (
-            <span className="font-bold text-lg tracking-wider text-white uppercase leading-tight tracking-wide truncate">
-              ESTROQUE
+            <span className="font-bold text-lg tracking-wide text-white leading-tight truncate">
+              Estroque
             </span>
           )}
         </div>

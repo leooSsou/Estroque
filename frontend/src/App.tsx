@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { AppShell } from './components/layout/AppShell';
@@ -17,6 +17,32 @@ import { Financeiro } from './pages/Financeiro';
 import { Contatos } from './pages/Contatos';
 import { Analytics } from './pages/Analytics';
 
+const ROUTE_TITLES: Record<string, string> = {
+  '/': 'Visão Geral',
+  '/produtos': 'Produtos',
+  '/estoque': 'Estoque',
+  '/ledger': 'Auditoria & Ledger',
+  '/nfe': 'Entrada NF-e',
+  '/transferencias': 'Transferências',
+  '/auditoria': 'Auditoria',
+  '/pdv': 'Frente de Caixa',
+  '/financeiro': 'Financeiro',
+  '/contatos': 'Contatos',
+  '/analytics': 'Curva ABC',
+  '/login': 'Login',
+};
+
+const PageTitleUpdater: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const pageName = ROUTE_TITLES[location.pathname] || 'Visão Geral';
+    document.title = `${pageName} | Estroque`;
+  }, [location.pathname]);
+
+  return null;
+};
+
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
 
@@ -25,7 +51,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
       <div className="min-h-screen bg-[#000000] flex items-center justify-center text-emerald-500">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
-          <span className="text-xs text-slate-400">Iniciando ESTROQUE...</span>
+          <span className="text-xs text-slate-400">Iniciando Estroque...</span>
         </div>
       </div>
     );
@@ -41,6 +67,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
+      <PageTitleUpdater />
       <AuthProvider>
         <ToastProvider>
           <Routes>

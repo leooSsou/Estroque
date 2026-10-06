@@ -1698,7 +1698,7 @@ export const PDVVendas: React.FC = () => {
         <div className="space-y-4">
           <div className="p-6 rounded-2xl bg-[#000000] border border-white/[0.16] text-xs space-y-3">
             <div className="text-center border-b border-white/[0.16] pb-3">
-              <div className="text-sm font-bold text-white">ESTROQUE ENTERPRISE</div>
+              <div className="text-sm font-bold text-white">Estroque Enterprise</div>
               <div className="text-[11px] text-slate-400">{activeLoja?.nome || 'Loja Matriz'}</div>
               <div className="text-[10px] text-slate-500">{activeLoja?.cnpj || '12.345.678/0001-90'}</div>
               <div className="text-[10px] text-slate-400 mt-1">

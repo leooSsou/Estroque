@@ -30,7 +30,7 @@ export const Login: React.FC = () => {
     setLoading(true);
     try {
       await login('dono@estroque.com.br', 'senha123');
-      toast.success('Bem-vindo ao ESTROQUE (Sessão de Demonstração)');
+      toast.success('Bem-vindo ao Estroque (Sessão de Demonstração)');
       navigate('/');
     } finally {
       setLoading(false);
@@ -49,13 +49,13 @@ export const Login: React.FC = () => {
         <div className="flex items-center gap-3.5 z-10">
           <img
             src="/favicon.png"
-            alt="ESTROQUE"
+            alt="Estroque"
             width="48"
             height="48"
             className="w-12 h-12 object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]"
           />
-          <span className="font-bold text-2xl tracking-widest text-white uppercase">
-            ESTROQUE
+          <span className="font-bold text-2xl tracking-wide text-white">
+            Estroque
           </span>
         </div>
 
@@ -100,7 +100,7 @@ export const Login: React.FC = () => {
 
         {/* Footer info */}
         <div className="text-xs text-slate-500 z-10">
-          © {new Date().getFullYear()} ESTROQUE. Todos os direitos reservados.
+          © {new Date().getFullYear()} Estroque. Todos os direitos reservados.
         </div>
       </div>
 
@@ -111,11 +111,11 @@ export const Login: React.FC = () => {
             <div className="flex items-center gap-3 mb-4 lg:hidden">
               <img
                 src="/favicon.png"
-                alt="ESTROQUE"
+                alt="Estroque"
                 className="w-9 h-9 object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.35)]"
               />
-              <span className="font-bold text-xl tracking-widest text-white uppercase">
-                ESTROQUE
+              <span className="font-bold text-xl tracking-wide text-white">
+                Estroque
               </span>
             </div>
             <h2 className="text-2xl font-bold text-white">Acesso ao Sistema</h2>
