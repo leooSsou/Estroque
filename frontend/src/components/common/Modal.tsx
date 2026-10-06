@@ -64,17 +64,17 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-[#0D1917] border border-[rgba(142,182,155,0.22)] rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85),0_0_40px_rgba(16,185,129,0.18)] p-6 sm:p-7 z-10 animate-scale-in my-auto`}
+        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-[#000000] border border-white/[0.16] rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] p-6 sm:p-7 z-10 animate-scale-in my-auto`}
       >
-        <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-[rgba(142,182,155,0.12)]">
+        <div className="flex items-start justify-between gap-4 pb-4 mb-5 border-b border-white/[0.16]">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[#F3FBF6] tracking-tight">{title}</h3>
-            {subtitle && <p className="text-xs text-[#94A89E] mt-1">{subtitle}</p>}
+            <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">{title}</h3>
+            {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] active:scale-95 transition-all"
+            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.06] active:scale-95 transition-all"
             title="Fechar (Esc)"
           >
             <X className="w-5 h-5" />

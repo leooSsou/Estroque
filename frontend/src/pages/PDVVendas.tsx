@@ -512,18 +512,18 @@ export const PDVVendas: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Ponto de Venda (PDV)
           </h1>
-          <p className="text-xs text-[#8EB69B] mt-0.5">
-            Loja: <strong className="text-[#DAF1DE]">{activeLoja?.nome || 'Matriz'}</strong> • Operador: <strong className="text-[#DAF1DE]">{caixaTurno?.operador_nome || 'Operador'}</strong>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Loja: <strong className="text-slate-200">{activeLoja?.nome || 'Matriz'}</strong> • Operador: <strong className="text-slate-200">{caixaTurno?.operador_nome || 'Operador'}</strong>
           </p>
         </div>
 
         {/* Status Pill of Cash Shift */}
         <div className="flex items-center gap-2">
           {caixaTurno?.aberto ? (
-            <Badge variant="mint">
+            <Badge variant="emerald">
               <Unlock className="w-3.5 h-3.5 mr-1 inline" /> Caixa Aberto
             </Badge>
           ) : (
@@ -535,7 +535,7 @@ export const PDVVendas: React.FC = () => {
       </div>
 
       {/* 4-Tab Segmented Control Navigation */}
-      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark overflow-x-auto table-scrollbar">
+      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-bento-dark overflow-x-auto table-scrollbar">
         {[
           { id: 'CAIXA', label: 'Frente de Caixa', icon: ShoppingCart, count: cart.reduce((a, b) => a + b.quantidade, 0) },
           { id: 'ESPERA', label: 'Vendas em Espera', icon: PauseCircle, count: vendasEspera.length },
@@ -550,18 +550,18 @@ export const PDVVendas: React.FC = () => {
               onClick={() => setActiveTab(tab.id as PDVTab)}
               className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2.5 whitespace-nowrap active:scale-95 ${
                 isActive
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
-                  : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                  ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/25 scale-[1.02]'
+                  : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
               }`}
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
               {typeof tab.count === 'number' && tab.count > 0 && (
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                  className={`px-2 py-0.5 rounded-full text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-[#000000]/30 text-[#000000]'
-                      : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+                      ? 'bg-emerald-800 text-white'
+                      : 'bg-[#000000] text-slate-300 border border-white/[0.16]'
                   }`}
                 >
                   {tab.count}
@@ -580,20 +580,20 @@ export const PDVVendas: React.FC = () => {
           {/* Left 65%: Product Selection & Scanner */}
           <div className="lg:col-span-7 space-y-4">
             {/* Barcode Scanner & Search Bar */}
-            <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark space-y-3">
+            <div className="p-4 rounded-3xl bg-[#000000] border border-white/[0.16] shadow-bento-dark space-y-3">
               <div className="relative group">
-                <Barcode className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+                <Barcode className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Bipar leitor de código de barras ou pesquisar item..."
-                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
                 />
                 {search && (
                   <button
                     onClick={() => setSearch('')}
-                    className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-white/[0.08] transition-all active:scale-90"
                     title="Limpar busca"
                   >
                     <X className="w-4 h-4" />
@@ -602,7 +602,7 @@ export const PDVVendas: React.FC = () => {
               </div>
 
               {/* Quick Filter Pills */}
-              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-white/[0.16] overflow-x-auto table-scrollbar">
                 {[
                   { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
                   { id: 'DISPONIVEL', label: 'Em Estoque', count: counts.disponivel },
@@ -615,16 +615,16 @@ export const PDVVendas: React.FC = () => {
                       onClick={() => setCatalogFilter(pill.id as any)}
                       className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                         isActive
-                          ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
-                          : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                          ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                          : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                       }`}
                     >
                       <span>{pill.label}</span>
                       <span
-                        className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-all ${
+                        className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold transition-all ${
                           isActive
-                            ? 'bg-[#000000]/30 text-[#000000]'
-                            : 'bg-[#142522] text-[#8EB69B]'
+                            ? 'bg-emerald-800 text-white'
+                            : 'bg-[#000000] text-slate-400 border border-white/[0.14]'
                         }`}
                       >
                         {pill.count}
@@ -636,7 +636,7 @@ export const PDVVendas: React.FC = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
               {filteredProdutos.map((prod) => {
                 const stock = activeLoja?.id
                   ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
@@ -646,29 +646,29 @@ export const PDVVendas: React.FC = () => {
                   <div
                     key={prod.id}
                     onClick={() => handleAddToCart(prod)}
-                    className={`bg-[#0D1917] border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-250 hover:border-[#10B981]/50 group btn-press hover-lift ${
+                    className={`bg-[#000000] border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-250 group btn-press hover-lift ${
                       stock === 0
-                        ? 'opacity-40 border-red-500/20 pointer-events-none'
-                        : 'border-[rgba(142,182,155,0.18)] hover:bg-[#142522]/50 hover:shadow-glow-emerald'
+                        ? 'opacity-40 border-rose-500/20 pointer-events-none'
+                        : 'border-white/[0.16] hover:border-emerald-500/40 hover:bg-white/[0.04]'
                     }`}
                   >
                     <div>
-                      <div className="flex items-center justify-between text-xs text-[#A2B89B] mb-1.5 font-mono">
+                      <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
                         <span>{prod.sku}</span>
-                        <span className={stock === 0 ? 'text-red-400 font-extrabold' : 'text-[#DAF1DE] font-semibold'}>
+                        <span className={stock === 0 ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}>
                           {stock} un
                         </span>
                       </div>
-                      <h4 className="text-sm font-bold text-[#F3FBF6] line-clamp-2 mb-2.5 group-hover:text-[#10B981] transition-colors">
+                      <h4 className="text-sm font-bold text-white line-clamp-2 mb-2.5 group-hover:text-emerald-400 transition-colors">
                         {prod.nome}
                       </h4>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2.5 border-t border-[rgba(142,182,155,0.1)]">
-                      <span className="text-base font-extrabold text-[#10B981] font-mono">
+                    <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.14]">
+                      <span className="text-base font-bold text-emerald-400">
                         R$ {prod.preco_venda.toFixed(2)}
                       </span>
-                      <button className="w-8 h-8 rounded-xl bg-[#142522] group-hover:bg-[#10B981] group-hover:text-[#000000] flex items-center justify-center text-[#DAF1DE] transition-transform group-hover:scale-110">
+                      <button className="w-8 h-8 rounded-xl bg-[#000000] border border-white/[0.16] group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 flex items-center justify-center text-slate-300 transition-all group-hover:scale-110">
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -680,39 +680,39 @@ export const PDVVendas: React.FC = () => {
 
           {/* Right 35%: Active Cart & Checkout */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="bg-[#0D1917] border border-[rgba(142,182,155,0.18)] rounded-3xl p-5 shadow-bento-dark space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-[rgba(142,182,155,0.12)]">
+            <div className="bg-[#000000] border border-white/[0.16] rounded-3xl p-5 shadow-bento-dark space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-white/[0.16]">
                 <div className="flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5 text-[#10B981]" />
-                  <h3 className="text-base font-bold text-[#F3FBF6]">Carrinho de Venda</h3>
+                  <ShoppingCart className="w-5 h-5 text-emerald-400" />
+                  <h3 className="text-base font-bold text-white">Carrinho de Venda</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   {cart.length > 0 && (
                     <button
                       onClick={() => setPauseModalOpen(true)}
-                      className="px-3 py-1 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-amber-400 hover:text-amber-300 text-xs font-bold border border-amber-400/30 flex items-center gap-1.5 transition-all active:scale-95"
+                      className="px-3 py-1 rounded-xl bg-[#000000] hover:bg-amber-400/10 text-amber-400 hover:text-amber-300 text-xs font-bold border border-amber-400/30 flex items-center gap-1.5 transition-all active:scale-95"
                       title="Pausar esta venda e liberar o caixa"
                     >
                       <PauseCircle className="w-3.5 h-3.5" />
                       <span>Pausar Venda</span>
                     </button>
                   )}
-                  <span className="text-xs text-[#DAF1DE] font-mono font-bold bg-[#142522] px-2.5 py-1 rounded-full border border-[rgba(142,182,155,0.2)]">
+                  <span className="text-xs text-slate-300 font-bold bg-[#000000] px-2.5 py-1 rounded-full border border-white/[0.16]">
                     {cart.reduce((a, b) => a + b.quantidade, 0)} itens
                   </span>
                 </div>
               </div>
 
               {/* Customer Selector & Credit Limit Widget */}
-              <div className="space-y-2 p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.14)]">
-                <label className="flex items-center gap-1.5 text-xs font-semibold text-[#DAF1DE]">
-                  <UserCheck className="w-4 h-4 text-[#10B981]" />
+              <div className="space-y-2 p-3.5 rounded-2xl bg-[#000000] border border-white/[0.16]">
+                <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                  <UserCheck className="w-4 h-4 text-emerald-400" />
                   <span>Cliente / Titular do Crediário</span>
                 </label>
                 <select
                   value={selectedClienteId}
                   onChange={(e) => setSelectedClienteId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:outline-none font-medium"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:outline-none font-medium"
                 >
                   <option value="">Consumidor Final (Sem Crediário)</option>
                   {clientes.map((cli) => (
@@ -723,20 +723,20 @@ export const PDVVendas: React.FC = () => {
                 </select>
 
                 {selectedCliente && (
-                  <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] flex items-center justify-between text-xs">
+                  <div className="pt-2 border-t border-white/[0.14] flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-[#A2B89B] font-medium">Limite Disponível:</span>
+                      <span className="text-slate-400 font-medium">Limite Disponível:</span>
                       <div
-                        className={`font-mono font-extrabold text-sm ${
-                          limiteDisponivel <= 0 ? 'text-red-400' : 'text-[#10B981]'
+                        className={`font-bold text-sm ${
+                          limiteDisponivel <= 0 ? 'text-rose-400' : 'text-emerald-400'
                         }`}
                       >
                         R$ {limiteDisponivel.toFixed(2)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[#A2B89B] font-medium">Limite Total:</span>
-                      <div className="font-mono text-sm font-bold text-[#DAF1DE]">
+                      <span className="text-slate-400 font-medium">Limite Total:</span>
+                      <div className="text-sm font-bold text-white">
                         R$ {selectedCliente.limite_credito.toFixed(2)}
                       </div>
                     </div>
@@ -745,19 +745,19 @@ export const PDVVendas: React.FC = () => {
               </div>
 
               {/* Cart Items List */}
-              <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 divide-y divide-[rgba(142,182,155,0.2)] table-scrollbar">
+              <div className="max-h-64 overflow-y-auto space-y-2.5 pr-1 divide-y divide-white/[0.14] table-scrollbar">
                 {cart.length === 0 ? (
-                  <div className="text-center py-8 text-sm text-[#5E756B]">
+                  <div className="text-center py-8 text-sm text-slate-500">
                     Nenhum item adicionado ao carrinho ainda.
                   </div>
                 ) : (
                   cart.map((item) => (
                     <div key={item.produto.id} className="pt-2.5 flex items-center justify-between gap-3">
                       <div className="truncate flex-1">
-                        <div className="text-sm font-bold text-[#F3FBF6] truncate">
+                        <div className="text-sm font-bold text-white truncate">
                           {item.produto.nome}
                         </div>
-                        <div className="text-xs text-[#DAF1DE] font-mono font-medium mt-0.5">
+                        <div className="text-xs text-slate-400 font-medium mt-0.5">
                           R$ {item.preco_unitario.toFixed(2)} un
                         </div>
                       </div>
@@ -765,20 +765,20 @@ export const PDVVendas: React.FC = () => {
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                           onClick={() => updateQuantity(item.produto.id, -1)}
-                          className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] btn-press"
+                          className="w-8 h-8 rounded-xl bg-[#000000] hover:bg-white/[0.08] flex items-center justify-center text-slate-200 border border-white/[0.16] btn-press"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
-                        <span className="w-8 text-center text-sm font-mono font-extrabold text-[#F3FBF6]">
+                        <span className="w-8 text-center text-sm font-bold text-white">
                           {item.quantidade}
                         </span>
                         <button
                           onClick={() => updateQuantity(item.produto.id, 1)}
-                          className="w-8 h-8 rounded-xl bg-[#142522] hover:bg-[#163832] flex items-center justify-center text-[#10B981] border border-[rgba(142,182,155,0.2)] btn-press"
+                          className="w-8 h-8 rounded-xl bg-[#000000] hover:bg-emerald-500/15 flex items-center justify-center text-emerald-400 border border-white/[0.16] btn-press"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
-                        <span className="w-20 text-right font-mono font-extrabold text-sm md:text-base text-[#10B981]">
+                        <span className="w-20 text-right font-bold text-sm md:text-base text-emerald-400">
                           R$ {(item.quantidade * item.preco_unitario).toFixed(2)}
                         </span>
                       </div>
@@ -789,7 +789,7 @@ export const PDVVendas: React.FC = () => {
 
               {/* Payment Methods Selector */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-[#DAF1DE]">Forma de Pagamento</label>
+                <label className="block text-xs font-semibold text-slate-300">Forma de Pagamento</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
                   {[
                     { id: 'PIX', label: 'PIX', icon: QrCode },
@@ -806,8 +806,8 @@ export const PDVVendas: React.FC = () => {
                         onClick={() => setFormaPagamento(pm.id as FormaPagamento)}
                         className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold btn-press ${
                           formaPagamento === pm.id
-                            ? 'bg-[#10B981] text-[#000000] shadow-glow-emerald'
-                            : 'bg-[#000000] text-[#DAF1DE] border border-[rgba(142,182,155,0.18)] hover:bg-[#142522]'
+                            ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20'
+                            : 'bg-[#000000] text-slate-300 border border-white/[0.16] hover:bg-white/[0.06]'
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -820,14 +820,14 @@ export const PDVVendas: React.FC = () => {
 
               {/* Dinheiro Change Calculator */}
               {formaPagamento === 'DINHEIRO' && (
-                <div className="p-3.5 rounded-2xl bg-[#000000] border border-amber-400/25 space-y-3">
+                <div className="p-3.5 rounded-2xl bg-[#000000] border border-amber-500/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                       <Banknote className="w-4 h-4 text-amber-400" />
                       <span>Valor Recebido em Espécie</span>
                     </label>
-                    <div className="flex items-center gap-1 text-[11px] font-mono font-bold">
-                      <span className="text-[#8EB69B]">R$</span>
+                    <div className="flex items-center gap-1 text-[11px] font-bold">
+                      <span className="text-slate-400">R$</span>
                       <input
                         type="number"
                         min="0"
@@ -835,7 +835,7 @@ export const PDVVendas: React.FC = () => {
                         value={valorRecebido}
                         onChange={(e) => setValorRecebido(e.target.value === '' ? '' : parseFloat(e.target.value))}
                         placeholder={valorTotal.toFixed(2)}
-                        className="w-24 px-2 py-1 rounded-lg bg-[#0D1917] border border-[rgba(142,182,155,0.25)] text-right text-sm text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
+                        className="w-24 px-2 py-1 rounded-lg bg-[#000000] border border-white/[0.16] text-right text-sm text-white font-bold focus:border-amber-400 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -847,7 +847,7 @@ export const PDVVendas: React.FC = () => {
                         key={idx}
                         type="button"
                         onClick={() => setValorRecebido(sug)}
-                        className="px-2.5 py-1 rounded-lg bg-[#142522] hover:bg-[#163832] text-[11px] font-mono font-semibold text-[#DAF1DE] border border-[rgba(142,182,155,0.15)] active:scale-95"
+                        className="px-2.5 py-1 rounded-lg bg-[#000000] hover:bg-white/[0.08] text-[11px] font-semibold text-slate-300 border border-white/[0.16] active:scale-95"
                       >
                         {idx === 0 ? 'Exato' : `R$ ${sug}`}
                       </button>
@@ -855,15 +855,15 @@ export const PDVVendas: React.FC = () => {
                   </div>
 
                   {/* Troco Result */}
-                  <div className="pt-2 border-t border-[rgba(142,182,155,0.25)] flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#F3FBF6]">Troco a Devolver:</span>
-                    <span className="text-base font-mono font-extrabold text-[#10B981]">
+                  <div className="pt-2 border-t border-white/[0.16] flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Troco a Devolver:</span>
+                    <span className="text-base font-bold text-emerald-400">
                       R$ {troco.toFixed(2)}
                     </span>
                   </div>
 
                   {dinheiroInsuficiente && (
-                    <div className="text-[11px] text-red-400 font-medium">
+                    <div className="text-[11px] text-rose-400 font-medium">
                       ⚠️ Faltam R$ {(valorTotal - (numValorRecebido || 0)).toFixed(2)} para cobrir o total.
                     </div>
                   )}
@@ -872,8 +872,8 @@ export const PDVVendas: React.FC = () => {
 
               {/* Credit Limit Alert if Exceeded */}
               {crediarioExcedido && (
-                <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-xs text-red-300">
-                  <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-400" />
+                <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-2 text-xs text-rose-300">
+                  <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-400" />
                   <span>
                     {selectedCliente
                       ? `Valor total (R$ ${valorTotal.toFixed(2)}) ultrapassa o limite disponível do cliente (R$ ${limiteDisponivel.toFixed(2)})!`
@@ -883,28 +883,28 @@ export const PDVVendas: React.FC = () => {
               )}
 
               {/* Totals & Final Action Button */}
-              <div className="pt-3.5 border-t border-[rgba(142,182,155,0.28)] space-y-3">
-                <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.22)] space-y-2.5">
+              <div className="pt-3.5 border-t border-white/[0.16] space-y-3">
+                <div className="p-3.5 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-2.5">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-[#F3FBF6]">Subtotal:</span>
-                    <span className="font-mono text-base font-bold text-[#F3FBF6]">R$ {subtotal.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-300">Subtotal:</span>
+                    <span className="text-base font-bold text-white">R$ {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-[#DAF1DE]">Desconto Aplicado:</span>
+                    <span className="font-semibold text-slate-300">Desconto Aplicado:</span>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-mono text-[#8EB69B]">R$</span>
+                      <span className="text-xs text-slate-400">R$</span>
                       <input
                         type="number"
                         min="0"
                         value={desconto}
                         onChange={(e) => setDesconto(parseFloat(e.target.value) || 0)}
-                        className="w-24 px-2.5 py-1 rounded-xl bg-[#0D1917] border border-[rgba(142,182,155,0.25)] font-mono text-right text-sm text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
+                        className="w-24 px-2.5 py-1 rounded-xl bg-[#000000] border border-white/[0.16] text-right text-sm text-white font-bold focus:border-emerald-500 focus:outline-none"
                       />
                     </div>
                   </div>
-                  <div className="pt-2.5 border-t border-[rgba(142,182,155,0.25)] flex items-center justify-between text-base font-bold text-[#F3FBF6]">
+                  <div className="pt-2.5 border-t border-white/[0.16] flex items-center justify-between text-base font-bold text-white">
                     <span>Total a Pagar:</span>
-                    <span className="text-3xl font-mono font-extrabold text-[#10B981] drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+                    <span className="text-3xl font-bold text-emerald-400">
                       R$ {valorTotal.toFixed(2)}
                     </span>
                   </div>
@@ -913,7 +913,7 @@ export const PDVVendas: React.FC = () => {
                 <button
                   onClick={handleFinalizeSale}
                   disabled={cart.length === 0 || crediarioExcedido || Boolean(dinheiroInsuficiente)}
-                  className="w-full py-3.5 px-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] text-sm md:text-base font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
+                  className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-base font-bold shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
                 >
                   <CheckCircle2 className="w-5 h-5" />
                   <span>Finalizar Venda & Emitir Cupom</span>
@@ -929,14 +929,14 @@ export const PDVVendas: React.FC = () => {
       {/* ========================================================================= */}
       {activeTab === 'ESPERA' && (
         <div className="space-y-4">
-          <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-4 rounded-3xl bg-[#000000] border border-white/[0.16] shadow-bento-dark flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-amber-400">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
                 <PauseCircle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#F3FBF6]">Fila de Vendas em Espera (Hold)</h3>
-                <p className="text-xs text-[#8EB69B]">
+                <h3 className="text-base font-bold text-white">Fila de Vendas em Espera (Hold)</h3>
+                <p className="text-xs text-slate-400">
                   Atendimentos pausados para liberar o caixa. Retome a qualquer instante.
                 </p>
               </div>
@@ -950,9 +950,9 @@ export const PDVVendas: React.FC = () => {
           {vendasEspera.length === 0 ? (
             <BentoCard>
               <div className="text-center py-12 space-y-3">
-                <Clock className="w-10 h-10 text-[#5E756B] mx-auto" />
-                <h4 className="text-base font-bold text-[#F3FBF6]">Nenhuma venda em espera no momento</h4>
-                <p className="text-xs text-[#8EB69B] max-w-md mx-auto">
+                <Clock className="w-10 h-10 text-slate-500 mx-auto" />
+                <h4 className="text-base font-bold text-white">Nenhuma venda em espera no momento</h4>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
                   Para pausar um atendimento em andamento e liberar o caixa para outro cliente, clique no botão <strong>"Pausar Venda"</strong> no carrinho.
                 </p>
               </div>
@@ -962,41 +962,41 @@ export const PDVVendas: React.FC = () => {
               {vendasEspera.map((esp) => (
                 <div
                   key={esp.id}
-                  className="bg-[#0D1917] border border-[rgba(142,182,155,0.18)] rounded-3xl p-5 shadow-bento-dark space-y-4 flex flex-col justify-between hover:border-[rgba(142,182,155,0.3)] transition-all"
+                  className="bg-[#000000] border border-white/[0.16] rounded-3xl p-5 shadow-bento-dark space-y-4 flex flex-col justify-between hover:border-white/[0.24] transition-all"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/30">
+                      <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-full border border-amber-400/30">
                         {esp.codigo}
                       </span>
-                      <span className="text-xs font-mono text-[#8EB69B]">
+                      <span className="text-xs text-slate-400">
                         {new Date(esp.criado_em).toLocaleTimeString('pt-BR')}
                       </span>
                     </div>
 
                     <div>
-                      <div className="text-xs text-[#A2B89B]">Cliente:</div>
-                      <div className="text-sm font-bold text-[#F3FBF6]">
+                      <div className="text-xs text-slate-400">Cliente:</div>
+                      <div className="text-sm font-bold text-white">
                         {esp.cliente_nome || 'Consumidor Final'}
                       </div>
                     </div>
 
                     {esp.observacao && (
-                      <div className="p-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.1)] text-xs text-[#DAF1DE] italic">
+                      <div className="p-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-slate-300 italic">
                         "{esp.observacao}"
                       </div>
                     )}
 
                     {/* Items preview */}
-                    <div className="space-y-1 pt-2 border-t border-[rgba(142,182,155,0.2)]">
-                      <div className="text-xs font-semibold text-[#DAF1DE]">Itens no Pedido:</div>
-                      <div className="text-xs text-[#DAF1DE] space-y-0.5 max-h-24 overflow-y-auto table-scrollbar">
+                    <div className="space-y-1 pt-2 border-t border-white/[0.14]">
+                      <div className="text-xs font-semibold text-slate-300">Itens no Pedido:</div>
+                      <div className="text-xs text-slate-400 space-y-0.5 max-h-24 overflow-y-auto table-scrollbar">
                         {esp.itens.map((it, idx) => (
                           <div key={idx} className="flex justify-between">
                             <span className="truncate pr-2">
                               {it.quantidade}x {it.produto.nome}
                             </span>
-                            <span className="font-mono text-[#DAF1DE] font-semibold">
+                            <span className="text-slate-200 font-semibold">
                               R$ {(it.quantidade * it.preco_unitario).toFixed(2)}
                             </span>
                           </div>
@@ -1005,10 +1005,10 @@ export const PDVVendas: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-[rgba(142,182,155,0.25)] space-y-3">
+                  <div className="pt-3 border-t border-white/[0.16] space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#F3FBF6]">Valor Total:</span>
-                      <span className="text-xl font-mono font-extrabold text-[#10B981]">
+                      <span className="text-xs font-bold text-white">Valor Total:</span>
+                      <span className="text-xl font-bold text-emerald-400">
                         R$ {esp.valor_total.toFixed(2)}
                       </span>
                     </div>
@@ -1016,7 +1016,7 @@ export const PDVVendas: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleDescartarVendaEspera(esp.id, esp.codigo)}
-                        className="px-3 py-2.5 rounded-xl bg-[#142522] hover:bg-red-500/20 text-[#8EB69B] hover:text-red-400 border border-[rgba(142,182,155,0.18)] hover:border-red-400/40 text-xs font-bold transition-all active:scale-95"
+                        className="px-3 py-2.5 rounded-xl bg-[#000000] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/[0.16] hover:border-rose-400/40 text-xs font-bold transition-all active:scale-95"
                         title="Descartar venda"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1024,7 +1024,7 @@ export const PDVVendas: React.FC = () => {
 
                       <button
                         onClick={() => handleRetomarVendaEspera(esp)}
-                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 active:scale-95"
                       >
                         <PlayCircle className="w-4 h-4" />
                         <span>Retomar no Caixa</span>
@@ -1044,20 +1044,20 @@ export const PDVVendas: React.FC = () => {
       {activeTab === 'HISTORICO' && (
         <div className="space-y-4">
           {/* Filter and Search */}
-          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-3xl bg-[#000000] border border-white/[0.16] shadow-bento-dark">
             <div className="relative flex-1">
-              <Search className="w-5 h-5 text-[#8EB69B] absolute left-4 top-3.5" />
+              <Search className="w-5 h-5 text-slate-400 absolute left-4 top-3.5" />
               <input
                 type="text"
                 value={searchHistorico}
                 onChange={(e) => setSearchHistorico(e.target.value)}
                 placeholder="Buscar venda por código, cliente ou forma de pagamento..."
-                className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+                className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
               />
               {searchHistorico && (
                 <button
                   onClick={() => setSearchHistorico('')}
-                  className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6]"
+                  className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1065,15 +1065,15 @@ export const PDVVendas: React.FC = () => {
             </div>
 
             {/* Quick Status Filter */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] shadow-inner">
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-white/[0.16]">
               {(['TODAS', 'CONCLUIDA', 'CANCELADA'] as const).map((st) => (
                 <button
                   key={st}
                   onClick={() => setStatusFilterHistorico(st)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95 ${
                     statusFilterHistorico === st
-                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald'
-                      : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
+                      ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
                   {st === 'TODAS' ? 'Todas' : st === 'CONCLUIDA' ? 'Concluídas' : 'Estornadas'}
@@ -1088,10 +1088,10 @@ export const PDVVendas: React.FC = () => {
                   setRelatorioPDFMode('DIARIO');
                   setRelatorioPDFModalOpen(true);
                 }}
-                className="h-10 px-4 rounded-xl bg-[#142522] hover:bg-[#1B332E] border border-[rgba(142,182,155,0.2)] text-xs font-bold text-[#DAF1DE] hover:text-[#F3FBF6] flex items-center gap-2 active:scale-95 transition-all shadow-sm cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white flex items-center gap-2 active:scale-95 transition-all shadow-sm cursor-pointer"
                 title="Gerar PDF com Fechamento Diário de Vendas"
               >
-                <FileText className="w-3.5 h-3.5 text-[#10B981]" />
+                <FileText className="w-3.5 h-3.5 text-emerald-400" />
                 <span>PDF do Dia</span>
               </button>
 
@@ -1100,10 +1100,10 @@ export const PDVVendas: React.FC = () => {
                   setRelatorioPDFMode('MENSAL');
                   setRelatorioPDFModalOpen(true);
                 }}
-                className="h-10 px-4 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-xs font-bold flex items-center gap-2 shadow-glow-emerald active:scale-95 transition-all cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-2 shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
                 title="Gerar PDF com Relatório Consolidado Mensal de Vendas"
               >
-                <FileText className="w-3.5 h-3.5 text-[#000000]" />
+                <FileText className="w-3.5 h-3.5 text-white" />
                 <span>PDF do Mês</span>
               </button>
             </div>
@@ -1113,8 +1113,8 @@ export const PDVVendas: React.FC = () => {
           <BentoCard>
             <div className="overflow-x-auto table-scrollbar pb-2">
               <table className="w-full text-left min-w-[1100px]">
-                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <thead className="bg-[#000000] border-b border-white/[0.16]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                     <th className="py-3.5 px-4 whitespace-nowrap">Código / Cupom</th>
                     <th className="py-3.5 px-4 whitespace-nowrap">Data / Hora</th>
                     <th className="py-3.5 px-4 whitespace-nowrap">Cliente</th>
@@ -1125,39 +1125,39 @@ export const PDVVendas: React.FC = () => {
                     <th className="py-3.5 px-4 whitespace-nowrap text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+                <tbody className="divide-y divide-white/[0.14]">
                   {filteredHistorico.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-sm text-[#5E756B] whitespace-nowrap">
+                      <td colSpan={8} className="py-12 text-center text-sm text-slate-500 whitespace-nowrap">
                         Nenhuma venda encontrada para os filtros selecionados.
                       </td>
                     </tr>
                   ) : (
                     filteredHistorico.map((v) => (
-                      <tr key={v.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
-                        <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#F3FBF6] group-hover:text-[#10B981] whitespace-nowrap">
+                      <tr key={v.id} className="hover:bg-white/[0.02] transition-colors group whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs font-bold text-white group-hover:text-emerald-400 whitespace-nowrap">
                           #{v.id.slice(0, 8)}
                         </td>
-                        <td className="py-3.5 px-4 text-xs font-mono text-[#A2B89B] whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
                           {new Date(v.data_venda).toLocaleString('pt-BR')}
                         </td>
-                        <td className="py-3.5 px-4 text-sm font-semibold text-[#DAF1DE] whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-sm font-semibold text-slate-200 whitespace-nowrap">
                           {v.cliente_nome || 'Consumidor Final'}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className="px-2.5 py-1 rounded-lg bg-[#142522] border border-[rgba(142,182,155,0.15)] text-xs font-mono text-[#DAF1DE]">
+                          <span className="px-2.5 py-1 rounded-lg bg-[#000000] border border-white/[0.16] text-xs text-slate-300">
                             {v.forma_pagamento}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 font-mono text-xs text-[#F3FBF6] text-center whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs text-white text-center whitespace-nowrap">
                           {v.itens?.reduce((acc, it) => acc + it.quantidade, 0) || 0} un
                         </td>
-                        <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
                           R$ {v.valor_total.toFixed(2)}
                         </td>
                         <td className="py-3.5 px-4 text-center whitespace-nowrap">
                           {v.status === 'CONCLUIDA' ? (
-                            <Badge variant="mint">Concluída</Badge>
+                            <Badge variant="emerald">Concluída</Badge>
                           ) : (
                             <Badge variant="danger">Cancelada / Estornada</Badge>
                           )}
@@ -1169,7 +1169,7 @@ export const PDVVendas: React.FC = () => {
                                 setReceiptSale(v);
                                 setReceiptModalOpen(true);
                               }}
-                              className="px-2.5 py-1.5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-xs font-semibold text-[#DAF1DE] flex items-center gap-1 border border-[rgba(142,182,155,0.18)] active:scale-95"
+                              className="px-2.5 py-1.5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-200 hover:text-white flex items-center gap-1 border border-white/[0.16] active:scale-95"
                               title="Reimprimir Comprovante"
                             >
                               <Printer className="w-3.5 h-3.5" />
@@ -1182,7 +1182,7 @@ export const PDVVendas: React.FC = () => {
                                   setVendaParaEstorno(v);
                                   setEstornoModalOpen(true);
                                 }}
-                                className="px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-xs font-semibold text-red-400 flex items-center gap-1 border border-red-500/30 active:scale-95"
+                                className="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold text-rose-400 flex items-center gap-1 border border-rose-500/30 active:scale-95"
                                 title="Estornar Venda e Devolver Itens ao Estoque"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -1207,18 +1207,18 @@ export const PDVVendas: React.FC = () => {
       {activeTab === 'OPERACAO_CAIXA' && (
         <div className="space-y-6">
           {/* Shift Status Banner & Action Buttons */}
-          <div className="p-5 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-5 rounded-3xl bg-[#000000] border border-white/[0.16] shadow-bento-dark flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-[#F3FBF6]">Turno Atual de Caixa</span>
+                <span className="text-base font-bold text-white">Turno Atual de Caixa</span>
                 {caixaTurno?.aberto ? (
-                  <Badge variant="mint">Aberto</Badge>
+                  <Badge variant="emerald">Aberto</Badge>
                 ) : (
                   <Badge variant="danger">Fechado</Badge>
                 )}
               </div>
-              <p className="text-xs text-[#8EB69B]">
-                Aberto em: {caixaTurno?.data_abertura ? new Date(caixaTurno.data_abertura).toLocaleString('pt-BR') : '—'} • Responsável: <strong className="text-[#DAF1DE]">{caixaTurno?.operador_nome || 'Operador'}</strong>
+              <p className="text-xs text-slate-400">
+                Aberto em: {caixaTurno?.data_abertura ? new Date(caixaTurno.data_abertura).toLocaleString('pt-BR') : '—'} • Responsável: <strong className="text-slate-200">{caixaTurno?.operador_nome || 'Operador'}</strong>
               </p>
             </div>
 
@@ -1227,7 +1227,7 @@ export const PDVVendas: React.FC = () => {
                 <>
                   <button
                     onClick={() => setSuprimentoModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-[#10B981] font-bold text-xs border border-[#10B981]/30 flex items-center gap-1.5 active:scale-95"
+                    className="px-4 py-2 rounded-xl bg-[#000000] hover:bg-emerald-500/10 text-emerald-400 font-bold text-xs border border-emerald-500/30 flex items-center gap-1.5 active:scale-95"
                   >
                     <ArrowUpRight className="w-4 h-4" />
                     <span>Suprimento (+)</span>
@@ -1235,7 +1235,7 @@ export const PDVVendas: React.FC = () => {
 
                   <button
                     onClick={() => setSangriaModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-amber-400 font-bold text-xs border border-amber-400/30 flex items-center gap-1.5 active:scale-95"
+                    className="px-4 py-2 rounded-xl bg-[#000000] hover:bg-amber-400/10 text-amber-400 font-bold text-xs border border-amber-400/30 flex items-center gap-1.5 active:scale-95"
                   >
                     <ArrowDownRight className="w-4 h-4" />
                     <span>Sangria (-)</span>
@@ -1243,7 +1243,7 @@ export const PDVVendas: React.FC = () => {
 
                   <button
                     onClick={() => setFechamentoModalOpen(true)}
-                    className="px-5 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-400 font-bold text-xs border border-red-500/40 flex items-center gap-1.5 active:scale-95"
+                    className="px-5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 font-bold text-xs border border-rose-500/40 flex items-center gap-1.5 active:scale-95"
                   >
                     <Lock className="w-4 h-4" />
                     <span>Fechar Caixa (Turno)</span>
@@ -1252,7 +1252,7 @@ export const PDVVendas: React.FC = () => {
               ) : (
                 <button
                   onClick={() => setAberturaModalOpen(true)}
-                  className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald flex items-center gap-2 active:scale-95 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 flex items-center gap-2 active:scale-95 cursor-pointer"
                 >
                   <Unlock className="w-4 h-4" />
                   <span>Abrir Novo Turno</span>
@@ -1264,10 +1264,10 @@ export const PDVVendas: React.FC = () => {
                   setRelatorioPDFMode('DIARIO');
                   setRelatorioPDFModalOpen(true);
                 }}
-                className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-[#DAF1DE] hover:text-[#F3FBF6] font-bold text-xs border border-[rgba(142,182,155,0.2)] flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white font-bold text-xs border border-white/[0.16] flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
                 title="Gerar e Imprimir Relatório em PDF do Fechamento de Caixa"
               >
-                <FileText className="w-4 h-4 text-[#10B981]" />
+                <FileText className="w-4 h-4 text-emerald-400" />
                 <span>PDF do Turno</span>
               </button>
             </div>
@@ -1275,44 +1275,44 @@ export const PDVVendas: React.FC = () => {
 
           {/* StatCards of Drawer Balance */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
-            <div className="p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.15)] space-y-1">
-              <span className="text-[11px] font-semibold text-[#8EB69B]">Fundo Inicial</span>
-              <div className="font-mono text-lg font-bold text-[#F3FBF6]">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-1">
+              <span className="text-[11px] font-semibold text-slate-400">Fundo Inicial</span>
+              <div className="text-lg font-bold text-white">
                 R$ {drawerStats.fundo.toFixed(2)}
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.15)] space-y-1">
-              <span className="text-[11px] font-semibold text-[#8EB69B]">Vendas em Dinheiro</span>
-              <div className="font-mono text-lg font-bold text-[#10B981]">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-1">
+              <span className="text-[11px] font-semibold text-slate-400">Vendas em Dinheiro</span>
+              <div className="text-lg font-bold text-emerald-400">
                 R$ {drawerStats.vendasDinheiro.toFixed(2)}
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.15)] space-y-1">
-              <span className="text-[11px] font-semibold text-[#8EB69B]">Cartão / PIX / Cred.</span>
-              <div className="font-mono text-lg font-bold text-[#DAF1DE]">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-1">
+              <span className="text-[11px] font-semibold text-slate-400">Cartão / PIX / Cred.</span>
+              <div className="text-lg font-bold text-purple-400">
                 R$ {drawerStats.vendasOutras.toFixed(2)}
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.15)] space-y-1">
-              <span className="text-[11px] font-semibold text-[#8EB69B]">Suprimentos (+)</span>
-              <div className="font-mono text-lg font-bold text-emerald-400">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-1">
+              <span className="text-[11px] font-semibold text-slate-400">Suprimentos (+)</span>
+              <div className="text-lg font-bold text-emerald-400">
                 R$ {drawerStats.suprimentos.toFixed(2)}
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.15)] space-y-1">
-              <span className="text-[11px] font-semibold text-[#8EB69B]">Sangrias (-)</span>
-              <div className="font-mono text-lg font-bold text-amber-400">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-1">
+              <span className="text-[11px] font-semibold text-slate-400">Sangrias (-)</span>
+              <div className="text-lg font-bold text-amber-400">
                 R$ {drawerStats.sangrias.toFixed(2)}
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#000000] border border-[#10B981]/40 shadow-glow-emerald space-y-1">
-              <span className="text-[11px] font-bold text-[#10B981]">Esperado na Gaveta</span>
-              <div className="font-mono text-xl font-extrabold text-[#10B981]">
+            <div className="p-4 rounded-2xl bg-[#000000] border border-emerald-500/40 shadow-sm space-y-1">
+              <span className="text-[11px] font-bold text-emerald-400">Esperado na Gaveta</span>
+              <div className="text-xl font-bold text-emerald-400">
                 R$ {drawerStats.saldoEsperadoGaveta.toFixed(2)}
               </div>
             </div>
@@ -1320,13 +1320,13 @@ export const PDVVendas: React.FC = () => {
 
           {/* Drawer Operations Table */}
           <BentoCard>
-            <div className="p-2 border-b border-[rgba(142,182,155,0.12)] mb-3">
-              <h4 className="text-sm font-bold text-[#F3FBF6]">Movimentações da Gaveta de Dinheiro</h4>
+            <div className="p-2 border-b border-white/[0.16] mb-3">
+              <h4 className="text-sm font-bold text-white">Movimentações da Gaveta de Dinheiro</h4>
             </div>
             <div className="overflow-x-auto table-scrollbar pb-2">
               <table className="w-full text-left min-w-[900px]">
-                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <thead className="bg-[#000000] border-b border-white/[0.16]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                     <th className="py-3 px-4 whitespace-nowrap">Data / Horário</th>
                     <th className="py-3 px-4 whitespace-nowrap">Tipo de Operação</th>
                     <th className="py-3 px-4 whitespace-nowrap">Valor</th>
@@ -1334,32 +1334,32 @@ export const PDVVendas: React.FC = () => {
                     <th className="py-3 px-4 whitespace-nowrap">Motivo / Justificativa</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+                <tbody className="divide-y divide-white/[0.14]">
                   {(caixaTurno?.operacoes || []).length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-xs text-[#5E756B] whitespace-nowrap">
+                      <td colSpan={5} className="py-8 text-center text-xs text-slate-500 whitespace-nowrap">
                         Nenhuma operação de caixa registrada neste turno.
                       </td>
                     </tr>
                   ) : (
                     caixaTurno?.operacoes.map((op) => (
-                      <tr key={op.id} className="hover:bg-[#142522]/50 transition-colors whitespace-nowrap">
-                        <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                      <tr key={op.id} className="hover:bg-white/[0.02] transition-colors whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
                           {new Date(op.data_hora).toLocaleString('pt-BR')}
                         </td>
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          {op.tipo === 'ABERTURA' && <Badge variant="blue">Abertura</Badge>}
-                          {op.tipo === 'SUPRIMENTO' && <Badge variant="mint">Suprimento (+)</Badge>}
+                          {op.tipo === 'ABERTURA' && <Badge variant="emerald">Abertura</Badge>}
+                          {op.tipo === 'SUPRIMENTO' && <Badge variant="emerald">Suprimento (+)</Badge>}
                           {op.tipo === 'SANGRIA' && <Badge variant="warning">Sangria (-)</Badge>}
                           {op.tipo === 'FECHAMENTO' && <Badge variant="neutral">Fechamento</Badge>}
                         </td>
-                        <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#F3FBF6] whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
                           R$ {op.valor.toFixed(2)}
                         </td>
-                        <td className="py-3.5 px-4 text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs font-semibold text-slate-200 whitespace-nowrap">
                           {op.operador_nome}
                         </td>
-                        <td className="py-3.5 px-4 text-xs text-[#DAF1DE] whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs text-slate-300 whitespace-nowrap">
                           {op.motivo}
                         </td>
                       </tr>
@@ -1384,33 +1384,33 @@ export const PDVVendas: React.FC = () => {
         subtitle="Reter venda temporariamente para atender outro cliente"
       >
         <div className="space-y-4">
-          <p className="text-xs text-[#DAF1DE]">
+          <p className="text-xs text-slate-300">
             Os itens e o cliente atual serão salvos na aba <strong>"Vendas em Espera"</strong>. O caixa ficará imediatamente limpo e disponível para novas vendas.
           </p>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">Observação ou Referência do Cliente (Opcional):</label>
+            <label className="text-xs font-semibold text-slate-300">Observação ou Referência do Cliente (Opcional):</label>
             <input
               type="text"
               value={pauseObservacao}
               onChange={(e) => setPauseObservacao(e.target.value)}
               placeholder="Ex: Foi buscar o cartão no carro, aguardando aprovação..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-amber-400 focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setPauseModalOpen(false)}
-              className="h-10 px-4 rounded-xl bg-[#142522] text-xs font-semibold text-[#94A89E] hover:text-[#F3FBF6]"
+              className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16] transition-all"
             >
               Cancelar
             </button>
             <button
               type="button"
               onClick={handleConfirmPauseSale}
-              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold shadow-md shadow-amber-500/25 flex items-center gap-1.5 active:scale-95"
             >
               <PauseCircle className="w-4 h-4" />
               <span>Confirmar e Pausar</span>
@@ -1427,8 +1427,8 @@ export const PDVVendas: React.FC = () => {
         subtitle={vendaParaEstorno ? `Cupom #${vendaParaEstorno.id.slice(0, 8)}` : ''}
       >
         <div className="space-y-4">
-          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 space-y-2 text-xs text-red-300">
-            <div className="flex items-center gap-2 font-bold text-red-400 text-sm">
+          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 space-y-2 text-xs text-rose-300">
+            <div className="flex items-center gap-2 font-bold text-rose-400 text-sm">
               <AlertTriangle className="w-5 h-5 flex-shrink-0" />
               <span>Atenção: Ação com impacto em estoque e financeiro!</span>
             </div>
@@ -1444,16 +1444,16 @@ export const PDVVendas: React.FC = () => {
             </ul>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               onClick={() => setEstornoModalOpen(false)}
-              className="h-10 px-4 rounded-xl bg-[#142522] text-xs font-semibold text-[#94A89E] hover:text-[#F3FBF6]"
+              className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16] transition-all"
             >
               Cancelar
             </button>
             <button
               onClick={handleConfirmarEstorno}
-              className="h-10 px-5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 flex items-center gap-1.5 active:scale-95"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Confirmar Estorno</span>
@@ -1471,7 +1471,7 @@ export const PDVVendas: React.FC = () => {
       >
         <form onSubmit={handleRegistrarSangria} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">Valor da Retirada (R$):</label>
+            <label className="text-xs font-semibold text-slate-300">Valor da Retirada (R$):</label>
             <input
               type="number"
               step="0.01"
@@ -1480,33 +1480,33 @@ export const PDVVendas: React.FC = () => {
               value={sangriaValor}
               onChange={(e) => setSangriaValor(e.target.value === '' ? '' : parseFloat(e.target.value))}
               placeholder="0,00"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-base font-bold text-white focus:border-amber-400 focus:outline-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">Motivo / Destino:</label>
+            <label className="text-xs font-semibold text-slate-300">Motivo / Destino:</label>
             <input
               type="text"
               required
               value={sangriaMotivo}
               onChange={(e) => setSangriaMotivo(e.target.value)}
               placeholder="Ex: Recolhimento para cofre central"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-amber-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-amber-400 focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setSangriaModalOpen(false)}
-              className="h-10 px-4 rounded-xl bg-[#142522] text-xs font-semibold text-[#94A89E] hover:text-[#F3FBF6]"
+              className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16] transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold shadow-md shadow-amber-500/25 flex items-center gap-1.5 active:scale-95"
             >
               <ArrowDownRight className="w-4 h-4" />
               <span>Registrar Sangria</span>
@@ -1524,7 +1524,7 @@ export const PDVVendas: React.FC = () => {
       >
         <form onSubmit={handleRegistrarSuprimento} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">Valor do Aporte (R$):</label>
+            <label className="text-xs font-semibold text-slate-300">Valor do Aporte (R$):</label>
             <input
               type="number"
               step="0.01"
@@ -1533,33 +1533,33 @@ export const PDVVendas: React.FC = () => {
               value={suprimentoValor}
               onChange={(e) => setSuprimentoValor(e.target.value === '' ? '' : parseFloat(e.target.value))}
               placeholder="0,00"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-base font-bold text-white focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">Motivo / Origem:</label>
+            <label className="text-xs font-semibold text-slate-300">Motivo / Origem:</label>
             <input
               type="text"
               required
               value={suprimentoMotivo}
               onChange={(e) => setSuprimentoMotivo(e.target.value)}
               placeholder="Ex: Troco inicial extra em moedas e notas"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setSuprimentoModalOpen(false)}
-              className="h-10 px-4 rounded-xl bg-[#142522] text-xs font-semibold text-[#94A89E] hover:text-[#F3FBF6]"
+              className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16] transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 active:scale-95"
             >
               <ArrowUpRight className="w-4 h-4" />
               <span>Registrar Suprimento</span>
@@ -1576,23 +1576,23 @@ export const PDVVendas: React.FC = () => {
         subtitle="Auditoria e encerramento do turno de trabalho"
       >
         <form onSubmit={handleFecharTurno} className="space-y-4">
-          <div className="p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.14)] space-y-2 text-xs">
-            <div className="flex justify-between text-[#A2B89B]">
+          <div className="p-3.5 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-2 text-xs">
+            <div className="flex justify-between text-slate-400">
               <span>Saldo Calculado pelo Sistema:</span>
-              <span className="font-mono font-bold text-[#F3FBF6]">
+              <span className="font-bold text-white">
                 R$ {drawerStats.saldoEsperadoGaveta.toFixed(2)}
               </span>
             </div>
             {typeof saldoContado === 'number' && (
-              <div className="flex justify-between border-t border-[rgba(142,182,155,0.1)] pt-2 font-bold">
-                <span>Diferença / Quebra de Caixa:</span>
+              <div className="flex justify-between border-t border-white/[0.16] pt-2 font-bold">
+                <span className="text-slate-300">Diferença / Quebra de Caixa:</span>
                 <span
-                  className={`font-mono text-sm ${
+                  className={`text-sm ${
                     saldoContado - drawerStats.saldoEsperadoGaveta === 0
-                      ? 'text-[#10B981]'
+                      ? 'text-emerald-400'
                       : saldoContado - drawerStats.saldoEsperadoGaveta < 0
-                      ? 'text-red-400'
-                      : 'text-blue-400'
+                      ? 'text-rose-400'
+                      : 'text-emerald-400'
                   }`}
                 >
                   {saldoContado - drawerStats.saldoEsperadoGaveta >= 0 ? '+' : ''}
@@ -1603,7 +1603,7 @@ export const PDVVendas: React.FC = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">
+            <label className="text-xs font-semibold text-slate-300">
               Saldo Físico em Gaveta (Contagem Cega):
             </label>
             <input
@@ -1614,32 +1614,32 @@ export const PDVVendas: React.FC = () => {
               value={saldoContado}
               onChange={(e) => setSaldoContado(e.target.value === '' ? '' : parseFloat(e.target.value))}
               placeholder="Informe o total apurado em dinheiro"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-red-400 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-base font-bold text-white focus:border-rose-400 focus:outline-none"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">Observações do Fechamento:</label>
+            <label className="text-xs font-semibold text-slate-300">Observações do Fechamento:</label>
             <textarea
               rows={2}
               value={fechamentoObservacao}
               onChange={(e) => setFechamentoObservacao(e.target.value)}
               placeholder="Justificativa para divergência ou recados para o próximo turno..."
-              className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-xs text-[#F3FBF6] focus:border-red-400 focus:outline-none"
+              className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white focus:border-rose-400 focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setFechamentoModalOpen(false)}
-              className="h-10 px-4 rounded-xl bg-[#142522] text-xs font-semibold text-[#94A89E] hover:text-[#F3FBF6]"
+              className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16] transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 flex items-center gap-1.5 active:scale-95"
             >
               <Lock className="w-4 h-4" />
               <span>Confirmar Fechamento</span>
@@ -1657,7 +1657,7 @@ export const PDVVendas: React.FC = () => {
       >
         <form onSubmit={handleAbrirTurno} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#A2B89B]">Fundo Inicial de Troco (R$):</label>
+            <label className="text-xs font-semibold text-slate-300">Fundo Inicial de Troco (R$):</label>
             <input
               type="number"
               step="0.01"
@@ -1665,21 +1665,21 @@ export const PDVVendas: React.FC = () => {
               required
               value={aberturaFundo}
               onChange={(e) => setAberturaFundo(e.target.value === '' ? '' : parseFloat(e.target.value))}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-base font-bold text-white focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setAberturaModalOpen(false)}
-              className="h-10 px-4 rounded-xl bg-[#142522] text-xs font-semibold text-[#94A89E] hover:text-[#F3FBF6]"
+              className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16] transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] text-xs font-bold shadow-glow-emerald flex items-center gap-1.5 active:scale-95"
+              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 active:scale-95"
             >
               <Unlock className="w-4 h-4" />
               <span>Abrir Caixa</span>
@@ -1696,33 +1696,33 @@ export const PDVVendas: React.FC = () => {
         subtitle={`Transação #${receiptSale?.id.slice(0, 8)}`}
       >
         <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.25)] font-mono text-xs space-y-3">
-            <div className="text-center border-b border-[rgba(142,182,155,0.2)] pb-3">
-              <div className="text-sm font-extrabold text-[#F3FBF6]">ESTROQUE ENTERPRISE</div>
-              <div className="text-[11px] text-[#94A89E]">{activeLoja?.nome || 'Loja Matriz'}</div>
-              <div className="text-[10px] text-[#5E756B]">{activeLoja?.cnpj || '12.345.678/0001-90'}</div>
-              <div className="text-[10px] text-[#8EB69B] mt-1">
+          <div className="p-6 rounded-2xl bg-[#000000] border border-white/[0.16] text-xs space-y-3">
+            <div className="text-center border-b border-white/[0.16] pb-3">
+              <div className="text-sm font-bold text-white">ESTROQUE ENTERPRISE</div>
+              <div className="text-[11px] text-slate-400">{activeLoja?.nome || 'Loja Matriz'}</div>
+              <div className="text-[10px] text-slate-500">{activeLoja?.cnpj || '12.345.678/0001-90'}</div>
+              <div className="text-[10px] text-slate-400 mt-1">
                 {receiptSale?.data_venda ? new Date(receiptSale.data_venda).toLocaleString('pt-BR') : ''}
               </div>
             </div>
 
-            <div className="space-y-1 divide-y divide-[rgba(142,182,155,0.18)]">
+            <div className="space-y-1 divide-y divide-white/[0.14]">
               {receiptSale?.itens?.map((it) => (
-                <div key={it.id} className="pt-1.5 flex justify-between text-[#F3FBF6]">
+                <div key={it.id} className="pt-1.5 flex justify-between text-white">
                   <span>
                     {it.quantidade}x {it.produto_nome || it.sku}
                   </span>
-                  <span className="text-[#10B981] font-bold">
+                  <span className="text-emerald-400 font-bold">
                     R$ {(it.quantidade * it.preco_unitario).toFixed(2)}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-[rgba(142,182,155,0.25)] pt-2.5 space-y-1.5">
-              <div className="flex justify-between text-[#F3FBF6]">
+            <div className="border-t border-white/[0.16] pt-2.5 space-y-1.5">
+              <div className="flex justify-between text-slate-300">
                 <span>Subtotal:</span>
-                <span className="font-semibold text-[#F3FBF6]">
+                <span className="font-semibold text-white">
                   R$ {((receiptSale?.valor_total || 0) + (receiptSale?.desconto || 0)).toFixed(2)}
                 </span>
               </div>
@@ -1734,36 +1734,36 @@ export const PDVVendas: React.FC = () => {
                 </div>
               ) : null}
 
-              <div className="flex justify-between text-[#DAF1DE]">
+              <div className="flex justify-between text-slate-300">
                 <span>Forma de Pagamento:</span>
-                <span className="font-bold text-[#F3FBF6]">{receiptSale?.forma_pagamento}</span>
+                <span className="font-bold text-white">{receiptSale?.forma_pagamento}</span>
               </div>
 
-              <div className="flex justify-between text-sm font-bold text-[#F3FBF6] pt-1.5 border-t border-[rgba(142,182,155,0.2)]">
+              <div className="flex justify-between text-sm font-bold text-white pt-1.5 border-t border-white/[0.16]">
                 <span>TOTAL:</span>
-                <span className="text-[#10B981] font-mono font-extrabold text-base">
+                <span className="text-emerald-400 font-bold text-base">
                   R$ {receiptSale?.valor_total.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {receiptSale?.forma_pagamento === 'CREDIARIO' && (
-              <div className="p-2 rounded bg-[#142522] text-[10px] text-[#DAF1DE] text-center">
+              <div className="p-2 rounded bg-[#000000] text-[10px] text-slate-300 text-center border border-white/[0.14]">
                 Venda registrada no crediário da loja. Saldo devedor do cliente atualizado.
               </div>
             )}
 
             {receiptSale?.status === 'CANCELADA' && (
-              <div className="p-2 rounded bg-red-500/15 text-[10px] text-red-400 text-center font-bold">
+              <div className="p-2 rounded bg-rose-500/15 text-[10px] text-rose-400 text-center font-bold border border-rose-500/30">
                 ⚠️ VENDA CANCELADA / ESTORNADA NO SISTEMA
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               onClick={() => setReceiptModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
             >
               Fechar
             </button>
@@ -1771,7 +1771,7 @@ export const PDVVendas: React.FC = () => {
               onClick={() => {
                 window.print();
               }}
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Comprovante</span>

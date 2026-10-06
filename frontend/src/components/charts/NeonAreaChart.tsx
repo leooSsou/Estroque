@@ -1,10 +1,11 @@
 import React, { useState, useId, useMemo, useRef } from 'react';
-import { Plus, TrendingUp } from 'lucide-react';
+import { TrendingUp, BarChart2 } from 'lucide-react';
 
 export interface ChartDataPoint {
   date: string;
   label: string;
   value: number;
+  vendasCount?: number;
 }
 
 interface NeonAreaChartProps {
@@ -12,30 +13,26 @@ interface NeonAreaChartProps {
   subtitle?: string;
   data: ChartDataPoint[];
   color?: string;
-  avgGrowth?: string;
   onPeriodChange?: (days: number) => void;
   activePeriod?: number;
   className?: string;
 }
 
 export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
-  title = 'Fluxo de Vendas & Receita',
-  subtitle = 'Histórico consolidado em tempo real',
+  title = 'Evolução de Vendas & Faturamento',
+  subtitle = 'Faturamento diário consolidado das lojas',
   data,
   color = '#00E599',
-  avgGrowth = '+14.2%',
   onPeriodChange,
   activePeriod = 14,
   className = '',
 }) => {
   const uid = useId().replace(/:/g, '');
-  const filterId = `neon-area-glow-${uid}`;
-  const gradId = `neon-area-grad-${uid}`;
+  const filterId = `chart-glow-${uid}`;
+  const gradId = `chart-grad-${uid}`;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-
-  // Periods: 7, 14, 30 days
   const [selectedPeriod, setSelectedPeriod] = useState<number>(activePeriod);
 
   const handleSelectPeriod = (days: number) => {
@@ -44,19 +41,22 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
   };
 
   // Dimensions
-  const height = 240;
+  const height = 230;
   const paddingLeft = 16;
   const paddingRight = 16;
-  const paddingTop = 36;
+  const paddingTop = 32;
   const paddingBottom = 28;
 
   // Values calculation
-  const values = data.map((d) => d.value);
-  const minVal = Math.min(...values);
-  const maxVal = Math.max(...values);
+  const values = useMemo(() => data.map((d) => d.value), [data]);
+  const minVal = useMemo(() => (values.length > 0 ? Math.min(...values) : 0), [values]);
+  const maxVal = useMemo(() => (values.length > 0 ? Math.max(...values) : 1), [values]);
   const valRange = maxVal - minVal || 1;
 
-  // Generate coordinates (normalized to 1000 width for responsive viewBox)
+  const totalPeriodo = useMemo(() => values.reduce((acc, curr) => acc + curr, 0), [values]);
+  const mediaDiaria = useMemo(() => (values.length > 0 ? totalPeriodo / values.length : 0), [values, totalPeriodo]);
+
+  // Generate coordinates
   const svgWidth = 1000;
   const usableWidth = svgWidth - paddingLeft - paddingRight;
   const usableHeight = height - paddingTop - paddingBottom;
@@ -123,10 +123,8 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
     setHoverIndex(null);
   };
 
-  // Active point
   const activePoint = hoverIndex !== null && points[hoverIndex] ? points[hoverIndex] : null;
 
-  // Date range display
   const dateRangeDisplay = useMemo(() => {
     if (data.length === 0) return '';
     const firstDate = data[0].date;
@@ -137,23 +135,23 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`bg-[#141518] border border-white/[0.07] rounded-3xl p-5 md:p-6 shadow-bento-dark relative overflow-hidden transition-all duration-300 ${className}`}
+      className={`bg-[#000000] border border-white/[0.16] rounded-3xl p-5 md:p-6 shadow-bento-dark relative overflow-hidden transition-all duration-300 ${className}`}
     >
-      {/* Header matching the reference: Title, subtitle with pill period & action plus */}
+      {/* Header: Title, Subtitle, and Period Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
           <div className="flex items-center gap-2.5">
             <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>
             {/* Period Selector Pills */}
-            <div className="flex items-center gap-1 bg-[#1A1B1F] p-0.5 rounded-lg border border-white/[0.06]">
+            <div className="flex items-center gap-1 bg-[#000000] p-0.5 rounded-lg border border-white/[0.16]">
               {[7, 14, 30].map((d) => (
                 <button
                   key={d}
                   onClick={() => handleSelectPeriod(d)}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-semibold transition-all ${
+                  className={`px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all ${
                     selectedPeriod === d
-                      ? 'bg-white/[0.12] text-white shadow-sm'
-                      : 'text-[#8A8F98] hover:text-white'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   {d}d
@@ -161,63 +159,57 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
               ))}
             </div>
           </div>
-          <p className="text-xs text-[#8A8F98] mt-0.5">{subtitle}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <button
-            className="w-8 h-8 rounded-xl bg-[#1A1B1F] hover:bg-[#22242A] border border-white/[0.08] flex items-center justify-center text-[#8A8F98] hover:text-white transition-all active:scale-95"
-            title="Expandir métricas"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+          <span className="p-2 rounded-xl bg-[#000000] border border-white/[0.16] text-emerald-400">
+            <BarChart2 className="w-4 h-4" />
+          </span>
         </div>
       </div>
 
       {/* Main Plot Area */}
       <div className="relative w-full">
         {/* Horizontal gridlines */}
-        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pt-9 pb-7">
+        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pt-8 pb-6">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="w-full border-b border-dashed border-white/[0.05]" />
+            <div key={i} className="w-full border-b border-dashed border-white/[0.14]" />
           ))}
         </div>
 
         {/* Interactive SVG */}
         <svg
           viewBox={`0 0 ${svgWidth} ${height}`}
-          className="w-full h-56 sm:h-64 overflow-visible cursor-crosshair select-none"
+          className="w-full h-52 sm:h-60 overflow-visible cursor-crosshair select-none"
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
         >
           <defs>
-            {/* Neon Glow Filter with Gaussian Blur */}
             <filter id={filterId} x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+              <feGaussianBlur stdDeviation="3" result="blur" />
               <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
 
-            {/* Gradient Fill under Curve */}
             <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity="0.28" />
-              <stop offset="60%" stopColor={color} stopOpacity="0.08" />
+              <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+              <stop offset="70%" stopColor={color} stopOpacity="0.04" />
               <stop offset="100%" stopColor={color} stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
-          {/* Area Fill */}
+            {/* Area Fill */}
           <path d={areaPath} fill={`url(#${gradId})`} />
 
-          {/* Primary Spline Neon Stroke */}
+          {/* Primary Spline Stroke */}
           <path
             d={linePath}
             fill="none"
             stroke={color}
-            strokeWidth="2.8"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
             filter={`url(#${filterId})`}
@@ -232,7 +224,7 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
                 y1={paddingTop - 10}
                 x2={activePoint.x}
                 y2={height - paddingBottom}
-                stroke="rgba(255, 255, 255, 0.25)"
+                stroke="rgba(255, 255, 255, 0.2)"
                 strokeWidth="1.2"
                 strokeDasharray="3 3"
               />
@@ -241,34 +233,33 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
               <circle
                 cx={activePoint.x}
                 cy={activePoint.y}
-                r="10"
+                r="8"
                 fill={color}
                 opacity="0.35"
-                className="animate-pulse"
               />
 
               {/* Solid Outer Ring */}
               <circle
                 cx={activePoint.x}
                 cy={activePoint.y}
-                r="5"
-                fill="#141518"
+                r="4.5"
+                fill="#000000"
                 stroke={color}
-                strokeWidth="2.5"
+                strokeWidth="2"
               />
 
               {/* Center Dot */}
               <circle
                 cx={activePoint.x}
                 cy={activePoint.y}
-                r="2.5"
+                r="2"
                 fill="#FFFFFF"
               />
             </g>
           )}
         </svg>
 
-        {/* Floating Tooltip Pill (Positioned absolutely over active point) */}
+        {/* Floating Tooltip Pill */}
         {activePoint && (
           <div
             className="absolute z-30 pointer-events-none transition-all duration-75"
@@ -278,32 +269,45 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
               transform: 'translate(-50%, -130%)',
             }}
           >
-            <div className="bg-[#1C1D22] border border-white/[0.12] px-2.5 py-1 rounded-lg shadow-xl flex items-center gap-1.5 whitespace-nowrap">
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-              <span className="font-mono text-xs font-extrabold text-white">
-                R$ {activePoint.data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </span>
-              <span className="text-[10px] text-[#8A8F98] font-mono">
-                • {activePoint.data.label}
-              </span>
+            <div className="bg-[#000000] border border-white/[0.14] px-3.5 py-2 rounded-xl shadow-2xl flex items-center gap-2.5 whitespace-nowrap">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+              <div>
+                <div className="text-xs font-bold text-white">
+                  R$ {activePoint.data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
+                <div className="text-[10px] text-slate-400">
+                  {activePoint.data.label} {activePoint.data.vendasCount ? `• ${activePoint.data.vendasCount} vendas` : ''}
+                </div>
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Footer matching reference: AVG metrics on left, Date range on right */}
-      <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center gap-3">
-          <span className="text-[#8A8F98] uppercase text-[10px] font-bold tracking-wider">
-            AVG
-          </span>
-          <span className="text-[#00E599] font-bold flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5" />
-            {avgGrowth}
-          </span>
+      {/* Footer: Real ERP daily average on left, Total & Date range on right */}
+      <div className="mt-4 pt-3 border-t border-white/[0.14] flex items-center justify-between text-xs">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+              MÉDIA DIÁRIA
+            </span>
+            <span className="text-emerald-400 font-bold flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5" />
+              R$ {mediaDiaria.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/dia
+            </span>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5 text-slate-400 text-xs">
+            <span className="text-slate-500 uppercase text-[10px] font-bold tracking-wider">
+              TOTAL
+            </span>
+            <span className="text-white font-semibold">
+              R$ {totalPeriodo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
         </div>
 
-        <div className="text-[#8A8F98] text-[11px] font-medium">
+        <div className="text-slate-400 text-[11px] font-medium">
           {dateRangeDisplay}
         </div>
       </div>

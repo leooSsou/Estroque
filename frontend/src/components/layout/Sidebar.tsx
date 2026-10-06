@@ -37,13 +37,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
 
   return (
     <aside
-      className={`fixed top-0 left-0 bottom-0 z-40 bg-[#000000] border-r border-[rgba(142,182,155,0.12)] transition-all duration-300 flex flex-col ${
+      className={`fixed top-0 left-0 bottom-0 z-40 bg-[#000000] border-r border-white/[0.10] transition-all duration-300 flex flex-col ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* Brand Header: Aligned h-20 with TopBar */}
       <div
-        className={`h-20 flex items-center border-b border-[rgba(142,182,155,0.12)] flex-shrink-0 ${
+        className={`h-20 flex items-center bg-[#000000] flex-shrink-0 ${
           collapsed
             ? 'flex-col justify-center gap-1.5 px-2'
             : 'justify-between px-4 sm:px-5'
@@ -55,10 +55,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
             alt="ESTROQUE"
             width="36"
             height="36"
-            className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] flex-shrink-0`}
+            className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain flex-shrink-0`}
           />
           {!collapsed && (
-            <span className="font-extrabold text-lg tracking-wider text-[#F3FBF6] uppercase leading-tight font-mono truncate">
+            <span className="font-bold text-lg tracking-wider text-white uppercase leading-tight tracking-wide truncate">
               ESTROQUE
             </span>
           )}
@@ -67,25 +67,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
         {/* Collapse toggle button inside sidebar header */}
         <button
           onClick={onToggleCollapse}
-          className={`${collapsed ? 'p-1' : 'p-1.5'} rounded-lg text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] transition-colors flex-shrink-0`}
+          className={`${collapsed ? 'p-1' : 'p-1.5'} rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors flex-shrink-0`}
           title={collapsed ? 'Expandir Menu' : 'Recolher Menu'}
         >
           {collapsed ? (
-            <PanelLeftOpen className="w-3.5 h-3.5 text-[#8EB69B]" />
+            <PanelLeftOpen className="w-3.5 h-3.5 text-slate-400" />
           ) : (
-            <PanelLeftClose className="w-4 h-4 text-[#8EB69B]" />
+            <PanelLeftClose className="w-4 h-4 text-slate-400" />
           )}
         </button>
       </div>
 
       {/* Navigation List */}
       <div
-        className={`flex-1 overflow-y-auto py-4 space-y-1.5 ${
+        className={`flex-1 overflow-y-auto py-4 space-y-1.5 bg-[#000000] ${
           collapsed ? 'px-2 flex flex-col items-center' : 'px-3'
         }`}
       >
         {!collapsed && (
-          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#5E756B]">
+          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Módulos Operacionais
           </div>
         )}
@@ -102,8 +102,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     : 'w-full gap-3 px-3.5 py-2.5 text-sm font-medium'
                 } ${
                   isActive
-                    ? 'bg-[#141518] text-[#00E599] shadow-sm border border-[#00E599]/30 shadow-[0_0_15px_-3px_rgba(0,229,153,0.2)] font-semibold'
-                    : 'text-[#8A8F98] hover:text-white hover:bg-[#141518]'
+                    ? 'bg-[#000000] text-white font-bold border border-white/[0.20] shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
                 }`
               }
               title={collapsed ? item.label : undefined}
@@ -111,9 +111,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               {({ isActive }) => (
                 <>
                   {!collapsed && isActive && (
-                    <span className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-[#00E599] rounded-r-full shadow-glow-emerald" />
+                    <span className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-emerald-500 rounded-r-full" />
                   )}
-                  <Icon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />
+                  <Icon className={`w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
                   {!collapsed && (
                     <span className="truncate flex-1">{item.label}</span>
                   )}

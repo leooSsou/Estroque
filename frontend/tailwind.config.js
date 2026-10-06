@@ -8,28 +8,33 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"Source Code Pro"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        sans: ['Inter', 'Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
+        mono: ['Inter', 'Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
       },
       colors: {
         estroque: {
           canvas: '#000000',
-          card: '#141518',
-          elevated: '#1D1E22',
-          modal: '#18191D',
-          border: 'rgba(255, 255, 255, 0.08)',
-          vibrant: '#00E599',
-          neonGreen: '#00E599',
-          neonAmber: '#FF9F43',
-          emerald: '#0B2B26',
-          pine: '#163832',
-          forest: '#235347',
-          sage: '#8A8F98',
-          mint: '#E5E7EB',
+          card: '#000000',
+          elevated: '#000000',
+          modal: '#000000',
+          border: 'rgba(255, 255, 255, 0.18)',
+          primary: '#10B981',
+          neon: '#00E599',
+          emerald: '#10B981',
+          amber: '#F59E0B',
+          purple: '#8B5CF6',
+          rose: '#EF4444',
+          gray: {
+            800: '#1A1B1E',
+            700: '#26272B',
+            600: '#383A40',
+            500: '#6B7280',
+            400: '#9CA3AF',
+          },
           text: {
             primary: '#FFFFFF',
-            secondary: '#8A8F98',
-            muted: '#62666D',
+            secondary: '#9CA3AF',
+            muted: '#6B7280',
           }
         }
       },
@@ -38,11 +43,11 @@ export default {
         'card': '24px',
       },
       boxShadow: {
-        'bento-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.07)',
-        'glow-emerald': '0 0 25px -5px rgba(0, 229, 153, 0.35)',
-        'glow-emerald-lg': '0 0 35px -5px rgba(0, 229, 153, 0.5)',
-        'glow-neon-green': '0 0 20px -2px rgba(0, 229, 153, 0.45)',
-        'glow-neon-amber': '0 0 20px -2px rgba(255, 159, 67, 0.45)',
+        'bento-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.18)',
+        'glow-emerald': '0 0 20px -3px rgba(16, 185, 129, 0.4)',
+        'glow-neon': '0 0 25px -2px rgba(0, 229, 153, 0.45)',
+        'glow-amber': '0 0 20px -3px rgba(245, 158, 11, 0.35)',
+        'glow-purple': '0 0 20px -3px rgba(139, 92, 246, 0.35)',
       },
       keyframes: {
         fadeIn: {

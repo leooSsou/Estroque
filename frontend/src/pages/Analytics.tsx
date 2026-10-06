@@ -47,58 +47,64 @@ export const Analytics: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Curva ABC & Pareto
           </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Classificação inteligente de produtos por impacto de faturamento e giro
+          </p>
         </div>
       </div>
 
       {/* 1. ABC Category Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Class A Card */}
-        <div className="bg-gradient-to-br from-[#0B2B26] to-[#0D1917] border border-[#10B981]/30 rounded-3xl p-5 shadow-bento-dark space-y-3">
+        <div className="bg-[#000000] border border-emerald-500/30 rounded-2xl p-5 shadow-lg space-y-3 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-600 to-emerald-400" />
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#10B981] uppercase tracking-wider font-mono">
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
               Classe A • Alta Relevância
             </span>
             <Badge variant="emerald">80.1% Receita</Badge>
           </div>
-          <div className="text-3xl font-extrabold text-[#F3FBF6] font-mono">
+          <div className="text-3xl font-bold text-white">
             {classeA.length} Produtos
           </div>
-          <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] text-[11px] text-[#DAF1DE]">
+          <div className="pt-2 border-t border-white/[0.16] text-[11px] text-slate-400">
             ✦ Ação: Manter estoque de segurança e recompra prioritária.
           </div>
         </div>
 
         {/* Class B Card */}
-        <div className="bg-gradient-to-br from-[#163832] to-[#0D1917] border border-[rgba(142,182,155,0.2)] rounded-3xl p-5 shadow-bento-dark space-y-3">
+        <div className="bg-[#000000] border border-purple-500/25 rounded-2xl p-5 shadow-lg space-y-3 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-purple-400" />
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#8EB69B] uppercase tracking-wider font-mono">
+            <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">
               Classe B • Giro Médio
             </span>
-            <Badge variant="sage">15.0% Receita</Badge>
+            <Badge variant="purple">15.0% Receita</Badge>
           </div>
-          <div className="text-3xl font-extrabold text-[#F3FBF6] font-mono">
+          <div className="text-3xl font-bold text-white">
             {classeB.length} Produtos
           </div>
-          <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] text-[11px] text-[#8EB69B]">
+          <div className="pt-2 border-t border-white/[0.16] text-[11px] text-slate-400">
             ✦ Ação: Acompanhamento quinzenal e reposição sob demanda.
           </div>
         </div>
 
         {/* Class C Card */}
-        <div className="bg-gradient-to-br from-[#142522] to-[#000000] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 shadow-bento-dark space-y-3">
+        <div className="bg-[#000000] border border-amber-500/25 rounded-2xl p-5 shadow-lg space-y-3 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-600 to-amber-400" />
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#5E756B] uppercase tracking-wider font-mono">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
               Classe C • Baixo Giro
             </span>
-            <Badge variant="neutral">4.9% Receita</Badge>
+            <Badge variant="amber">4.9% Receita</Badge>
           </div>
-          <div className="text-3xl font-extrabold text-[#F3FBF6] font-mono">
+          <div className="text-3xl font-bold text-white">
             {classeC.length} Produtos
           </div>
-          <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] text-[11px] text-amber-300">
+          <div className="pt-2 border-t border-white/[0.16] text-[11px] text-amber-400">
             ✦ Ação: Avaliar liquidação ou redução de lote para liberar capital.
           </div>
         </div>
@@ -113,32 +119,32 @@ export const Analytics: React.FC = () => {
             <div key={item.produto_id} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2.5 truncate max-w-lg">
-                  <span className="w-6 h-6 rounded-full bg-[#142522] text-[#10B981] border border-[rgba(142,182,155,0.25)] flex items-center justify-center font-mono font-extrabold text-xs flex-shrink-0">
+                  <span className="w-6 h-6 rounded-full bg-[#000000] text-emerald-400 border border-white/[0.16] flex items-center justify-center font-bold text-xs flex-shrink-0">
                     {idx + 1}
                   </span>
-                  <span className="font-bold text-sm md:text-base text-[#F3FBF6] truncate">{item.nome}</span>
-                  <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'sage' : 'neutral'}>
+                  <span className="font-bold text-sm md:text-base text-white truncate">{item.nome}</span>
+                  <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'purple' : 'amber'}>
                     Classe {item.classe}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-4 font-mono">
-                  <span className="text-[#10B981] font-bold text-sm md:text-base">
+                <div className="flex items-center gap-4">
+                  <span className="text-emerald-400 font-bold text-sm md:text-base">
                     R$ {item.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <span className="text-[#DAF1DE] font-extrabold text-sm w-14 text-right">
+                  <span className="text-slate-300 font-bold text-sm w-14 text-right">
                     {item.percentual_acumulado}%
                   </span>
                 </div>
               </div>
 
-              <div className="w-full h-3.5 rounded-full bg-[#000000] border border-[rgba(142,182,155,0.1)] overflow-hidden p-0.5">
+              <div className="w-full h-3 rounded-full bg-[#000000] border border-white/[0.16] overflow-hidden p-0.5">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     item.classe === 'A'
-                      ? 'bg-gradient-to-r from-[#059669] to-[#10B981]'
+                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-400'
                       : item.classe === 'B'
-                      ? 'bg-gradient-to-r from-[#163832] to-[#8EB69B]'
-                      : 'bg-[#5E756B]'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-400'
+                      : 'bg-gradient-to-r from-amber-600 to-amber-400'
                   }`}
                   style={{ width: `${item.percentual_acumulado}%` }}
                 />
@@ -154,8 +160,8 @@ export const Analytics: React.FC = () => {
       >
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[960px]">
-            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+            <thead className="bg-[#000000] border-b border-white/[0.16]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                 <th className="py-3.5 px-4">Produto</th>
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4 text-center">Classe</th>
@@ -165,48 +171,48 @@ export const Analytics: React.FC = () => {
                 <th className="py-3.5 px-4 text-right">Ação Recomendada</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+            <tbody className="divide-y divide-white/[0.14]">
               {curvaItems.map((item) => (
-                <tr key={item.produto_id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
-                  <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                <tr key={item.produto_id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
+                  <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
                     {item.nome}
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
                     {item.sku}
                   </td>
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'sage' : 'neutral'}>
+                    <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'purple' : 'amber'}>
                       Classe {item.classe}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
                     {item.faturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                     {item.giro_dias || 25} dias
                   </td>
-                  <td className="py-3.5 px-4 font-mono text-sm font-bold text-[#F3FBF6] whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
                     {item.estoque_atual ?? 12} un
                   </td>
                   <td className="py-3.5 px-4 text-right whitespace-nowrap">
                     {item.classe === 'A' ? (
                       <button
                         onClick={() => handleAction(item, 'Emitir Pedido de Compra')}
-                        className="px-4 py-2 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all btn-press whitespace-nowrap"
+                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all btn-press whitespace-nowrap"
                       >
                         Comprar com Fornecedor
                       </button>
                     ) : item.classe === 'B' ? (
                       <button
                         onClick={() => handleAction(item, 'Acompanhar Giro')}
-                        className="px-4 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all btn-press"
+                        className="px-4 py-2 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/[0.16] text-xs font-bold transition-all btn-press"
                       >
                         Monitorar Giro
                       </button>
                     ) : (
                       <button
                         onClick={() => handleAction(item, 'Criar Promoção de Queima')}
-                        className="px-4 py-2 rounded-xl bg-[#2B2312] hover:bg-amber-900/60 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all btn-press"
+                        className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all btn-press"
                       >
                         Criar Desconto / Promoção
                       </button>

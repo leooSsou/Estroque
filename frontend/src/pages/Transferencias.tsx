@@ -168,14 +168,17 @@ export const Transferencias: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Transferências entre Lojas
           </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Logística interfilial, despacho de cargas e conferência cega de recebimento
+          </p>
         </div>
 
         <button
           onClick={() => setNewModalOpen(true)}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nova Solicitação</span>
@@ -183,21 +186,21 @@ export const Transferencias: React.FC = () => {
       </div>
 
       {/* High-Resolution Filter and Search Bar */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-lg">
         {/* Search */}
         <div className="relative flex-1 max-w-xl group">
-          <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+          <Search className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por produto, SKU ou código de transferência..."
-            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+            className="w-full pl-12 pr-10 py-3 rounded-xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+              className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-white/[0.1] transition-all active:scale-90"
               title="Limpar busca"
             >
               <X className="w-4 h-4" />
@@ -206,31 +209,40 @@ export const Transferencias: React.FC = () => {
         </div>
 
         {/* Segmented Status Tabs */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-[#000000] border border-white/[0.16] overflow-x-auto table-scrollbar">
           {[
-            { id: 'TODOS', label: 'Todas', count: counts.todos },
-            { id: 'SOLICITADO', label: 'Solicitadas', count: counts.solicitado },
-            { id: 'DESPACHADO', label: 'Em Trânsito', count: counts.despachado },
-            { id: 'RECEBIDO', label: 'Recebidas', count: counts.recebido },
-            { id: 'DIVERGENTE', label: 'Divergentes', count: counts.divergente },
+            { id: 'TODOS', label: 'Todas', count: counts.todos, color: 'emerald' },
+            { id: 'SOLICITADO', label: 'Solicitadas', count: counts.solicitado, color: 'amber' },
+            { id: 'DESPACHADO', label: 'Em Trânsito', count: counts.despachado, color: 'purple' },
+            { id: 'RECEBIDO', label: 'Recebidas', count: counts.recebido, color: 'emerald' },
+            { id: 'DIVERGENTE', label: 'Divergentes', count: counts.divergente, color: 'rose' },
           ].map((tab) => {
             const isActive = statusFilter === tab.id;
+            const activeClass =
+              tab.color === 'emerald'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold'
+                : tab.color === 'amber'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 font-bold'
+                : tab.color === 'purple'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25 font-bold'
+                : 'bg-rose-600 text-white shadow-md shadow-rose-600/25 font-bold';
+
             return (
               <button
                 key={tab.id}
                 onClick={() => setStatusFilter(tab.id as any)}
-                className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
+                className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
-                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                    ? `${activeClass} scale-[1.02]`
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                  className={`px-2 py-0.5 rounded-full text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-[#000000]/30 text-[#000000]'
-                      : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+                      ? 'bg-black/30 text-white'
+                      : 'bg-[#000000] text-slate-300 border border-white/[0.16]'
                   }`}
                 >
                   {tab.count}
@@ -248,25 +260,25 @@ export const Transferencias: React.FC = () => {
           return (
             <div
               key={trf.id}
-              className="bg-[#0D1917] border border-[rgba(142,182,155,0.14)] rounded-3xl p-5 shadow-bento-dark space-y-4 hover:border-[rgba(142,182,155,0.25)] transition-all flex flex-col justify-between"
+              className="bg-[#000000] border border-white/[0.16] rounded-2xl p-5 shadow-lg space-y-4 hover:border-white/[0.18] transition-all flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-xs text-[#8EB69B] font-mono font-semibold">
+                  <span className="text-xs text-slate-400 font-semibold">
                     #{trf.id.slice(0, 8)}
                   </span>
                   {trf.status === 'SOLICITADO' && (
-                    <Badge variant="warning">
+                    <Badge variant="amber">
                       <Clock className="w-3.5 h-3.5 mr-1 inline" /> Solicitado
                     </Badge>
                   )}
                   {trf.status === 'DESPACHADO' && (
-                    <Badge variant="blue">
+                    <Badge variant="purple">
                       <Truck className="w-3.5 h-3.5 mr-1 inline" /> Em Trânsito
                     </Badge>
                   )}
                   {trf.status === 'RECEBIDO' && (
-                    <Badge variant="mint">
+                    <Badge variant="emerald">
                       <CheckCircle2 className="w-3.5 h-3.5 mr-1 inline" /> Recebido
                     </Badge>
                   )}
@@ -279,41 +291,41 @@ export const Transferencias: React.FC = () => {
 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Package className="w-5 h-5 text-[#10B981] flex-shrink-0" />
-                    <span className="text-sm md:text-base font-bold text-[#F3FBF6] truncate">
+                    <Package className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                    <span className="text-sm md:text-base font-bold text-white truncate">
                       {prod?.nome || 'Produto'}
                     </span>
                   </div>
-                  <div className="text-sm font-mono text-[#DAF1DE]">
-                    Quantidade: <strong className="text-lg font-bold text-[#10B981]">{trf.quantidade}</strong> un
+                  <div className="text-sm text-slate-300">
+                    Quantidade: <strong className="text-lg font-bold text-emerald-400">{trf.quantidade}</strong> un
                   </div>
                 </div>
 
                 {/* Origin -> Destination Route */}
-                <div className="mt-4 p-3.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.1)] space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-[#94A89E]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#8EB69B] flex-shrink-0" />
-                    <span className="truncate">Origem: <strong className="text-[#F3FBF6]">{getLojaNome(trf.loja_origem_id)}</strong></span>
+                <div className="mt-4 p-3.5 rounded-xl bg-[#000000] border border-white/[0.16] space-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-500 flex-shrink-0" />
+                    <span className="truncate">Origem: <strong className="text-slate-200">{getLojaNome(trf.loja_origem_id)}</strong></span>
                   </div>
-                  <div className="flex items-center gap-2 text-[#DAF1DE]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] flex-shrink-0" />
-                    <span className="truncate">Destino: <strong className="text-[#10B981]">{getLojaNome(trf.loja_destino_id)}</strong></span>
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                    <span className="truncate">Destino: <strong className="text-white font-bold">{getLojaNome(trf.loja_destino_id)}</strong></span>
                   </div>
                 </div>
 
                 {trf.justificativa && (
-                  <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300">
+                  <div className="mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300">
                     <strong>Motivo de Divergência:</strong> {trf.justificativa}
                   </div>
                 )}
               </div>
 
               {/* Action Buttons based on status */}
-              <div className="pt-3 border-t border-[rgba(142,182,155,0.1)]">
+              <div className="pt-3 border-t border-white/[0.16]">
                 {trf.status === 'SOLICITADO' && (
                   <button
                     onClick={() => handleDespachar(trf.id)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-sm font-semibold text-[#10B981] flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] border border-purple-500/30 text-sm font-semibold text-purple-400 hover:text-purple-300 flex items-center justify-center gap-2 transition-all"
                   >
                     <Truck className="w-4 h-4" />
                     <span>Despachar Carga</span>
@@ -323,7 +335,7 @@ export const Transferencias: React.FC = () => {
                 {trf.status === 'DESPACHADO' && (
                   <button
                     onClick={() => handleOpenReceiving(trf)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-[#10B981] hover:bg-[#059669] text-[#000000] text-sm font-bold shadow-glow-emerald flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>Conferência Cega de Recebimento</span>
@@ -331,7 +343,7 @@ export const Transferencias: React.FC = () => {
                 )}
 
                 {(trf.status === 'RECEBIDO' || trf.status === 'DIVERGENTE') && (
-                  <div className="text-center text-xs text-[#5E756B] py-1">
+                  <div className="text-center text-xs text-slate-500 py-1">
                     Transferência concluída
                   </div>
                 )}
@@ -350,13 +362,13 @@ export const Transferencias: React.FC = () => {
         <form onSubmit={handleCreateTransfer} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Loja de Origem
               </label>
               <select
                 value={origemId}
                 onChange={(e) => setOrigemId(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -367,13 +379,13 @@ export const Transferencias: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Loja de Destino
               </label>
               <select
                 value={destinoId}
                 onChange={(e) => setDestinoId(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -385,13 +397,13 @@ export const Transferencias: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Produto
             </label>
             <select
               value={produtoId}
               onChange={(e) => setProdutoId(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             >
               {Object.values(produtos).map((p) => (
                 <option key={p.id} value={p.id}>
@@ -402,7 +414,7 @@ export const Transferencias: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Quantidade a Transferir
             </label>
             <input
@@ -411,21 +423,21 @@ export const Transferencias: React.FC = () => {
               required
               value={quantidade}
               onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setNewModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
             >
               Emitir Solicitação
             </button>
@@ -440,18 +452,18 @@ export const Transferencias: React.FC = () => {
         title="Conferência de Recebimento"
       >
         <form onSubmit={handleConfirmReceiving} className="space-y-4">
-          <div className="p-4 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.14)] space-y-2">
-            <div className="text-xs text-[#94A89E]">Manifesto de Envio:</div>
-            <div className="text-sm font-semibold text-[#F3FBF6]">
+          <div className="p-4 rounded-xl bg-[#000000] border border-white/[0.16] space-y-2">
+            <div className="text-xs text-slate-400">Manifesto de Envio:</div>
+            <div className="text-sm font-semibold text-white">
               {produtos[activeTransfer?.produto_id || '']?.nome}
             </div>
-            <div className="text-xs font-mono text-[#8EB69B]">
-              Quantidade Despachada no Manifesto: <strong>{activeTransfer?.quantidade}</strong> un
+            <div className="text-xs text-slate-300">
+              Quantidade Despachada no Manifesto: <strong className="text-white">{activeTransfer?.quantidade}</strong> un
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Quantidade Física Contada no Recebimento
             </label>
             <input
@@ -460,17 +472,17 @@ export const Transferencias: React.FC = () => {
               required
               value={scannedQty}
               onChange={(e) => setScannedQty(parseInt(e.target.value) || 0)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-base font-mono font-bold text-[#10B981] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-base font-bold text-emerald-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             />
           </div>
 
           {activeTransfer && scannedQty !== activeTransfer.quantidade && (
-            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-red-400">
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-rose-400">
                 <AlertTriangle className="w-4 h-4" />
                 <span>Divergência Detectada! (Diferença de {scannedQty - activeTransfer.quantidade} un)</span>
               </div>
-              <label className="block text-[11px] text-red-200">
+              <label className="block text-[11px] text-rose-200">
                 Justificativa Obrigatória para Auditoria:
               </label>
               <textarea
@@ -479,22 +491,22 @@ export const Transferencias: React.FC = () => {
                 value={justificativa}
                 onChange={(e) => setJustificativa(e.target.value)}
                 placeholder="Ex: Caixa violada durante o transporte, faltou 1 unidade..."
-                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-red-500/30 text-xs text-red-100 focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-rose-500/30 text-xs text-rose-100 placeholder-slate-500 focus:outline-none"
               />
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setReceivingModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
             >
               Confirmar Recebimento
             </button>

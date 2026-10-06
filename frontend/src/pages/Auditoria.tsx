@@ -136,15 +136,18 @@ export const Auditoria: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Auditoria & Inventário Físico
           </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Conferência cega por bipagem de código de barras e conciliação de saldos divergentes
+          </p>
         </div>
 
         <button
           onClick={handleApproveReconciliation}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>Aprovar Ajuste de Estoque</span>
@@ -152,22 +155,22 @@ export const Auditoria: React.FC = () => {
       </div>
 
       {/* Barcode Scanner Bar in High Definition */}
-      <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+      <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-lg">
         <form onSubmit={handleBarcodeScan} className="flex flex-col sm:flex-row items-center gap-3">
           <div className="relative flex-1 w-full group">
-            <Barcode className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+            <Barcode className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
             <input
               type="text"
               value={barcodeQuery}
               onChange={(e) => setBarcodeQuery(e.target.value)}
               placeholder="Bipar código de barras (EAN-13) ou digitar SKU e pressionar Enter..."
-              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+              className="w-full pl-12 pr-10 py-3 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
             />
             {barcodeQuery && (
               <button
                 type="button"
                 onClick={() => setBarcodeQuery('')}
-                className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-white/[0.1] transition-all active:scale-90"
                 title="Limpar busca"
               >
                 <X className="w-4 h-4" />
@@ -177,7 +180,7 @@ export const Auditoria: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#142522] hover:bg-[#163832] border border-[#10B981]/40 text-sm font-bold text-[#10B981] transition-all flex items-center justify-center gap-2 flex-shrink-0 active:scale-95 shadow-glow-emerald"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-all flex items-center justify-center gap-2 flex-shrink-0 active:scale-95"
           >
             <Sparkles className="w-4 h-4" />
             <span>Bipar Item (+1)</span>
@@ -189,45 +192,45 @@ export const Auditoria: React.FC = () => {
       <BentoCard
         title="Balanço & Comparativo de Inventário"
         action={
-          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] shadow-inner">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#000000] border border-white/[0.16]">
             <button
               onClick={() => setFilterMode('TODOS')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
                 filterMode === 'TODOS'
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
-                  : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
+                  ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/25 scale-[1.02]'
+                  : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <span>Todos</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'TODOS' ? 'bg-[#000000]/30 text-[#000000]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${filterMode === 'TODOS' ? 'bg-black/30 text-white' : 'bg-[#000000] text-slate-300 border border-white/[0.16]'}`}>
                 {counts.todos}
               </span>
             </button>
 
             <button
               onClick={() => setFilterMode('DIVERGENTE')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
                 filterMode === 'DIVERGENTE'
-                  ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold shadow-[0_0_15px_rgba(239,68,68,0.35)] scale-[1.02]'
-                  : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
+                  ? 'bg-rose-600 text-white font-bold shadow-md shadow-rose-600/25 scale-[1.02]'
+                  : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <span>Divergentes</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'DIVERGENTE' ? 'bg-black/30 text-white' : 'bg-[#142522] text-[#8EB69B]'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${filterMode === 'DIVERGENTE' ? 'bg-black/30 text-white' : 'bg-[#000000] text-slate-300 border border-white/[0.16]'}`}>
                 {counts.divergente}
               </span>
             </button>
 
             <button
               onClick={() => setFilterMode('CORRETO')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 active:scale-95 ${
                 filterMode === 'CORRETO'
-                  ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] font-bold shadow-glow-emerald scale-[1.02]'
-                  : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522]'
+                  ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/25 scale-[1.02]'
+                  : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
               }`}
             >
               <span>Bateu 100%</span>
-              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${filterMode === 'CORRETO' ? 'bg-[#000000]/30 text-[#000000]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+              <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${filterMode === 'CORRETO' ? 'bg-black/30 text-white' : 'bg-[#000000] text-slate-300 border border-white/[0.16]'}`}>
                 {counts.correto}
               </span>
             </button>
@@ -236,8 +239,8 @@ export const Auditoria: React.FC = () => {
       >
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[1050px]">
-            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+            <thead className="bg-[#000000] border-b border-white/[0.16]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                 <th className="py-3.5 px-4">Produto</th>
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4">EAN</th>
@@ -248,24 +251,24 @@ export const Auditoria: React.FC = () => {
                 <th className="py-3.5 px-4 text-right">Contador Rápido</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+            <tbody className="divide-y divide-white/[0.14]">
               {filteredItems.map((item, idx) => {
                 const diff = item.contado - item.sistema;
                 const impact = diff * item.produto.preco_custo;
 
                 return (
-                  <tr key={item.produto.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
-                    <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                  <tr key={item.produto.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
                       {item.produto.nome}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
                       {item.produto.sku}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-[#DAF1DE] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs text-slate-300 whitespace-nowrap">
                       {item.produto.codigo_barras || '—'}
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-sm font-bold text-[#DAF1DE] text-center whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-sm font-bold text-slate-200 text-center whitespace-nowrap">
                       {item.sistema} un
                     </td>
 
@@ -282,28 +285,28 @@ export const Auditoria: React.FC = () => {
                             return copy;
                           });
                         }}
-                        className="w-24 px-3 py-1.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.25)] font-mono text-center text-sm text-[#10B981] font-extrabold focus:border-[#10B981] focus:outline-none"
+                        className="w-24 px-3 py-1.5 rounded-xl bg-[#000000] border border-white/[0.16] text-center text-sm text-emerald-400 font-bold focus:border-emerald-500 focus:outline-none"
                       />
                     </td>
 
-                    <td className="py-3.5 px-4 text-center font-mono whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       {diff === 0 ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#163832] text-[#10B981] border border-[#10B981]/30 text-xs font-bold whitespace-nowrap">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-[#000000] text-slate-300 border border-white/[0.14] text-xs font-bold whitespace-nowrap">
                           0 (Conforme)
                         </span>
                       ) : diff > 0 ? (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-950/60 text-[#34D399] border border-emerald-500/30 text-xs font-bold whitespace-nowrap">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-bold whitespace-nowrap">
                           +{diff} un (Sobra)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-red-950/60 text-red-400 border border-red-500/30 text-xs font-bold whitespace-nowrap">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs font-bold whitespace-nowrap">
                           {diff} un (Falta)
                         </span>
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-right whitespace-nowrap">
-                      <span className={impact < 0 ? 'text-red-400' : impact > 0 ? 'text-[#10B981]' : 'text-[#DAF1DE]'}>
+                    <td className="py-3.5 px-4 text-sm font-bold text-right whitespace-nowrap">
+                      <span className={impact < 0 ? 'text-rose-400' : impact > 0 ? 'text-emerald-400' : 'text-slate-400'}>
                         {impact.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </span>
                     </td>
@@ -312,21 +315,21 @@ export const Auditoria: React.FC = () => {
                       <div className="inline-flex items-center gap-1.5">
                         <button
                           onClick={() => handleIncrement(idx, -1)}
-                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#F3FBF6] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          className="w-9 h-9 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-bold text-white border border-white/[0.16] transition-colors btn-press flex items-center justify-center"
                           title="Subtrair 1"
                         >
                           -1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 1)}
-                          className="w-9 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-sm font-bold text-[#10B981] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          className="w-9 h-9 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-bold text-emerald-400 border border-white/[0.16] transition-colors btn-press flex items-center justify-center"
                           title="Somar 1"
                         >
                           +1
                         </button>
                         <button
                           onClick={() => handleIncrement(idx, 5)}
-                          className="px-3 h-9 rounded-xl bg-[#142522] hover:bg-[#163832] text-xs font-bold text-[#34D399] border border-[rgba(142,182,155,0.2)] transition-colors btn-press flex items-center justify-center"
+                          className="px-3 h-9 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-bold text-emerald-400 border border-white/[0.16] transition-colors btn-press flex items-center justify-center"
                           title="Somar 5"
                         >
                           +5

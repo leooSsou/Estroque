@@ -176,14 +176,17 @@ export const Produtos: React.FC = () => {
       {/* Top Header & Quick Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Catálogo de Produtos
           </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Gestão de mix, precificação inteligente por markup e controle cadastral
+          </p>
         </div>
 
         <button
           onClick={() => setNewProductModalOpen(true)}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#000000] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2"
+          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" />
           <span>Novo Produto</span>
@@ -191,21 +194,21 @@ export const Produtos: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar in High Definition */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-lg">
         {/* Search Input with Focus Ring & Clear Button */}
         <div className="relative flex-1 max-w-xl group">
-          <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+          <Search className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por descrição, SKU ou código de barras..."
-            className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+            className="w-full pl-12 pr-10 py-3 rounded-xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+              className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-white/[0.1] transition-all active:scale-90"
               title="Limpar busca"
             >
               <X className="w-4 h-4" />
@@ -214,30 +217,37 @@ export const Produtos: React.FC = () => {
         </div>
 
         {/* High-Resolution Segmented Control with Real-Time Counters */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#000000] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-[#000000] border border-white/[0.16] overflow-x-auto table-scrollbar">
           {[
-            { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
-            { id: 'NORMAL', label: 'Estoque Normal', count: counts.normal },
-            { id: 'BAIXO', label: 'Estoque Baixo', count: counts.baixo },
-            { id: 'RUPTURA', label: 'Rupturas', count: counts.ruptura },
+            { id: 'TODOS', label: 'Todos os Itens', count: counts.todos, color: 'emerald' },
+            { id: 'NORMAL', label: 'Estoque Normal', count: counts.normal, color: 'emerald' },
+            { id: 'BAIXO', label: 'Estoque Baixo', count: counts.baixo, color: 'amber' },
+            { id: 'RUPTURA', label: 'Rupturas', count: counts.ruptura, color: 'rose' },
           ].map((tab) => {
             const isActive = statusFilter === tab.id;
+            const activeClass =
+              tab.color === 'emerald'
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold'
+                : tab.color === 'amber'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 font-bold'
+                : 'bg-rose-600 text-white shadow-md shadow-rose-600/25 font-bold';
+
             return (
               <button
                 key={tab.id}
                 onClick={() => setStatusFilter(tab.id as any)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#000000] shadow-glow-emerald font-bold scale-[1.02]'
-                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                    ? `${activeClass} scale-[1.02]`
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                  className={`px-2 py-0.5 rounded-full text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-[#000000]/30 text-[#000000]'
-                      : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+                      ? 'bg-black/30 text-white'
+                      : 'bg-[#000000] text-slate-300 border border-white/[0.16]'
                   }`}
                 >
                   {tab.count}
@@ -252,8 +262,8 @@ export const Produtos: React.FC = () => {
       <BentoCard>
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[1100px]">
-            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+            <thead className="bg-[#000000] border-b border-white/[0.16]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                 <th className="py-3.5 px-4">Produto</th>
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4">Categoria</th>
@@ -267,7 +277,7 @@ export const Produtos: React.FC = () => {
                 <th className="py-3.5 px-4 text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+            <tbody className="divide-y divide-white/[0.14]">
               {filtered.map((prod) => {
                 const stock = activeLoja?.id
                   ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
@@ -279,64 +289,64 @@ export const Produtos: React.FC = () => {
                     : 0;
 
                 return (
-                  <tr key={prod.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                  <tr key={prod.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
                           <Package className="w-4 h-4" />
                         </div>
-                        <span className="font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                        <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
                           {prod.nome}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                       {prod.sku}
                     </td>
-                    <td className="py-3.5 px-4 text-xs text-[#A2B89B] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
                       {prod.categoria || 'Geral'}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                       {prod.codigo_barras ? (
                         <span className="flex items-center gap-1.5">
-                          <Barcode className="w-4 h-4 text-[#8EB69B]" />
+                          <Barcode className="w-4 h-4 text-slate-400" />
                           {prod.codigo_barras}
                         </span>
                       ) : (
-                        <span className="text-[#5E756B]">—</span>
+                        <span className="text-slate-500">—</span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#C1D7C8] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                       {prod.preco_custo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-bold text-[#34D399] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-bold text-emerald-400 whitespace-nowrap">
                       +{prod.markup.toFixed(1)}%
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
                       {prod.preco_venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                       {margemBruta.toFixed(1)}%
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#F3FBF6] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
                       {stock} un
                     </td>
                     <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       {stock === 0 ? (
                         <Badge variant="danger">Ruptura</Badge>
                       ) : stock <= minStock ? (
-                        <Badge variant="warning">Baixo</Badge>
+                        <Badge variant="amber">Baixo</Badge>
                       ) : (
-                        <Badge variant="mint">Normal</Badge>
+                        <Badge variant="emerald">Normal</Badge>
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => openMarkupModal(prod)}
-                        className="px-3.5 py-2 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
+                        className="px-3.5 py-2 rounded-lg bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/[0.16] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
                         title="Simular e Ajustar Markup"
                       >
-                        <Calculator className="w-3.5 h-3.5 text-[#10B981]" />
+                        <Calculator className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Markup</span>
                       </button>
                     </td>
@@ -357,14 +367,14 @@ export const Produtos: React.FC = () => {
       >
         <div className="space-y-6">
           {/* Formula preview */}
-          <div className="p-3.5 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.15)] flex items-center justify-between text-xs font-mono">
-            <span className="text-[#94A89E]">Preço de Venda = Custo × (1 + Markup%)</span>
-            <span className="text-[#10B981] font-semibold">Cálculo Automático</span>
+          <div className="p-3.5 rounded-xl bg-[#000000] border border-white/[0.16] flex items-center justify-between text-xs">
+            <span className="text-slate-400">Preço de Venda = Custo × (1 + Markup%)</span>
+            <span className="text-emerald-400 font-semibold">Cálculo Automático</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1.5">
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
                 Preço de Custo (R$)
               </label>
               <input
@@ -372,12 +382,12 @@ export const Produtos: React.FC = () => {
                 step="0.01"
                 value={costPrice}
                 onChange={(e) => handleCostPriceChange(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1.5">
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
                 Markup Aplicado (%)
               </label>
               <input
@@ -385,12 +395,12 @@ export const Produtos: React.FC = () => {
                 step="0.5"
                 value={markupPercent}
                 onChange={(e) => handleMarkupChange(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-emerald-400 font-bold focus:border-emerald-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#94A89E] mb-1.5">
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
                 Preço de Venda (R$)
               </label>
               <input
@@ -398,16 +408,16 @@ export const Produtos: React.FC = () => {
                 step="0.01"
                 value={sellingPrice}
                 onChange={(e) => handleSellingPriceChange(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.18)] text-sm font-mono text-[#F3FBF6] font-bold focus:border-[#10B981] focus:outline-none"
+                className="w-full px-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white font-bold focus:border-emerald-500 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Interactive Range Slider */}
           <div>
-            <div className="flex items-center justify-between text-xs text-[#94A89E] mb-2">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
               <span>Deslize para calibrar o Markup</span>
-              <span className="font-mono text-[#10B981] font-bold">{markupPercent}%</span>
+              <span className="text-emerald-400 font-bold">{markupPercent}%</span>
             </div>
             <input
               type="range"
@@ -416,21 +426,21 @@ export const Produtos: React.FC = () => {
               step="1"
               value={markupPercent}
               onChange={(e) => handleMarkupChange(parseFloat(e.target.value))}
-              className="w-full accent-[#10B981] cursor-pointer"
+              className="w-full accent-emerald-500 cursor-pointer"
             />
           </div>
 
           {/* Dynamic Gross Profit Card */}
-          <div className="p-4 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#000000] border border-white/[0.16] flex items-center justify-between">
             <div>
-              <span className="text-xs text-[#94A89E]">Lucro Bruto Unitário Estimado</span>
-              <div className="text-xl font-bold text-[#10B981] font-mono">
+              <span className="text-xs text-slate-400">Lucro Bruto Unitário Estimado</span>
+              <div className="text-xl font-bold text-emerald-400">
                 R$ {(sellingPrice - costPrice).toFixed(2)}
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs text-[#94A89E]">Margem Bruta</span>
-              <div className="text-xl font-bold text-[#DAF1DE] font-mono">
+              <span className="text-xs text-slate-400">Margem Bruta</span>
+              <div className="text-xl font-bold text-slate-200">
                 {sellingPrice > 0
                   ? (((sellingPrice - costPrice) / sellingPrice) * 100).toFixed(1)
                   : '0.0'}
@@ -439,16 +449,16 @@ export const Produtos: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               onClick={() => setMarkupModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               onClick={handleSaveMarkup}
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Novo Preço</span>
@@ -465,7 +475,7 @@ export const Produtos: React.FC = () => {
       >
         <form onSubmit={handleCreateProduct} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Nome do Produto
             </label>
             <input
@@ -474,13 +484,13 @@ export const Produtos: React.FC = () => {
               value={newNome}
               onChange={(e) => setNewNome(e.target.value)}
               placeholder="Ex: Teclado Sem Fio Bluetooth"
-              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 SKU (Código)
               </label>
               <input
@@ -489,12 +499,12 @@ export const Produtos: React.FC = () => {
                 value={newSku}
                 onChange={(e) => setNewSku(e.target.value)}
                 placeholder="Ex: TEC-BLU-07"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all uppercase"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all uppercase"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Código de Barras (EAN-13)
               </label>
               <input
@@ -502,14 +512,14 @@ export const Produtos: React.FC = () => {
                 value={newBarcode}
                 onChange={(e) => setNewBarcode(e.target.value)}
                 placeholder="Ex: 7891234560074"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Preço de Custo (R$)
               </label>
               <input
@@ -518,12 +528,12 @@ export const Produtos: React.FC = () => {
                 required
                 value={newCusto}
                 onChange={(e) => setNewCusto(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Markup (%)
               </label>
               <input
@@ -532,12 +542,12 @@ export const Produtos: React.FC = () => {
                 required
                 value={newMarkup}
                 onChange={(e) => setNewMarkup(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#10B981] font-bold focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-emerald-400 font-bold focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Estoque Inicial (un)
               </label>
               <input
@@ -545,29 +555,29 @@ export const Produtos: React.FC = () => {
                 required
                 value={newEstoqueInicial}
                 onChange={(e) => setNewEstoqueInicial(parseInt(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               />
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] flex items-center justify-between text-xs">
-            <span className="text-[#94A89E] font-medium">Preço de Venda Gerado:</span>
-            <span className="text-base font-bold text-[#10B981] font-mono">
+          <div className="p-3.5 rounded-xl bg-[#000000] border border-white/[0.16] flex items-center justify-between text-xs">
+            <span className="text-slate-400 font-medium">Preço de Venda Gerado:</span>
+            <span className="text-base font-bold text-emerald-400">
               R$ {(newCusto * (1 + newMarkup / 100)).toFixed(2)}
             </span>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setNewProductModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#000000] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
             >
               Salvar Produto
             </button>
