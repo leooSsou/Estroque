@@ -10,8 +10,17 @@ interface StatCardProps {
     trend: 'up' | 'down' | 'neutral' | 'warning';
   };
   icon: LucideIcon;
-  accentColor?: string;
+  iconColor?: 'blue' | 'emerald' | 'amber' | 'purple' | 'rose';
+  color?: 'blue' | 'emerald' | 'amber' | 'purple' | 'rose';
 }
+
+const colorMap = {
+  blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  purple: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  rose: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+};
 
 export const StatCard: React.FC<StatCardProps> = ({
   title,
@@ -19,54 +28,70 @@ export const StatCard: React.FC<StatCardProps> = ({
   subtitle,
   badge,
   icon: Icon,
+  iconColor,
+  color,
 }) => {
+  const activeColor = color || iconColor || 'emerald';
   const isCurrency = typeof value === 'string' && value.trim().startsWith('R$');
   const currencyAmount = isCurrency ? value.trim().replace(/^R\$\s*/, '') : '';
 
   return (
-    <div className="bg-[#0D1917] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 shadow-bento-dark relative overflow-hidden group hover:border-[#10B981]/40 hover:-translate-y-1 hover:shadow-glow-emerald transition-all duration-300">
-      <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#10B981]/5 rounded-full blur-2xl group-hover:bg-[#10B981]/15 transition-all duration-500 pointer-events-none" />
+    <div className="bg-[#000000] border border-white/[0.16] rounded-3xl p-5 shadow-bento-dark relative overflow-hidden group hover:border-white/[0.24] hover:-translate-y-1 transition-all duration-300">
       <div className="flex items-start justify-between gap-3 relative z-10">
-        <div className="flex-1 min-w-0 space-y-1.5">
-          <span className="text-xs font-semibold text-[#94A89E] uppercase tracking-wider block truncate">
+        <div className="flex-1 min-w-0 space-y-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block truncate">
             {title}
           </span>
-          {isCurrency ? (
-            <div className="flex items-baseline gap-1.5 whitespace-nowrap">
-              <span className="text-xs sm:text-sm font-semibold text-[#8EB69B] font-mono select-none">
-                R$
-              </span>
-              <span className="text-xl sm:text-2xl xl:text-[26px] font-extrabold text-[#F3FBF6] font-mono tracking-tight">
-                {currencyAmount}
-              </span>
-            </div>
-          ) : (
-            <div className="text-xl sm:text-2xl xl:text-[26px] font-extrabold text-[#F3FBF6] font-mono tracking-tight whitespace-nowrap">
-              {value}
-            </div>
-          )}
+
+          <div className="pt-2">
+            {isCurrency ? (
+              <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                <span className="text-sm font-semibold text-slate-400 select-none">
+                  R$
+                </span>
+                <span className="text-2xl xl:text-3xl font-bold text-white tracking-tight">
+                  {currencyAmount}
+                </span>
+              </div>
+            ) : (
+              <div className="text-2xl xl:text-3xl font-bold text-white tracking-tight whitespace-nowrap">
+                {value}
+              </div>
+            )}
+          </div>
         </div>
-        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#142522] border border-[rgba(142,182,155,0.18)] flex items-center justify-center text-[#10B981] shadow-sm flex-shrink-0 group-hover:scale-110 group-hover:bg-[#10B981]/10 group-hover:border-[#10B981]/40 transition-all duration-300">
+
+        {/* Clean colorful icon capsule */}
+        <div
+          className={`w-11 h-11 rounded-2xl flex items-center justify-center border flex-shrink-0 group-hover:scale-110 transition-transform duration-300 ${colorMap[activeColor]}`}
+        >
           <Icon className="w-5 h-5" />
         </div>
       </div>
 
       {(subtitle || badge) && (
-        <div className="mt-4 flex items-center gap-2 pt-3 border-t border-[rgba(142,182,155,0.08)]">
-          {badge && (
+        <div className="mt-4 flex items-center justify-between gap-2 pt-3 border-t border-white/[0.14]">
+          {badge ? (
             <span
-              className={`text-[11px] font-semibold px-2 py-0.5 rounded-full font-mono ${
+              className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
                 badge.trend === 'up'
-                  ? 'bg-[#163832] text-[#DAF1DE] border border-[rgba(142,182,155,0.2)]'
+                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                   : badge.trend === 'warning'
-                  ? 'bg-[#2A1715] text-red-400 border border-red-500/30'
-                  : 'bg-[#142522] text-[#8EB69B]'
+                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                  : badge.trend === 'down'
+                  ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                  : 'bg-[#000000] text-slate-300 border border-white/[0.14]'
               }`}
             >
               {badge.text}
             </span>
+          ) : <span />}
+
+          {subtitle && (
+            <span className="text-xs text-slate-400 truncate text-right">
+              {subtitle}
+            </span>
           )}
-          {subtitle && <span className="text-xs text-[#94A89E] truncate">{subtitle}</span>}
         </div>
       )}
     </div>

@@ -8,26 +8,33 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"Source Code Pro"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+        sans: ['Inter', 'Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
+        mono: ['Inter', 'Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica', 'Arial', 'sans-serif'],
       },
       colors: {
         estroque: {
-          canvas: '#070E0D',
-          card: '#0D1917',
-          elevated: '#142522',
-          modal: '#1B332E',
-          border: 'rgba(142, 182, 155, 0.12)',
-          vibrant: '#10B981',
-          emerald: '#0B2B26',
-          pine: '#163832',
-          forest: '#235347',
-          sage: '#8EB69B',
-          mint: '#DAF1DE',
+          canvas: '#000000',
+          card: '#000000',
+          elevated: '#000000',
+          modal: '#000000',
+          border: 'rgba(255, 255, 255, 0.18)',
+          primary: '#10B981',
+          neon: '#00E599',
+          emerald: '#10B981',
+          amber: '#F59E0B',
+          purple: '#8B5CF6',
+          rose: '#EF4444',
+          gray: {
+            800: '#1A1B1E',
+            700: '#26272B',
+            600: '#383A40',
+            500: '#6B7280',
+            400: '#9CA3AF',
+          },
           text: {
-            primary: '#F3FBF6',
-            secondary: '#94A89E',
-            muted: '#5E756B',
+            primary: '#FFFFFF',
+            secondary: '#9CA3AF',
+            muted: '#6B7280',
           }
         }
       },
@@ -36,9 +43,11 @@ export default {
         'card': '24px',
       },
       boxShadow: {
-        'bento-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(142, 182, 155, 0.12)',
-        'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.3)',
-        'glow-emerald-lg': '0 0 35px -5px rgba(16, 185, 129, 0.45)',
+        'bento-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.18)',
+        'glow-emerald': '0 0 20px -3px rgba(16, 185, 129, 0.4)',
+        'glow-neon': '0 0 25px -2px rgba(0, 229, 153, 0.45)',
+        'glow-amber': '0 0 20px -3px rgba(245, 158, 11, 0.35)',
+        'glow-purple': '0 0 20px -3px rgba(139, 92, 246, 0.35)',
       },
       keyframes: {
         fadeIn: {

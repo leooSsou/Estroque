@@ -133,16 +133,19 @@ export const NFeImport: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Importação de NF-e
           </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Entrada automática de notas fiscais via XML SEFAZ com conciliação contábil e de estoque
+          </p>
         </div>
 
         <button
           onClick={handleSimulateUpload}
-          className="px-4 py-2 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] transition-all flex items-center gap-2"
+          className="px-4 py-2 rounded-full bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center gap-2"
         >
-          <Sparkles className="w-4 h-4" />
+          <Sparkles className="w-4 h-4 text-emerald-400" />
           <span>Carregar XML Exemplo</span>
         </button>
       </div>
@@ -152,17 +155,17 @@ export const NFeImport: React.FC = () => {
         <BentoCard>
           <div
             onClick={handleSimulateUpload}
-            className="border-2 border-dashed border-[rgba(142,182,155,0.25)] hover:border-[#10B981] rounded-3xl p-12 text-center cursor-pointer transition-all hover:bg-[#142522]/30 flex flex-col items-center justify-center gap-4 group"
+            className="border-2 border-dashed border-white/[0.15] hover:border-emerald-500 rounded-2xl p-12 text-center cursor-pointer transition-all hover:bg-white/[0.02] flex flex-col items-center justify-center gap-4 group"
           >
-            <div className="w-16 h-16 rounded-2xl bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] group-hover:scale-110 transition-transform">
+            <div className="w-16 h-16 rounded-2xl bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
               <UploadCloud className="w-8 h-8" />
             </div>
 
             <div>
-              <h3 className="text-base font-semibold text-[#F3FBF6]">
+              <h3 className="text-base font-semibold text-white">
                 Arraste o arquivo XML da NF-e aqui ou clique para selecionar
               </h3>
-              <p className="text-xs text-[#94A89E] mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 Padrão nacional SEFAZ NF-e v4.00
               </p>
             </div>
@@ -174,49 +177,49 @@ export const NFeImport: React.FC = () => {
           {/* Invoice Header Card */}
           <BentoCard title="Dados do Documento Fiscal">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
-                <span className="text-[11px] text-[#94A89E]">Número & Série</span>
-                <div className="text-base font-bold text-[#F3FBF6] font-mono mt-0.5">
+              <div className="p-3.5 rounded-xl bg-[#000000] border border-white/[0.16]">
+                <span className="text-[11px] text-slate-400">Número & Série</span>
+                <div className="text-base font-bold text-white mt-0.5">
                   NF-e {nfeHeader.numero} / S.{nfeHeader.serie}
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
-                <span className="text-[11px] text-[#94A89E]">Fornecedor</span>
-                <div className="text-sm font-semibold text-[#F3FBF6] truncate mt-0.5">
+              <div className="p-3.5 rounded-xl bg-[#000000] border border-white/[0.16]">
+                <span className="text-[11px] text-slate-400">Fornecedor</span>
+                <div className="text-sm font-semibold text-white truncate mt-0.5">
                   {nfeHeader.fornecedor}
                 </div>
-                <div className="text-[10px] text-[#94A89E] font-mono">{nfeHeader.cnpjFornecedor}</div>
+                <div className="text-[10px] text-slate-400">{nfeHeader.cnpjFornecedor}</div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
-                <span className="text-[11px] text-[#94A89E]">Data de Emissão</span>
-                <div className="text-sm font-medium text-[#F3FBF6] mt-0.5">
+              <div className="p-3.5 rounded-xl bg-[#000000] border border-white/[0.16]">
+                <span className="text-[11px] text-slate-400">Data de Emissão</span>
+                <div className="text-sm font-medium text-white mt-0.5">
                   {nfeHeader.dataEmissao}
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.12)]">
-                <span className="text-[11px] text-[#94A89E]">Valor Total da Nota</span>
-                <div className="text-lg font-bold text-[#10B981] font-mono mt-0.5">
+              <div className="p-3.5 rounded-xl bg-[#000000] border border-white/[0.16]">
+                <span className="text-[11px] text-slate-400">Valor Total da Nota</span>
+                <div className="text-lg font-bold text-emerald-400 mt-0.5">
                   R$ {nfeHeader.valorTotal.toFixed(2)}
                 </div>
               </div>
             </div>
 
             {/* Chave de Acesso bar */}
-            <div className="mt-4 p-3 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.14)] flex items-center justify-between gap-2">
+            <div className="mt-4 p-3 rounded-xl bg-[#000000] border border-white/[0.16] flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 truncate">
-                <span className="text-[11px] text-[#94A89E] font-semibold flex-shrink-0">
+                <span className="text-[11px] text-slate-400 font-semibold flex-shrink-0">
                   Chave 44d:
                 </span>
-                <span className="text-xs font-mono text-[#DAF1DE] truncate">
+                <span className="text-xs text-slate-300 truncate">
                   {nfeHeader.chaveAcesso}
                 </span>
               </div>
               <button
                 onClick={handleCopyChave}
-                className="p-1.5 rounded-lg hover:bg-[#142522] text-[#8EB69B] hover:text-[#F3FBF6] transition-colors flex-shrink-0"
+                className="p-1.5 rounded-lg hover:bg-white/[0.08] text-slate-400 hover:text-white transition-colors flex-shrink-0"
                 title="Copiar Chave"
               >
                 <Copy className="w-4 h-4" />
@@ -230,39 +233,39 @@ export const NFeImport: React.FC = () => {
           >
             <div className="overflow-x-auto table-scrollbar pb-2">
               <table className="w-full text-left min-w-[950px]">
-                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <thead className="bg-[#000000] border-b border-white/[0.16]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                     <th className="py-3.5 px-4">Descrição no XML</th>
                     <th className="py-3.5 px-4">EAN / NCM</th>
                     <th className="py-3.5 px-4">Quantidade</th>
                     <th className="py-3.5 px-4">Custo Unitário</th>
-                    <th className="py-3.5 px-4">Subtotal</th>
+                    <th className="py-3.5 px-4 text-emerald-400">Subtotal</th>
                     <th className="py-3.5 px-4 text-center">Ação no Catálogo</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+                <tbody className="divide-y divide-white/[0.14]">
                   {nfeItens.map((item) => (
-                    <tr key={item.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
-                      <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                    <tr key={item.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
                         {item.descricao}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B] whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
                         {item.ean} • {item.ncm}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#DAF1DE] whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-sm font-bold text-slate-200 whitespace-nowrap">
                         +{item.quantidade} un
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#C1D7C8] whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                         {item.valor_unitario.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
                         {item.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </td>
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         {item.match_existente ? (
-                          <Badge variant="mint">Atualizar Custo Médio</Badge>
+                          <Badge variant="emerald">Atualizar Custo Médio</Badge>
                         ) : (
-                          <Badge variant="sage">+ Auto-cadastro</Badge>
+                          <Badge variant="emerald">+ Auto-cadastro</Badge>
                         )}
                       </td>
                     </tr>
@@ -272,10 +275,10 @@ export const NFeImport: React.FC = () => {
             </div>
 
             {/* Confirm Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-white/[0.16]">
               <button
                 onClick={() => setParsed(false)}
-                className="px-4 py-2 rounded-full bg-[#142522] hover:bg-[#163832] text-xs font-semibold text-[#94A89E]"
+                className="px-4 py-2 rounded-full bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16]"
               >
                 Cancelar e Trocar XML
               </button>
@@ -283,7 +286,7 @@ export const NFeImport: React.FC = () => {
               <button
                 onClick={handleConfirmImport}
                 disabled={loading}
-                className="px-6 py-3 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] text-xs font-bold shadow-glow-emerald flex items-center gap-2"
+                className="px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-2 active:scale-95 transition-all"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>

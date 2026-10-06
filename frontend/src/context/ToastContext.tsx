@@ -49,26 +49,26 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-center justify-between gap-3 p-4 rounded-2xl shadow-glow-emerald border transition-all duration-300 animate-slide-in-right ${
+            className={`pointer-events-auto flex items-center justify-between gap-3 p-4 rounded-2xl shadow-xl border transition-all duration-300 animate-slide-in-right bg-[#000000]/95 backdrop-blur-md ${
               t.type === 'success'
-                ? 'bg-[#0D1917] border-[#10B981]/50 text-[#F3FBF6]'
+                ? 'border-emerald-500/30 text-white'
                 : t.type === 'error'
-                ? 'bg-[#1C0F0F] border-red-500/50 text-red-100'
+                ? 'border-rose-500/30 text-white'
                 : t.type === 'warning'
-                ? 'bg-[#1B180E] border-amber-500/50 text-amber-100'
-                : 'bg-[#0D1917] border-[#8EB69B]/40 text-[#F3FBF6]'
+                ? 'border-amber-500/30 text-white'
+                : 'border-emerald-500/30 text-white'
             }`}
           >
             <div className="flex items-center gap-3">
-              {t.type === 'success' && <CheckCircle2 className="w-5 h-5 text-[#10B981] flex-shrink-0" />}
-              {t.type === 'error' && <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />}
+              {t.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />}
+              {t.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />}
               {t.type === 'warning' && <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />}
-              {t.type === 'info' && <Info className="w-5 h-5 text-[#8EB69B] flex-shrink-0" />}
+              {t.type === 'info' && <Info className="w-5 h-5 text-emerald-400 flex-shrink-0" />}
               <span className="text-sm font-medium">{t.message}</span>
             </div>
             <button
               onClick={() => removeToast(t.id)}
-              className="text-[#94A89E] hover:text-[#F3FBF6] p-1.5 rounded-lg hover:bg-[#142522] btn-press transition-colors"
+              className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/[0.08] btn-press transition-colors"
             >
               <X className="w-4 h-4" />
             </button>

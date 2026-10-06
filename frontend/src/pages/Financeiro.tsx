@@ -116,14 +116,17 @@ export const Financeiro: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Gestão Financeira
           </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Controle de fluxo de caixa, despesas operacionais e fechamentos automatizados
+          </p>
         </div>
 
         <button
           onClick={() => setNewExpenseModal(true)}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nova Despesa</span>
@@ -136,6 +139,7 @@ export const Financeiro: React.FC = () => {
           title="Receitas"
           value={`R$ ${totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={ArrowDownRight}
+          color="emerald"
           badge={{ text: '+18.2%', trend: 'up' }}
         />
 
@@ -143,6 +147,7 @@ export const Financeiro: React.FC = () => {
           title="Despesas"
           value={`R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={ArrowUpRight}
+          color="rose"
           badge={{ text: 'Controlado', trend: 'neutral' }}
         />
 
@@ -150,6 +155,7 @@ export const Financeiro: React.FC = () => {
           title="Saldo em Caixa"
           value={`R$ ${saldoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={DollarSign}
+          color={saldoLiquido >= 0 ? 'emerald' : 'rose'}
           badge={{ text: saldoLiquido >= 0 ? '+ Superávit' : 'Déficit', trend: saldoLiquido >= 0 ? 'up' : 'warning' }}
         />
       </div>
@@ -159,20 +165,20 @@ export const Financeiro: React.FC = () => {
         {/* Entries Table (7 cols) */}
         <div className="lg:col-span-8 space-y-4">
           {/* High-Resolution Filter and Search Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-lg">
             <div className="relative flex-1 group">
-              <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3 transition-colors duration-200 pointer-events-none" />
+              <Search className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3 transition-colors duration-200 pointer-events-none" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por descrição ou categoria..."
-                className="w-full pl-12 pr-10 py-2.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+                className="w-full pl-12 pr-10 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-3.5 top-2.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                  className="absolute right-3.5 top-2.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-white/[0.1] transition-all active:scale-90"
                   title="Limpar busca"
                 >
                   <X className="w-4 h-4" />
@@ -180,45 +186,45 @@ export const Financeiro: React.FC = () => {
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] shadow-inner">
+            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#000000] border border-white/[0.16]">
               <button
                 onClick={() => setTipoFilter('TODOS')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                   tipoFilter === 'TODOS'
-                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
-                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold scale-[1.02]'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 <span>Todos</span>
-                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${tipoFilter === 'TODOS' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${tipoFilter === 'TODOS' ? 'bg-black/30 text-white' : 'bg-[#000000] text-slate-300 border border-white/[0.16]'}`}>
                   {counts.todos}
                 </span>
               </button>
 
               <button
                 onClick={() => setTipoFilter('RECEITA')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                   tipoFilter === 'RECEITA'
-                    ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
-                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold scale-[1.02]'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 <span>Receitas</span>
-                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${tipoFilter === 'RECEITA' ? 'bg-[#070E0D]/30 text-[#070E0D]' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${tipoFilter === 'RECEITA' ? 'bg-black/30 text-white' : 'bg-[#000000] text-slate-300 border border-white/[0.16]'}`}>
                   {counts.receitas}
                 </span>
               </button>
 
               <button
                 onClick={() => setTipoFilter('DESPESA')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                   tipoFilter === 'DESPESA'
-                    ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.35)] font-bold scale-[1.02]'
-                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                    ? 'bg-rose-600 text-white shadow-md shadow-rose-600/25 font-bold scale-[1.02]'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 <span>Despesas</span>
-                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${tipoFilter === 'DESPESA' ? 'bg-black/30 text-white' : 'bg-[#142522] text-[#8EB69B]'}`}>
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${tipoFilter === 'DESPESA' ? 'bg-black/30 text-white' : 'bg-[#000000] text-slate-300 border border-white/[0.16]'}`}>
                   {counts.despesas}
                 </span>
               </button>
@@ -230,8 +236,8 @@ export const Financeiro: React.FC = () => {
           >
             <div className="overflow-x-auto table-scrollbar pb-2">
               <table className="w-full text-left min-w-[900px]">
-                <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-                  <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+                <thead className="bg-[#000000] border-b border-white/[0.16]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                     <th className="py-3.5 px-4">Data</th>
                     <th className="py-3.5 px-4 text-center">Tipo</th>
                     <th className="py-3.5 px-4">Descrição</th>
@@ -240,31 +246,31 @@ export const Financeiro: React.FC = () => {
                     <th className="py-3.5 px-4 text-right">Valor</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+                <tbody className="divide-y divide-white/[0.14]">
                   {filteredLancamentos.map((l) => (
-                    <tr key={l.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
-                      <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#A2B89B] whitespace-nowrap">
+                    <tr key={l.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
                         {new Date(l.data_lancamento).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <Badge variant={l.tipo === 'RECEITA' ? 'mint' : 'danger'}>
+                        <Badge variant={l.tipo === 'RECEITA' ? 'emerald' : 'danger'}>
                           {l.tipo}
                         </Badge>
                       </td>
-                      <td className="py-3.5 px-4 font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
                         {l.descricao || l.categoria}
                       </td>
-                      <td className="py-3.5 px-4 text-xs font-mono text-[#A2B89B] whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
                         {l.categoria}
                       </td>
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'warning'}>
+                        <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
                           {l.status_pagamento}
                         </Badge>
                       </td>
                       <td
-                        className={`py-3.5 px-4 font-mono text-sm font-extrabold text-right whitespace-nowrap ${
-                          l.tipo === 'RECEITA' ? 'text-[#10B981]' : 'text-red-400'
+                        className={`py-3.5 px-4 text-sm font-bold text-right whitespace-nowrap ${
+                          l.tipo === 'RECEITA' ? 'text-emerald-400' : 'text-rose-400'
                         }`}
                       >
                         {l.tipo === 'RECEITA' ? '+' : '-'} {l.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -283,29 +289,29 @@ export const Financeiro: React.FC = () => {
             title="Fechamento Diário"
           >
             <div className="space-y-4 pt-1">
-              <div className="p-4 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.15)] space-y-3">
+              <div className="p-4 rounded-xl bg-[#000000] border border-white/[0.16] space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-1.5 text-[#10B981] font-semibold">
+                  <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                     <Clock className="w-3.5 h-3.5" /> Próxima Execução
                   </span>
-                  <span className="font-mono text-[#8EB69B]">Hoje às 23:59:00</span>
+                  <span className="text-slate-400">Hoje às 23:59:00</span>
                 </div>
 
-                <div className="border-t border-[rgba(142,182,155,0.1)] pt-2.5 text-xs text-[#94A89E] space-y-1.5">
+                <div className="border-t border-white/[0.16] pt-2.5 text-xs text-slate-300 space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Totalização de vendas por forma de pagamento</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Cálculo de CMV e Lucro Bruto do dia</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Alerta de itens em ruptura e estoque crítico</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-[#10B981]" />
+                    <Mail className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Disparo de e-mail executivo ao proprietário</span>
                   </div>
                 </div>
@@ -313,9 +319,9 @@ export const Financeiro: React.FC = () => {
 
               <button
                 onClick={handleResendDailyEmail}
-                className="w-full py-2.5 px-4 rounded-full bg-[#142522] hover:bg-[#163832] border border-[#10B981]/30 text-xs font-semibold text-[#10B981] flex items-center justify-center gap-2 transition-all"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white flex items-center justify-center gap-2 transition-all"
               >
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Simular Envio de Relatório</span>
               </button>
             </div>
@@ -331,13 +337,13 @@ export const Financeiro: React.FC = () => {
       >
         <form onSubmit={handleCreateExpense} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Categoria
             </label>
             <select
               value={despesaCategoria}
               onChange={(e) => setDespesaCategoria(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             >
               <option value="Aluguel & Condomínio">Aluguel & Condomínio</option>
               <option value="Energia Elétrica & Internet">Energia Elétrica & Internet</option>
@@ -349,7 +355,7 @@ export const Financeiro: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Descrição / Detalhes
             </label>
             <input
@@ -358,13 +364,13 @@ export const Financeiro: React.FC = () => {
               value={despesaDescricao}
               onChange={(e) => setDespesaDescricao(e.target.value)}
               placeholder="Ex: Pagamento da fatura de energia CPFL"
-              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Valor (R$)
               </label>
               <input
@@ -374,18 +380,18 @@ export const Financeiro: React.FC = () => {
                 required
                 value={despesaValor}
                 onChange={(e) => setDespesaValor(parseFloat(e.target.value) || 0)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Status Pagamento
               </label>
               <select
                 value={despesaStatus}
                 onChange={(e) => setDespesaStatus(e.target.value as 'PENDENTE' | 'PAGO')}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               >
                 <option value="PAGO">Liquidado (Pago)</option>
                 <option value="PENDENTE">A Pagar (Pendente)</option>
@@ -393,17 +399,17 @@ export const Financeiro: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setNewExpenseModal(false)}
-              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
             >
               Lançar Despesa
             </button>

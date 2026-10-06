@@ -43,7 +43,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: saas_celery_worker
-    command: celery -A src.infrastructure.tasks.celery_app worker --loglevel=info
+    command: celery -A src.infrastructure.tasks.celery_app worker -c 1 --loglevel=info
+    profiles:
+      - celery
     volumes:
       - .:/app
     environment:
@@ -59,6 +61,8 @@ services:
       dockerfile: Dockerfile
     container_name: saas_celery_beat
     command: celery -A src.infrastructure.tasks.celery_app beat --loglevel=info
+    profiles:
+      - celery
     volumes:
       - .:/app
     environment:

@@ -115,14 +115,17 @@ export const Estoque: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#F3FBF6] tracking-tight">
+          <h1 className="text-2xl font-bold text-white tracking-tight">
             Controle de Estoque
           </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Gestão multi-loja, controle de rupturas e valorização de inventário
+          </p>
         </div>
 
         <button
           onClick={() => handleOpenMovement()}
-          className="px-5 py-2.5 rounded-full bg-[#10B981] hover:bg-[#059669] text-[#070E0D] font-bold text-xs shadow-glow-emerald transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nova Movimentação</span>
@@ -130,22 +133,22 @@ export const Estoque: React.FC = () => {
       </div>
 
       {/* High-Resolution Filter & Store Bar */}
-      <div className="p-4 rounded-3xl bg-[#0D1917] border border-[rgba(142,182,155,0.18)] shadow-bento-dark space-y-3.5">
+      <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-lg space-y-3.5">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
           {/* Search Input with Focus Ring & Clear Button */}
           <div className="relative flex-1 max-w-xl group">
-            <Search className="w-5 h-5 text-[#8EB69B] group-focus-within:text-[#10B981] absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+            <Search className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por descrição do item ou SKU..."
-              className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-medium text-[#F3FBF6] placeholder-[#5E756B] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all duration-200 shadow-inner"
+              className="w-full pl-12 pr-10 py-3 rounded-xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                className="absolute right-3.5 top-3.5 text-[#8EB69B] hover:text-[#F3FBF6] p-0.5 rounded-full hover:bg-[rgba(142,182,155,0.15)] transition-all active:scale-90"
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-white p-0.5 rounded-full hover:bg-white/[0.1] transition-all active:scale-90"
                 title="Limpar busca"
               >
                 <X className="w-4 h-4" />
@@ -154,29 +157,36 @@ export const Estoque: React.FC = () => {
           </div>
 
           {/* Quick Status Filter Pills */}
-          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#070E0D] border border-[rgba(142,182,155,0.18)] overflow-x-auto table-scrollbar shadow-inner">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-[#000000] border border-white/[0.16] overflow-x-auto table-scrollbar">
             {[
-              { id: 'TODOS', label: 'Todos os Itens', count: counts.todos },
-              { id: 'BAIXO', label: 'Estoque Baixo', count: counts.baixo },
-              { id: 'RUPTURA', label: 'Rupturas', count: counts.ruptura },
+              { id: 'TODOS', label: 'Todos os Itens', count: counts.todos, color: 'emerald' },
+              { id: 'BAIXO', label: 'Estoque Baixo', count: counts.baixo, color: 'amber' },
+              { id: 'RUPTURA', label: 'Rupturas', count: counts.ruptura, color: 'rose' },
             ].map((st) => {
               const isActive = statusFilter === st.id;
+              const activeClass =
+                st.color === 'emerald'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold'
+                  : st.color === 'amber'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 font-bold'
+                  : 'bg-rose-600 text-white shadow-md shadow-rose-600/25 font-bold';
+
               return (
                 <button
                   key={st.id}
                   onClick={() => setStatusFilter(st.id as any)}
-                  className={`px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
+                  className={`px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap active:scale-95 ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-bold scale-[1.02]'
-                      : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-transparent hover:border-[rgba(142,182,155,0.18)]'
+                      ? `${activeClass} scale-[1.02]`
+                      : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
                   <span>{st.label}</span>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-mono font-bold transition-all ${
+                    className={`px-2 py-0.5 rounded-full text-xs font-bold transition-all ${
                       isActive
-                        ? 'bg-[#070E0D]/30 text-[#070E0D]'
-                        : 'bg-[#142522] text-[#8EB69B] border border-[rgba(142,182,155,0.12)]'
+                        ? 'bg-black/30 text-white'
+                        : 'bg-[#000000] text-slate-300 border border-white/[0.16]'
                     }`}
                   >
                     {st.count}
@@ -188,17 +198,17 @@ export const Estoque: React.FC = () => {
         </div>
 
         {/* Store Selection Segmented Bar */}
-        <div className="pt-2 border-t border-[rgba(142,182,155,0.1)] flex items-center gap-2 overflow-x-auto table-scrollbar">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#8EB69B] flex items-center gap-1.5 mr-1 flex-shrink-0">
-            <Store className="w-3.5 h-3.5 text-[#10B981]" />
+        <div className="pt-2 border-t border-white/[0.16] flex items-center gap-2 overflow-x-auto table-scrollbar">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 mr-1 flex-shrink-0">
+            <Store className="w-3.5 h-3.5 text-emerald-400" />
             Filial:
           </span>
           <button
             onClick={() => setSelectedLojaFilter('TODAS')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
               selectedLojaFilter === 'TODAS'
-                ? 'bg-[#163832] text-[#10B981] border border-[#10B981]/50 font-bold shadow-glow-emerald'
-                : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-bold'
+                : 'bg-[#000000] text-slate-400 hover:text-white border border-white/[0.16] hover:border-white/[0.2]'
             }`}
           >
             <span>Todas as Lojas (Consolidado)</span>
@@ -209,10 +219,10 @@ export const Estoque: React.FC = () => {
               <button
                 key={l.id}
                 onClick={() => setSelectedLojaFilter(l.id)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
                   isSelected
-                    ? 'bg-[#163832] text-[#10B981] border border-[#10B981]/50 font-bold shadow-glow-emerald'
-                    : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] border border-[rgba(142,182,155,0.14)] hover:border-[rgba(142,182,155,0.3)]'
+                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 font-bold'
+                    : 'bg-[#000000] text-slate-400 hover:text-white border border-white/[0.16] hover:border-white/[0.2]'
                 }`}
               >
                 <span>{l.nome}</span>
@@ -226,8 +236,8 @@ export const Estoque: React.FC = () => {
       <BentoCard>
         <div className="overflow-x-auto table-scrollbar pb-2">
           <table className="w-full text-left min-w-[1050px]">
-            <thead className="bg-[#0A1614] border-b border-[rgba(142,182,155,0.18)]">
-              <tr className="text-xs font-bold uppercase tracking-wider text-[#A2B89B] whitespace-nowrap">
+            <thead className="bg-[#000000] border-b border-white/[0.16]">
+              <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                 <th className="py-3.5 px-4">Produto</th>
                 <th className="py-3.5 px-4">SKU</th>
                 <th className="py-3.5 px-4">Estoque Mínimo</th>
@@ -237,13 +247,13 @@ export const Estoque: React.FC = () => {
                     <th
                       key={loja.id}
                       className={`py-3.5 px-4 transition-colors ${
-                        isSelected ? 'text-[#10B981] bg-[#163832]/40' : ''
+                        isSelected ? 'text-emerald-400 bg-emerald-500/10' : ''
                       }`}
                     >
                       <div className="flex items-center gap-1.5 whitespace-nowrap">
                         <span>{loja.nome}</span>
                         {isSelected && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         )}
                       </div>
                     </th>
@@ -254,27 +264,27 @@ export const Estoque: React.FC = () => {
                 <th className="py-3.5 px-4 text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(142,182,155,0.08)]">
+            <tbody className="divide-y divide-white/[0.14]">
               {filtered.map((prod) => {
                 const totalStock = prod.estoque_total ?? 0;
                 const totalCostVal = totalStock * prod.preco_custo;
 
                 return (
-                  <tr key={prod.id} className="hover:bg-[#142522]/50 transition-colors group whitespace-nowrap">
+                  <tr key={prod.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#142522] border border-[rgba(142,182,155,0.2)] flex items-center justify-center text-[#10B981] flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
                           <Package className="w-4 h-4" />
                         </div>
-                        <span className="font-bold text-sm text-[#F3FBF6] group-hover:text-[#10B981] transition-colors whitespace-nowrap">
+                        <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
                           {prod.nome}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                       {prod.sku}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-[#A2B89B] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
                       {prod.estoque_minimo || 5} un
                     </td>
 
@@ -285,17 +295,17 @@ export const Estoque: React.FC = () => {
                       return (
                         <td
                           key={loja.id}
-                          className={`py-3.5 px-4 font-mono transition-colors whitespace-nowrap ${
-                            isSelected ? 'bg-[#163832]/20 font-bold' : ''
+                          className={`py-3.5 px-4 transition-colors whitespace-nowrap ${
+                            isSelected ? 'bg-emerald-500/10 font-bold' : ''
                           }`}
                         >
                           <span
                             className={`font-bold text-sm ${
                               stockInLoja === 0
-                                ? 'text-red-400 font-extrabold'
+                                ? 'text-rose-400 font-bold'
                                 : stockInLoja <= (prod.estoque_minimo || 5)
                                 ? 'text-amber-400'
-                                : 'text-[#DAF1DE]'
+                                : 'text-slate-200'
                             }`}
                           >
                             {stockInLoja} un
@@ -304,18 +314,18 @@ export const Estoque: React.FC = () => {
                       );
                     })}
 
-                    <td className="py-3.5 px-4 font-mono text-sm font-extrabold text-[#10B981] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
                       {totalStock} un
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-xs font-semibold text-[#DAF1DE] whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
                       {totalCostVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </td>
 
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <button
                         onClick={() => handleOpenMovement(prod)}
-                        className="px-3.5 py-1.5 rounded-xl bg-[#142522] hover:bg-[#163832] text-[#DAF1DE] hover:text-white border border-[rgba(142,182,155,0.25)] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
+                        className="px-3.5 py-1.5 rounded-lg bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/[0.16] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
                       >
                         Ajustar
                       </button>
@@ -336,13 +346,13 @@ export const Estoque: React.FC = () => {
       >
         <form onSubmit={handleSubmitMovement} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Produto
             </label>
             <select
               value={movProdutoId}
               onChange={(e) => setMovProdutoId(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             >
               {produtos.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -354,13 +364,13 @@ export const Estoque: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Loja / Depósito
               </label>
               <select
                 value={movLojaId}
                 onChange={(e) => setMovLojaId(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               >
                 {lojas.map((l) => (
                   <option key={l.id} value={l.id}>
@@ -371,7 +381,7 @@ export const Estoque: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Tipo da Operação
               </label>
               <div className="grid grid-cols-2 gap-2.5">
@@ -380,8 +390,8 @@ export const Estoque: React.FC = () => {
                   onClick={() => setMovTipo('ENTRADA')}
                   className={`h-11 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
                     movTipo === 'ENTRADA'
-                      ? 'bg-gradient-to-r from-[#10B981] to-[#059669] text-[#070E0D] shadow-glow-emerald font-extrabold'
-                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold'
+                      : 'bg-[#000000] text-slate-400 hover:text-white hover:bg-white/[0.04] border border-white/[0.16]'
                   }`}
                 >
                   <ArrowDownRight className="w-4 h-4" />
@@ -392,8 +402,8 @@ export const Estoque: React.FC = () => {
                   onClick={() => setMovTipo('SAIDA')}
                   className={`h-11 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
                     movTipo === 'SAIDA'
-                      ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/20 font-extrabold'
-                      : 'bg-[#070E0D] text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#142522] border border-[rgba(142,182,155,0.18)]'
+                      ? 'bg-rose-600 text-white shadow-md shadow-rose-600/25 font-bold'
+                      : 'bg-[#000000] text-slate-400 hover:text-white hover:bg-white/[0.04] border border-white/[0.16]'
                   }`}
                 >
                   <ArrowUpRight className="w-4 h-4" />
@@ -405,7 +415,7 @@ export const Estoque: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Quantidade
               </label>
               <input
@@ -414,18 +424,18 @@ export const Estoque: React.FC = () => {
                 required
                 value={movQtd}
                 onChange={(e) => setMovQtd(parseInt(e.target.value) || 1)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm font-mono text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#8EB69B] uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Motivo / Razão
               </label>
               <select
                 value={movMotivo}
                 onChange={(e) => setMovMotivo(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#070E0D] border border-[rgba(142,182,155,0.2)] text-sm text-[#F3FBF6] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/25 focus:outline-none transition-all"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
               >
                 <option value="Ajuste de inventário rotativo">Ajuste de inventário rotativo</option>
                 <option value="Avaria ou dano em transporte">Avaria ou dano em transporte</option>
@@ -436,17 +446,17 @@ export const Estoque: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[rgba(142,182,155,0.12)]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setMovementModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#142522] hover:bg-[#1B332E] text-sm font-semibold text-[#94A89E] hover:text-[#F3FBF6] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-[#070E0D] text-sm font-bold shadow-glow-emerald active:scale-95 transition-all flex items-center gap-2"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2"
             >
               Confirmar Movimentação
             </button>
