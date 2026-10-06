@@ -102,8 +102,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                     : 'w-full gap-3 px-3.5 py-2.5 text-sm font-medium'
                 } ${
                   isActive
-                    ? 'bg-[#142522] text-[#10B981] shadow-sm border border-[#10B981]/30 shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)] font-semibold'
-                    : 'text-[#94A89E] hover:text-[#F3FBF6] hover:bg-[#0D1917]'
+                    ? 'bg-[#141518] text-[#00E599] shadow-sm border border-[#00E599]/30 shadow-[0_0_15px_-3px_rgba(0,229,153,0.2)] font-semibold'
+                    : 'text-[#8A8F98] hover:text-white hover:bg-[#141518]'
                 }`
               }
               title={collapsed ? item.label : undefined}
@@ -111,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
               {({ isActive }) => (
                 <>
                   {!collapsed && isActive && (
-                    <span className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-[#10B981] rounded-r-full shadow-glow-emerald" />
+                    <span className="absolute left-0 top-2.5 bottom-2.5 w-1 bg-[#00E599] rounded-r-full shadow-glow-emerald" />
                   )}
                   <Icon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />
                   {!collapsed && (

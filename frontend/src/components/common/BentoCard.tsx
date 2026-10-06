@@ -17,13 +17,13 @@ export const BentoCard: React.FC<BentoCardProps> = ({
 }) => {
   return (
     <div
-      className={`bg-[#0D1917] border border-[rgba(142,182,155,0.12)] rounded-3xl p-5 md:p-6 shadow-bento-dark transition-all duration-300 hover:border-[rgba(142,182,155,0.28)] ${className}`}
+      className={`bg-[#141518] border border-white/[0.07] rounded-3xl p-5 md:p-6 shadow-bento-dark transition-all duration-300 hover:border-white/[0.16] ${className}`}
     >
       {(title || subtitle || action) && (
-        <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-[rgba(142,182,155,0.08)]">
+        <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-white/[0.06]">
           <div>
-            {title && <h3 className="text-base font-semibold text-[#F3FBF6]">{title}</h3>}
-            {subtitle && <p className="text-xs text-[#94A89E] mt-0.5">{subtitle}</p>}
+            {title && <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>}
+            {subtitle && <p className="text-xs text-[#8A8F98] mt-0.5">{subtitle}</p>}
           </div>
           {action && <div>{action}</div>}
         </div>

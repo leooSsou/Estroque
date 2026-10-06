@@ -14,20 +14,22 @@ export default {
       colors: {
         estroque: {
           canvas: '#000000',
-          card: '#0D1917',
-          elevated: '#142522',
-          modal: '#1B332E',
-          border: 'rgba(142, 182, 155, 0.12)',
-          vibrant: '#10B981',
+          card: '#141518',
+          elevated: '#1D1E22',
+          modal: '#18191D',
+          border: 'rgba(255, 255, 255, 0.08)',
+          vibrant: '#00E599',
+          neonGreen: '#00E599',
+          neonAmber: '#FF9F43',
           emerald: '#0B2B26',
           pine: '#163832',
           forest: '#235347',
-          sage: '#8EB69B',
-          mint: '#DAF1DE',
+          sage: '#8A8F98',
+          mint: '#E5E7EB',
           text: {
-            primary: '#F3FBF6',
-            secondary: '#94A89E',
-            muted: '#5E756B',
+            primary: '#FFFFFF',
+            secondary: '#8A8F98',
+            muted: '#62666D',
           }
         }
       },
@@ -36,9 +38,11 @@ export default {
         'card': '24px',
       },
       boxShadow: {
-        'bento-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(142, 182, 155, 0.12)',
-        'glow-emerald': '0 0 25px -5px rgba(16, 185, 129, 0.3)',
-        'glow-emerald-lg': '0 0 35px -5px rgba(16, 185, 129, 0.45)',
+        'bento-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.07)',
+        'glow-emerald': '0 0 25px -5px rgba(0, 229, 153, 0.35)',
+        'glow-emerald-lg': '0 0 35px -5px rgba(0, 229, 153, 0.5)',
+        'glow-neon-green': '0 0 20px -2px rgba(0, 229, 153, 0.45)',
+        'glow-neon-amber': '0 0 20px -2px rgba(255, 159, 67, 0.45)',
       },
       keyframes: {
         fadeIn: {
