@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, Loja } from '../types';
+import { User, Loja, RegisterTenantPayload } from '../types';
 import { api } from '../services/api';
 import { storage } from '../services/storage';
 
@@ -10,6 +10,7 @@ interface AuthContextType {
   activeLoja: Loja | null;
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<void>;
+  registerTenant: (dados: RegisterTenantPayload) => Promise<void>;
   logout: () => void;
   setActiveLoja: (loja: Loja) => void;
   refreshLojas: () => Promise<void>;
@@ -78,6 +79,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const registerTenant = async (dados: RegisterTenantPayload) => {
+    setIsLoading(true);
+    try {
+      const res = await api.registerTenant(dados);
+      setUser(res.user);
+      setToken(res.token);
+      await refreshLojas();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     api.logout();
     setUser(null);
@@ -93,6 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeLoja,
         isLoading,
         login,
+        registerTenant,
         logout,
         setActiveLoja,
         refreshLojas,

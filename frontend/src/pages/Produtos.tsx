@@ -93,15 +93,20 @@ export const Produtos: React.FC = () => {
     if (!selectedProduto) return;
     try {
       await api.updateProduto(selectedProduto.id, {
+        nome: selectedProduto.nome,
         preco_custo: costPrice,
         markup: markupPercent,
         preco_venda: sellingPrice,
+        codigo_barras: selectedProduto.codigo_barras,
+        fornecedor_id: selectedProduto.fornecedor_id,
+        ativo: selectedProduto.ativo,
       });
       toast.success(`Precificação de "${selectedProduto.nome}" atualizada!`);
       setMarkupModalOpen(false);
       fetchProdutos();
-    } catch {
-      toast.error('Erro ao salvar atualização de markup.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao salvar atualização de markup.';
+      toast.error(msg);
     }
   };
 
@@ -129,8 +134,9 @@ export const Produtos: React.FC = () => {
       setNewSku('');
       setNewBarcode('');
       fetchProdutos();
-    } catch {
-      toast.error('Erro ao cadastrar produto.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao cadastrar produto.';
+      toast.error(msg);
     }
   };
 
