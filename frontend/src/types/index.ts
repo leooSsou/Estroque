@@ -217,3 +217,42 @@ export interface CaixaTurno {
   fundo_inicial: number;
   operacoes: OperacaoCaixa[];
 }
+
+export interface ItemImportadoNFe {
+  produto: Produto;
+  quantidade_importada: number;
+  valor_unitario_nfe: number;
+  novo_produto_cadastrado: boolean;
+}
+
+export interface ImportarNFeResponse {
+  fornecedor: Fornecedor;
+  itens_processados: ItemImportadoNFe[];
+}
+
+export interface AuditarEstoqueResponse {
+  auditoria: {
+    id: string;
+    loja_id: string;
+    tenant_id: string;
+    data_auditoria?: string | null;
+    itens: {
+      id: string;
+      produto_id: string;
+      quantidade_fisica: number;
+      quantidade_sistema: number;
+    }[];
+  };
+  movimentacoes_geradas: MovimentacaoEstoque[];
+}
+
+export interface RegisterTenantPayload {
+  nome_fantasia: string;
+  razao_social: string;
+  cnpj: string;
+  endereco_loja?: string;
+  dono_nome: string;
+  dono_email: string;
+  dono_senha: string;
+}
+

@@ -29,43 +29,54 @@ export const Auditoria: React.FC = () => {
   const [barcodeQuery, setBarcodeQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const loadAuditItems = async () => {
+    const prods = await api.getProdutos(activeLoja?.id);
+    const auditList: AuditItemState[] = prods.map((p) => {
+      const stock = activeLoja?.id ? p.estoque_por_loja?.[activeLoja.id] ?? 0 : p.estoque_total ?? 0;
+      return {
+        produto: p,
+        sistema: stock,
+        contado: stock,
+      };
+    });
+    setItems(auditList);
+  };
+
   useEffect(() => {
-    const init = async () => {
-      const prods = await api.getProdutos(activeLoja?.id);
-      const auditList: AuditItemState[] = prods.map((p) => {
-        const stock = activeLoja?.id ? p.estoque_por_loja?.[activeLoja.id] ?? 0 : p.estoque_total ?? 0;
-        return {
-          produto: p,
-          sistema: stock,
-          contado: stock, // Pre-populated for review or blind testing
-        };
-      });
-      setItems(auditList);
-    };
-    init();
+    loadAuditItems();
   }, [activeLoja]);
 
-  const handleIncrement = (index: number, delta: number) => {
-    setItems((prev) => {
-      const copy = [...prev];
-      copy[index].contado = Math.max(0, copy[index].contado + delta);
-      return copy;
-    });
+  const handleIncrementByProduct = (produtoId: string, delta: number) => {
+    setItems((prev) =>
+      prev.map((it) =>
+        it.produto.id === produtoId
+          ? { ...it, contado: Math.max(0, it.contado + delta) }
+          : it
+      )
+    );
+  };
+
+  const handleSetContadoByProduct = (produtoId: string, val: number) => {
+    setItems((prev) =>
+      prev.map((it) =>
+        it.produto.id === produtoId ? { ...it, contado: Math.max(0, val) } : it
+      )
+    );
   };
 
   const handleBarcodeScan = (e: React.FormEvent) => {
     e.preventDefault();
     if (!barcodeQuery.trim()) return;
 
-    const idx = items.findIndex(
+    const found = items.find(
       (it) =>
         it.produto.codigo_barras === barcodeQuery ||
         it.produto.sku.toLowerCase() === barcodeQuery.toLowerCase()
     );
 
-    if (idx !== -1) {
-      handleIncrement(idx, 1);
-      toast.success(`Item BIPADO: +1 un para ${items[idx].produto.nome}`);
+    if (found) {
+      handleIncrementByProduct(found.produto.id, 1);
+      toast.success(`Item BIPADO: +1 un para ${found.produto.nome}`);
       setBarcodeQuery('');
     } else {
       toast.error(`Nenhum item com código "${barcodeQuery}" encontrado nesta loja.`);
@@ -73,28 +84,29 @@ export const Auditoria: React.FC = () => {
   };
 
   const handleApproveReconciliation = async () => {
+    if (items.length === 0) {
+      toast.info('Não há produtos carregados para auditar.');
+      return;
+    }
+
     setLoading(true);
     try {
-      let adjustmentsCount = 0;
-      for (const item of items) {
-        const diff = item.contado - item.sistema;
-        if (diff !== 0) {
-          adjustmentsCount++;
-          await api.movimentarEstoque({
-            loja_id: activeLoja?.id || '11111111-1111-1111-1111-111111111111',
-            produto_id: item.produto.id,
-            tipo: diff > 0 ? 'ENTRADA' : 'SAIDA',
-            quantidade: Math.abs(diff),
-            motivo: `Ajuste de Auditoria Física Cega (#AUD-${Date.now().toString().slice(-4)})`,
-          });
-        }
-      }
+      const lojaId = activeLoja?.id || '11111111-1111-1111-1111-111111111111';
+      const payload = items.map((item) => ({
+        produto_id: item.produto.id,
+        quantidade_fisica: item.contado,
+      }));
+
+      const res = await api.auditarEstoque(lojaId, payload);
+      const adjustmentsCount = res.movimentacoes_geradas.length;
 
       toast.success(
-        `Auditoria concluída! ${adjustmentsCount} ajustes conciliados com sucesso no Ledger.`
+        `Auditoria concluída! ${adjustmentsCount} ajuste(s) conciliado(s) com sucesso no Ledger.`
       );
-    } catch {
-      toast.error('Erro ao aprovar conciliação.');
+      await loadAuditItems();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao aprovar conciliação.';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -252,7 +264,7 @@ export const Auditoria: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.14]">
-              {filteredItems.map((item, idx) => {
+              {filteredItems.map((item) => {
                 const diff = item.contado - item.sistema;
                 const impact = diff * item.produto.preco_custo;
 
@@ -279,11 +291,7 @@ export const Auditoria: React.FC = () => {
                         value={item.contado}
                         onChange={(e) => {
                           const val = parseInt(e.target.value) || 0;
-                          setItems((prev) => {
-                            const copy = [...prev];
-                            copy[idx].contado = val;
-                            return copy;
-                          });
+                          handleSetContadoByProduct(item.produto.id, val);
                         }}
                         className="w-24 px-3 py-1.5 rounded-xl bg-[#000000] border border-white/[0.16] text-center text-sm text-emerald-400 font-bold focus:border-emerald-500 focus:outline-none"
                       />
@@ -314,21 +322,21 @@ export const Auditoria: React.FC = () => {
                     <td className="py-4 px-4 text-right">
                       <div className="inline-flex items-center gap-1.5">
                         <button
-                          onClick={() => handleIncrement(idx, -1)}
+                          onClick={() => handleIncrementByProduct(item.produto.id, -1)}
                           className="w-9 h-9 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-bold text-white border border-white/[0.16] transition-colors btn-press flex items-center justify-center"
                           title="Subtrair 1"
                         >
                           -1
                         </button>
                         <button
-                          onClick={() => handleIncrement(idx, 1)}
+                          onClick={() => handleIncrementByProduct(item.produto.id, 1)}
                           className="w-9 h-9 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-bold text-emerald-400 border border-white/[0.16] transition-colors btn-press flex items-center justify-center"
                           title="Somar 1"
                         >
                           +1
                         </button>
                         <button
-                          onClick={() => handleIncrement(idx, 5)}
+                          onClick={() => handleIncrementByProduct(item.produto.id, 5)}
                           className="px-3 h-9 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-bold text-emerald-400 border border-white/[0.16] transition-colors btn-press flex items-center justify-center"
                           title="Somar 5"
                         >
