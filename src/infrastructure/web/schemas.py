@@ -54,6 +54,18 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UsuarioCreateRequest(BaseModel):
+    """
+    Schema para requisição de cadastro de um novo colaborador/gerente no Tenant.
+    """
+    nome: str = Field(..., min_length=1, max_length=100, description="Nome completo do colaborador.")
+    email: EmailStr = Field(..., description="E-mail de acesso do colaborador.")
+    senha: str = Field(..., min_length=6, max_length=100, description="Senha inicial de acesso (mínimo 6 caracteres).")
+    role: str = Field(default="GERENTE", pattern="^(DONO|GERENTE)$", description="Perfil de acesso: DONO ou GERENTE.")
+    loja_atribuida_id: UUID | None = Field(None, description="ID da loja física vinculada (obrigatório para GERENTE).")
+
+
+
 class LojaCreateRequest(BaseModel):
     """
     Schema para requisição de criação de uma nova Loja.
@@ -399,6 +411,15 @@ class RegistrarDespesaRequest(BaseModel):
     categoria: str = Field(..., min_length=1, max_length=50, description="Categoria da despesa.")
     status_pagamento: str = Field(..., description="Status do pagamento (PENDENTE ou PAGO).")
     data_pagamento: datetime | None = Field(None, description="Data de efetivação do pagamento.")
+
+
+class RegistrarReceitaRequest(BaseModel):
+    loja_id: UUID = Field(..., description="ID da loja associada à receita.")
+    valor: float = Field(..., gt=0, description="Valor da receita.")
+    categoria: str = Field(..., min_length=1, max_length=50, description="Categoria da receita (ex: Suprimento de Caixa).")
+    status_pagamento: str = Field(default="PAGO", description="Status do recebimento (PENDENTE ou PAGO).")
+    data_pagamento: datetime | None = Field(None, description="Data de efetivação do recebimento.")
+
 
 
 class FinanceiroLancamentoResponse(BaseModel):

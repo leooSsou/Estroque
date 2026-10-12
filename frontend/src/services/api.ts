@@ -664,6 +664,33 @@ class ApiClient {
     storage.removerVendaEspera(id);
   }
 
+  // --- EQUIPE & USUÁRIOS ---
+  async getUsuarios(): Promise<User[]> {
+    const res = await this.request<User[]>('/auth/usuarios');
+    if (res.data && Array.isArray(res.data)) {
+      return res.data;
+    }
+    return [storage.getUser()];
+  }
+
+  async createUsuario(dados: {
+    nome: string;
+    email: string;
+    senha: string;
+    role: 'DONO' | 'GERENTE';
+    loja_atribuida_id?: string | null;
+  }): Promise<User> {
+    const res = await this.request<User>('/auth/usuarios', {
+      method: 'POST',
+      body: JSON.stringify(dados),
+    });
+    if (res.isBackend && res.error) {
+      throw new Error(res.error);
+    }
+    if (res.data) return res.data;
+    throw new Error('Servidor indisponível para cadastro de usuário.');
+  }
+
   // --- OPERAÇÕES DE CAIXA (TURNO) ---
   async getCaixaTurno(): Promise<CaixaTurno> {
     return storage.getCaixaTurno();
@@ -673,17 +700,79 @@ class ApiClient {
     return storage.abrirCaixa(fundoInicial);
   }
 
-  async registrarSangria(valor: number, motivo: string): Promise<OperacaoCaixa> {
-    return storage.registrarSangria(valor, motivo);
+  async registrarSangria(valor: number, motivo: string, lojaId?: string): Promise<OperacaoCaixa> {
+    const op = storage.registrarSangria(valor, motivo);
+    const activeId =
+      lojaId ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
+      await this.request('/financeiro/despesas', {
+        method: 'POST',
+        body: JSON.stringify({
+          loja_id: activeId,
+          valor,
+          categoria: `Sangria de Caixa: ${motivo}`.slice(0, 50),
+          status_pagamento: 'PAGO',
+        }),
+      });
+    }
+    return op;
   }
 
-  async registrarSuprimento(valor: number, motivo: string): Promise<OperacaoCaixa> {
-    return storage.registrarSuprimento(valor, motivo);
+  async registrarSuprimento(valor: number, motivo: string, lojaId?: string): Promise<OperacaoCaixa> {
+    const op = storage.registrarSuprimento(valor, motivo);
+    const activeId =
+      lojaId ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
+      await this.request('/financeiro/receitas', {
+        method: 'POST',
+        body: JSON.stringify({
+          loja_id: activeId,
+          valor,
+          categoria: `Suprimento de Caixa: ${motivo}`.slice(0, 50),
+          status_pagamento: 'PAGO',
+        }),
+      });
+    }
+    return op;
   }
 
-  async fecharCaixa(saldoInformado: number, observacao?: string): Promise<{ diferenca: number; resumo: CaixaTurno }> {
-    return storage.fecharCaixa(saldoInformado, observacao);
+  async fecharCaixa(
+    saldoInformado: number,
+    observacao?: string,
+    lojaId?: string
+  ): Promise<{ diferenca: number; resumo: CaixaTurno }> {
+    const res = storage.fecharCaixa(saldoInformado, observacao);
+    const activeId =
+      lojaId ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-') && res.diferenca !== 0) {
+      if (res.diferenca < 0) {
+        await this.request('/financeiro/despesas', {
+          method: 'POST',
+          body: JSON.stringify({
+            loja_id: activeId,
+            valor: Math.abs(res.diferenca),
+            categoria: 'Quebra de Caixa (Fechamento)',
+            status_pagamento: 'PAGO',
+          }),
+        });
+      } else {
+        await this.request('/financeiro/receitas', {
+          method: 'POST',
+          body: JSON.stringify({
+            loja_id: activeId,
+            valor: res.diferenca,
+            categoria: 'Sobra de Caixa (Fechamento)',
+            status_pagamento: 'PAGO',
+          }),
+        });
+      }
+    }
+    return res;
   }
+
 
   // --- FINANCEIRO ---
   async getFinanceiro(lojaId?: string): Promise<FinanceiroLancamento[]> {

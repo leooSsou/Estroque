@@ -27,3 +27,10 @@ class UsuarioRepository(ABC):
         """
         Busca um Usuário cadastrado pelo ID.
         """
+
+    def listar_por_tenant(self, tenant_id: UUID) -> list[Usuario]:
+        """
+        Lista todos os Usuários pertencentes ao Tenant informado.
+        """
+        return []
+

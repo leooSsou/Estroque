@@ -6,8 +6,10 @@ from src.domain.exceptions.business import (
     CnpjEmUsoException,
     CredenciaisInvalidasException,
     EmailEmUsoException,
+    LojaNaoEncontradaException,
 )
 from src.infrastructure.database.repositorios_concrete import (
+    RepositorioLojaSQLAlchemy,
     RepositorioTenantSQLAlchemy,
     RepositorioUsuarioSQLAlchemy,
 )
@@ -22,6 +24,7 @@ from src.infrastructure.web.schemas import (
     RegisterRequest,
     RegisterResponse,
     UserResponse,
+    UsuarioCreateRequest,
 )
 from src.use_cases.autenticacao.autenticar_usuario import (
     AutenticarUsuario,
@@ -135,3 +138,79 @@ def get_me(current_user: Usuario = Depends(get_current_user)) -> UserResponse:
         tenant_id=current_user.tenant_id,
         loja_atribuida_id=current_user.loja_atribuida_id
     )
+
+
+@router.get("/usuarios", response_model=list[UserResponse])
+def listar_usuarios(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> list[UserResponse]:
+    """
+    Lista todos os colaboradores/gerentes do Tenant do usuário logado.
+    """
+    usuario_repo = RepositorioUsuarioSQLAlchemy(db)
+    usuarios = usuario_repo.listar_por_tenant(current_user.tenant_id)
+    return [UserResponse.model_validate(u) for u in usuarios]
+
+
+@router.post("/usuarios", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def criar_usuario_equipe(
+    data: UsuarioCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> UserResponse:
+    """
+    Permite ao DONO cadastrar novos GERENTES (vinculados a uma filial específica)
+    ou co-administradores (DONO) no Tenant.
+    """
+    if current_user.role not in {"DONO", "ADMIN_SAAS"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apenas o proprietário (DONO) pode cadastrar novos colaboradores.",
+        )
+
+    loja_repo = RepositorioLojaSQLAlchemy(db)
+    usuario_repo = RepositorioUsuarioSQLAlchemy(db)
+    servico_cripto = BcryptServicoCriptografia()
+
+    if data.role == "GERENTE":
+        if not data.loja_atribuida_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Usuários com perfil de GERENTE devem estar vinculados a uma loja física.",
+            )
+        loja = loja_repo.obter_por_id(data.loja_atribuida_id, current_user.tenant_id)
+        if not loja:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(LojaNaoEncontradaException(str(data.loja_atribuida_id))),
+            )
+
+    try:
+        db.info["ignore_tenant_filter"] = True
+        email_normalizado = str(data.email).strip().lower()
+        existente = usuario_repo.obter_por_email(email_normalizado)
+        if existente:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"O e-mail '{email_normalizado}' já está em uso por outro usuário.",
+            )
+
+        novo_usuario = Usuario(
+            nome=data.nome,
+            email=email_normalizado,
+            senha_hash=servico_cripto.gerar_hash(data.senha),
+            role=data.role,
+            tenant_id=current_user.tenant_id,
+            loja_atribuida_id=data.loja_atribuida_id if data.role == "GERENTE" else None,
+        )
+        salvo = usuario_repo.salvar(novo_usuario)
+        return UserResponse.model_validate(salvo)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+    finally:
+        db.info.pop("ignore_tenant_filter", None)
+

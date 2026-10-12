@@ -85,3 +85,41 @@ def test_fluxo_autenticacao_completo(client: TestClient):
     response_me_falha = client.get("/auth/me", headers=headers_invalidos)
     assert response_me_falha.status_code == 401
     assert "token inválido" in response_me_falha.json()["detail"].lower()
+
+    # 8. Criar loja e cadastrar GERENTE da equipe via POST /auth/usuarios
+    res_loja = client.post("/lojas/", json={
+        "nome": "Filial Centro",
+        "cnpj": "19.869.091/0001-24",
+        "endereco": "Rua XV, 100"
+    }, headers=headers)
+    assert res_loja.status_code == 201
+    loja_id = res_loja.json()["id"]
+
+    res_novo_gerente = client.post("/auth/usuarios", json={
+        "nome": "Marina Gerente",
+        "email": "marina@express.com",
+        "senha": "senha_gerente_123",
+        "role": "GERENTE",
+        "loja_atribuida_id": loja_id
+    }, headers=headers)
+    assert res_novo_gerente.status_code == 201
+    gerente_data = res_novo_gerente.json()
+    assert gerente_data["role"] == "GERENTE"
+    assert gerente_data["loja_atribuida_id"] == loja_id
+
+    # 9. Listar usuários da equipe via GET /auth/usuarios
+    res_equipe = client.get("/auth/usuarios", headers=headers)
+    assert res_equipe.status_code == 200
+    assert len(res_equipe.json()) == 2
+
+    # 10. Registrar suprimento/receita avulsa via POST /financeiro/receitas
+    res_rec = client.post("/financeiro/receitas", json={
+        "loja_id": loja_id,
+        "valor": 200.0,
+        "categoria": "Suprimento de Caixa",
+        "status_pagamento": "PAGO"
+    }, headers=headers)
+    assert res_rec.status_code == 201
+    assert res_rec.json()["tipo"] == "RECEITA"
+    assert res_rec.json()["valor"] == 200.0
+
