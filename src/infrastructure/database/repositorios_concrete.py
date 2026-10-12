@@ -184,6 +184,23 @@ class RepositorioUsuarioSQLAlchemy(UsuarioRepository):
             loja_atribuida_id=model.loja_atribuida_id
         )
 
+    def listar_por_tenant(self, tenant_id: UUID) -> list[Usuario]:
+        self.db.info["tenant_id"] = tenant_id
+        models = self.db.query(UsuarioModel).filter(UsuarioModel.tenant_id == tenant_id).all()
+        return [
+            Usuario(
+                id=m.id,
+                nome=m.nome,
+                email=m.email,
+                senha_hash=m.senha_hash,
+                role=m.role,
+                tenant_id=m.tenant_id,
+                loja_atribuida_id=m.loja_atribuida_id,
+            )
+            for m in models
+        ]
+
+
 
 class RepositorioLojaSQLAlchemy(LojaRepository):
     """

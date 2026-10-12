@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
 from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
     DomainException,
@@ -19,6 +20,7 @@ from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     FinanceiroLancamentoResponse,
     RegistrarDespesaRequest,
+    RegistrarReceitaRequest,
 )
 from src.use_cases.financeiro.listar_lancamentos import (
     ListarLancamentosFinanceiros,
@@ -73,6 +75,44 @@ def registrar_despesa(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DomainException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+
+
+@router.post("/receitas", response_model=FinanceiroLancamentoResponse, status_code=status.HTTP_201_CREATED)
+def registrar_receita(
+    request: RegistrarReceitaRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> FinanceiroLancamentoResponse:
+    """
+    Registra uma receita/suprimento avulso de caixa para uma loja física.
+    """
+    exigir_acesso_loja(request.loja_id, current_user)
+
+    loja_repo = RepositorioLojaSQLAlchemy(db)
+    loja = loja_repo.obter_por_id(request.loja_id, current_user.tenant_id)
+    if not loja:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(LojaNaoEncontradaException(str(request.loja_id))),
+        )
+
+    financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
+    try:
+        lancamento = FinanceiroLancamento(
+            loja_id=request.loja_id,
+            tipo="RECEITA",
+            valor=request.valor,
+            categoria=request.categoria,
+            status_pagamento=request.status_pagamento,
+            tenant_id=current_user.tenant_id,
+            data_pagamento=request.data_pagamento or (
+                datetime.utcnow() if request.status_pagamento == "PAGO" else None
+            ),
+        )
+        salvo = financeiro_repo.salvar(lancamento)
+        return FinanceiroLancamentoResponse.model_validate(salvo)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
@@ -138,4 +178,5 @@ def quitar_lancamento(
         tenant_id=current_user.tenant_id,
     ))
     return FinanceiroLancamentoResponse.model_validate(output.lancamento)
+
 
