@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
 import { Cliente, Fornecedor } from '../types';
@@ -10,14 +11,13 @@ import {
   Building2,
   Plus,
   Search,
-  Mail,
-  Phone,
-  CreditCard,
+  DollarSign,
   CheckCircle2,
   X,
 } from 'lucide-react';
 
 export const Contatos: React.FC = () => {
+  const { activeLoja } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'CLIENTES' | 'FORNECEDORES'>('CLIENTES');
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -32,6 +32,11 @@ export const Contatos: React.FC = () => {
   const [cliDoc, setCliDoc] = useState('');
   const [cliTel, setCliTel] = useState('');
   const [cliLimite, setCliLimite] = useState(1000.0);
+
+  // Baixa de Crediário Modal
+  const [crediarioCliente, setCrediarioCliente] = useState<Cliente | null>(null);
+  const [valorReceber, setValorReceber] = useState<number>(0);
+  const [submittingCrediario, setSubmittingCrediario] = useState(false);
 
   // New Supplier Modal
   const [newSupplierModal, setNewSupplierModal] = useState(false);
@@ -77,8 +82,39 @@ export const Contatos: React.FC = () => {
       setCliDoc('');
       setCliTel('');
       loadData();
-    } catch {
-      toast.error('Erro ao cadastrar cliente.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao cadastrar cliente.';
+      toast.error(msg);
+    }
+  };
+
+  const handleOpenCrediarioModal = (cliente: Cliente) => {
+    setCrediarioCliente(cliente);
+    setValorReceber(Number(cliente.saldo_devedor_crediario.toFixed(2)));
+  };
+
+  const handleReceberCrediario = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!crediarioCliente) return;
+    if (valorReceber <= 0 || valorReceber > crediarioCliente.saldo_devedor_crediario + 0.001) {
+      toast.warning('Informe um valor válido até o limite do saldo devedor.');
+      return;
+    }
+
+    setSubmittingCrediario(true);
+    try {
+      const lojaId = activeLoja?.id || '11111111-1111-1111-1111-111111111111';
+      const atualizado = await api.receberCrediario(crediarioCliente.id, lojaId, valorReceber);
+      toast.success(
+        `Recebimento de R$ ${valorReceber.toFixed(2)} registrado! Saldo devedor restante: R$ ${atualizado.saldo_devedor_crediario.toFixed(2)}`
+      );
+      setCrediarioCliente(null);
+      await loadData();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao registrar baixa de crediário.';
+      toast.error(msg);
+    } finally {
+      setSubmittingCrediario(false);
     }
   };
 
@@ -99,8 +135,9 @@ export const Contatos: React.FC = () => {
       setFornRazao('');
       setFornCnpj('');
       loadData();
-    } catch {
-      toast.error('Erro ao cadastrar fornecedor.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao cadastrar fornecedor.';
+      toast.error(msg);
     }
   };
 
@@ -230,6 +267,7 @@ export const Contatos: React.FC = () => {
                   <th className="py-3.5 px-4">Saldo Devedor</th>
                   <th className="py-3.5 px-4">Limite Disponível</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.14]">
@@ -263,6 +301,22 @@ export const Contatos: React.FC = () => {
                           <Badge variant="danger">Limite Esgotado</Badge>
                         ) : (
                           <Badge variant="emerald">Apto para Crediário</Badge>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        {c.saldo_devedor_crediario > 0 ? (
+                          <button
+                            onClick={() => handleOpenCrediarioModal(c)}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 inline-flex items-center gap-1.5 transition-all active:scale-95"
+                          >
+                            <DollarSign className="w-3.5 h-3.5" />
+                            <span>Receber Fiado</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/70" />
+                            Quitado
+                          </span>
                         )}
                       </td>
                     </tr>
@@ -314,6 +368,97 @@ export const Contatos: React.FC = () => {
           </div>
         </BentoCard>
       )}
+
+      {/* Baixa de Crediário Modal */}
+      <Modal
+        isOpen={!!crediarioCliente}
+        onClose={() => setCrediarioCliente(null)}
+        title="Receber Pagamento de Crediário (Fiado)"
+      >
+        {crediarioCliente && (
+          <form onSubmit={handleReceberCrediario} className="space-y-4">
+            <div className="p-4 rounded-xl bg-[#000000] border border-white/[0.16] space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Cliente</span>
+                <span className="font-bold text-white">{crediarioCliente.nome}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Saldo Devedor Atual</span>
+                <span className="font-bold text-amber-400 text-sm">
+                  {crediarioCliente.saldo_devedor_crediario.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  })}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Saldo Restante Após Baixa</span>
+                <span className="font-bold text-emerald-400">
+                  {Math.max(0, crediarioCliente.saldo_devedor_crediario - valorReceber).toLocaleString(
+                    'pt-BR',
+                    { style: 'currency', currency: 'BRL' }
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Valor Recebido no Caixa (R$)
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setValorReceber(Number((crediarioCliente.saldo_devedor_crediario / 2).toFixed(2)))
+                    }
+                    className="px-2 py-0.5 rounded bg-white/[0.06] hover:bg-white/[0.12] text-[11px] font-semibold text-slate-300 border border-white/[0.12]"
+                  >
+                    50%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setValorReceber(Number(crediarioCliente.saldo_devedor_crediario.toFixed(2)))
+                    }
+                    className="px-2 py-0.5 rounded bg-emerald-500/15 hover:bg-emerald-500/25 text-[11px] font-bold text-emerald-400 border border-emerald-500/30"
+                  >
+                    Quitar Total
+                  </button>
+                </div>
+              </div>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                max={crediarioCliente.saldo_devedor_crediario}
+                required
+                value={valorReceber}
+                onChange={(e) => setValorReceber(parseFloat(e.target.value) || 0)}
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm font-bold text-emerald-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+              <button
+                type="button"
+                onClick={() => setCrediarioCliente(null)}
+                className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={submittingCrediario}
+                className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
+              >
+                {submittingCrediario ? 'Registrando...' : 'Confirmar Recebimento'}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
 
       {/* New Client Modal */}
       <Modal

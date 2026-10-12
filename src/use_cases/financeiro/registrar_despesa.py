@@ -3,7 +3,10 @@ from datetime import datetime
 from uuid import UUID
 
 from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
-from src.domain.exceptions.business import LojaNaoEncontradaException
+from src.domain.exceptions.business import (
+    DomainException,
+    LojaNaoEncontradaException,
+)
 from src.domain.repositories.financeiro_lancamento_repository import (
     FinanceiroLancamentoRepository,
 )
@@ -57,3 +60,43 @@ class RegistrarDespesaLoja:
         lancamento_salvo = self.financeiro_repo.salvar(lancamento)
 
         return RegistrarDespesaOutput(lancamento=lancamento_salvo)
+
+
+@dataclass(frozen=True)
+class QuitarLancamentoInput:
+    lancamento_id: UUID
+    tenant_id: UUID
+
+
+@dataclass(frozen=True)
+class QuitarLancamentoOutput:
+    lancamento: FinanceiroLancamento
+
+
+class QuitarLancamentoFinanceiro:
+    """
+    Caso de Uso: Dar baixa em um lançamento financeiro pendente (PENDENTE -> PAGO).
+    """
+    def __init__(self, financeiro_repo: FinanceiroLancamentoRepository) -> None:
+        self.financeiro_repo = financeiro_repo
+
+    def executar(self, input_data: QuitarLancamentoInput) -> QuitarLancamentoOutput:
+        lancamento = self.financeiro_repo.obter_por_id(input_data.lancamento_id, input_data.tenant_id)
+        if not lancamento:
+            raise DomainException("Lançamento financeiro não encontrado.")
+
+        lancamento_atualizado = FinanceiroLancamento(
+            id=lancamento.id,
+            loja_id=lancamento.loja_id,
+            tipo=lancamento.tipo,
+            valor=lancamento.valor,
+            categoria=lancamento.categoria,
+            status_pagamento="PAGO",
+            tenant_id=lancamento.tenant_id,
+            data_lancamento=lancamento.data_lancamento,
+            data_pagamento=lancamento.data_pagamento or datetime.utcnow(),
+        )
+
+        lancamento_salvo = self.financeiro_repo.salvar(lancamento_atualizado)
+        return QuitarLancamentoOutput(lancamento=lancamento_salvo)
+
