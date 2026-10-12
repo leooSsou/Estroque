@@ -1,12 +1,20 @@
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from src.domain.entities.cliente import Cliente
+from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
 from src.domain.exceptions.business import (
     ClienteNaoEncontradoException,
     DocumentoClienteEmUsoException,
+    DomainException,
+    LojaNaoEncontradaException,
 )
 from src.domain.repositories.cliente_repository import ClienteRepository
+from src.domain.repositories.financeiro_lancamento_repository import (
+    FinanceiroLancamentoRepository,
+)
+from src.domain.repositories.loja_repository import LojaRepository
 
 
 @dataclass(frozen=True)
@@ -133,3 +141,75 @@ class AtualizarCliente:
         cliente_salvo = self.cliente_repo.salvar(cliente_atualizado)
 
         return AtualizarClienteOutput(cliente=cliente_salvo)
+
+
+@dataclass(frozen=True)
+class ReceberCrediarioInput:
+    cliente_id: UUID
+    loja_id: UUID
+    valor: float
+    tenant_id: UUID
+
+
+@dataclass(frozen=True)
+class ReceberCrediarioOutput:
+    cliente: Cliente
+    lancamento: FinanceiroLancamento
+
+
+class ReceberCrediarioCliente:
+    """
+    Caso de Uso: Dar baixa (total ou parcial) no saldo devedor de crediário de um cliente
+    e registrar a entrada financeira (RECEITA PAGO) no caixa da loja.
+    """
+    def __init__(
+        self,
+        cliente_repo: ClienteRepository,
+        financeiro_repo: FinanceiroLancamentoRepository,
+        loja_repo: LojaRepository,
+    ) -> None:
+        self.cliente_repo = cliente_repo
+        self.financeiro_repo = financeiro_repo
+        self.loja_repo = loja_repo
+
+    def executar(self, input_data: ReceberCrediarioInput) -> ReceberCrediarioOutput:
+        loja = self.loja_repo.obter_por_id(input_data.loja_id, input_data.tenant_id)
+        if not loja:
+            raise LojaNaoEncontradaException(str(input_data.loja_id))
+
+        cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
+        if not cliente:
+            raise ClienteNaoEncontradoException(str(input_data.cliente_id))
+
+        if input_data.valor <= 0:
+            raise ValueError("O valor recebido deve ser maior que zero.")
+
+        if input_data.valor > round(cliente.saldo_devedor_crediario + 0.001, 2):
+            raise DomainException("O valor recebido não pode ser maior que o saldo devedor atual do cliente.")
+
+        novo_saldo = max(0.0, round(cliente.saldo_devedor_crediario - input_data.valor, 2))
+        cliente_atualizado = Cliente(
+            nome=cliente.nome,
+            email=cliente.email,
+            documento=cliente.documento,
+            tenant_id=cliente.tenant_id,
+            id=cliente.id,
+            ativo=cliente.ativo,
+            limite_credito=cliente.limite_credito,
+            saldo_devedor_crediario=novo_saldo,
+        )
+        cliente_salvo = self.cliente_repo.salvar(cliente_atualizado)
+
+        lancamento = FinanceiroLancamento(
+            loja_id=input_data.loja_id,
+            tipo="RECEITA",
+            valor=round(input_data.valor, 2),
+            categoria="Recebimento de Crediário",
+            status_pagamento="PAGO",
+            tenant_id=input_data.tenant_id,
+            data_pagamento=datetime.utcnow(),
+        )
+        lancamento_salvo = self.financeiro_repo.salvar(lancamento)
+
+        return ReceberCrediarioOutput(cliente=cliente_salvo, lancamento=lancamento_salvo)
+

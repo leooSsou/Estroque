@@ -168,6 +168,15 @@ class ClienteResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ReceberCrediarioRequest(BaseModel):
+    """
+    Schema para requisição de recebimento/baixa de crediário de um Cliente.
+    """
+    loja_id: UUID = Field(..., description="ID da loja física onde o pagamento foi recebido.")
+    valor: float = Field(..., gt=0, description="Valor recebido para abater do saldo devedor.")
+
+
+
 class FornecedorCreateRequest(BaseModel):
     """
     Schema para requisição de criação de um novo Fornecedor.

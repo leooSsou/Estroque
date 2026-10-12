@@ -7,16 +7,22 @@ from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
     ClienteNaoEncontradoException,
     DocumentoClienteEmUsoException,
+    DomainException,
+    LojaNaoEncontradaException,
 )
 from src.infrastructure.database.repositorios_concrete import (
     RepositorioClienteSQLAlchemy,
+    RepositorioFinanceiroLancamentoSQLAlchemy,
+    RepositorioLojaSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
+from src.infrastructure.web.authorization import exigir_acesso_loja
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     ClienteCreateRequest,
     ClienteResponse,
     ClienteUpdateRequest,
+    ReceberCrediarioRequest,
 )
 from src.use_cases.catalogo.gerenciar_cliente import (
     AtualizarCliente,
@@ -25,6 +31,8 @@ from src.use_cases.catalogo.gerenciar_cliente import (
     CriarClienteInput,
     ListarClientes,
     ObterCliente,
+    ReceberCrediarioCliente,
+    ReceberCrediarioInput,
 )
 
 router = APIRouter(prefix="/clientes", tags=["Clientes"])
@@ -137,3 +145,45 @@ def atualizar_cliente(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(e)
         )
+
+
+@router.post("/{cliente_id}/receber-crediario", response_model=ClienteResponse, status_code=status.HTTP_200_OK)
+def receber_crediario(
+    cliente_id: UUID,
+    request: ReceberCrediarioRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> ClienteResponse:
+    """
+    Registra o recebimento (total ou parcial) do saldo devedor de crediário de um cliente
+    e lança automaticamente a receita paga no caixa da loja informada.
+    """
+    exigir_acesso_loja(request.loja_id, current_user)
+
+    cliente_repo = RepositorioClienteSQLAlchemy(db)
+    financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
+    loja_repo = RepositorioLojaSQLAlchemy(db)
+
+    use_case = ReceberCrediarioCliente(
+        cliente_repo=cliente_repo,
+        financeiro_repo=financeiro_repo,
+        loja_repo=loja_repo,
+    )
+
+    input_data = ReceberCrediarioInput(
+        cliente_id=cliente_id,
+        loja_id=request.loja_id,
+        valor=request.valor,
+        tenant_id=current_user.tenant_id,
+    )
+
+    try:
+        output = use_case.executar(input_data)
+        return ClienteResponse.model_validate(output.cliente)
+    except (ClienteNaoEncontradoException, LojaNaoEncontradaException) as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except DomainException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+

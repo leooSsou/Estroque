@@ -500,6 +500,33 @@ class ApiClient {
     return storage.addCliente(dados);
   }
 
+  async receberCrediario(clienteId: string, lojaId: string, valor: number): Promise<Cliente> {
+    const res = await this.request<Cliente>(`/clientes/${clienteId}/receber-crediario`, {
+      method: 'POST',
+      body: JSON.stringify({ loja_id: lojaId, valor }),
+    });
+    if (res.isBackend && res.error) {
+      throw new Error(res.error);
+    }
+    if (res.data) return res.data;
+
+    // Fallback offline
+    const clientes = storage.getClientes();
+    const idx = clientes.findIndex((c) => c.id === clienteId);
+    if (idx === -1) throw new Error('Cliente não encontrado.');
+    clientes[idx].saldo_devedor_crediario = Math.max(0, Number((clientes[idx].saldo_devedor_crediario - valor).toFixed(2)));
+    localStorage.setItem('estroque_clientes', JSON.stringify(clientes));
+    storage.addLancamentoFinanceiro({
+      loja_id: lojaId,
+      tipo: 'RECEITA',
+      valor,
+      categoria: 'Recebimento de Crediário',
+      status_pagamento: 'PAGO',
+      descricao: `Recebimento Crediário - ${clientes[idx].nome}`,
+    });
+    return clientes[idx];
+  }
+
   // --- FORNECEDORES ---
   async getFornecedores(): Promise<Fornecedor[]> {
     const res = await this.request<Fornecedor[]>('/fornecedores/');
@@ -659,8 +686,9 @@ class ApiClient {
   }
 
   // --- FINANCEIRO ---
-  async getFinanceiro(): Promise<FinanceiroLancamento[]> {
-    const res = await this.request<FinanceiroLancamento[]>('/financeiro/lancamentos');
+  async getFinanceiro(lojaId?: string): Promise<FinanceiroLancamento[]> {
+    const endpoint = lojaId ? `/financeiro/lancamentos?loja_id=${lojaId}` : '/financeiro/lancamentos';
+    const res = await this.request<FinanceiroLancamento[]>(endpoint);
     if (res.data && Array.isArray(res.data)) {
       return res.data;
     }
@@ -687,6 +715,29 @@ class ApiClient {
       tipo: 'DESPESA',
     });
   }
+
+  async quitarLancamento(lancamentoId: string): Promise<FinanceiroLancamento> {
+    const res = await this.request<FinanceiroLancamento>(
+      `/financeiro/lancamentos/${lancamentoId}/pagar`,
+      {
+        method: 'PATCH',
+      }
+    );
+    if (res.isBackend && res.error) {
+      throw new Error(res.error);
+    }
+    if (res.data) return res.data;
+
+    // Fallback offline
+    const list = storage.getFinanceiro();
+    const idx = list.findIndex((l) => l.id === lancamentoId);
+    if (idx === -1) throw new Error('Lançamento não encontrado.');
+    list[idx].status_pagamento = 'PAGO';
+    list[idx].data_pagamento = new Date().toISOString();
+    localStorage.setItem('estroque_financeiro', JSON.stringify(list));
+    return list[idx];
+  }
+
 
   // --- ANALYTICS ---
   async getDashboardAnalytics(lojaId?: string): Promise<DashboardAnalytics> {

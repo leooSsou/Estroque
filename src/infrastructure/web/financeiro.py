@@ -25,6 +25,8 @@ from src.use_cases.financeiro.listar_lancamentos import (
     ListarLancamentosInput,
 )
 from src.use_cases.financeiro.registrar_despesa import (
+    QuitarLancamentoFinanceiro,
+    QuitarLancamentoInput,
     RegistrarDespesaInput,
     RegistrarDespesaLoja,
 )
@@ -111,3 +113,29 @@ def listar_lancamentos(
         return [FinanceiroLancamentoResponse.model_validate(lancamento) for lancamento in output.lancamentos]
     except DomainException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.patch("/lancamentos/{lancamento_id}/pagar", response_model=FinanceiroLancamentoResponse, status_code=status.HTTP_200_OK)
+def quitar_lancamento(
+    lancamento_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> FinanceiroLancamentoResponse:
+    """
+    Dá baixa em um lançamento financeiro pendente (PENDENTE -> PAGO),
+    respeitando isolamento de tenant e filial (BOLA/BFLA).
+    """
+    financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
+    lancamento = financeiro_repo.obter_por_id(lancamento_id, current_user.tenant_id)
+    if not lancamento:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lançamento financeiro não encontrado.")
+
+    exigir_acesso_loja(lancamento.loja_id, current_user)
+
+    use_case = QuitarLancamentoFinanceiro(financeiro_repo=financeiro_repo)
+    output = use_case.executar(QuitarLancamentoInput(
+        lancamento_id=lancamento_id,
+        tenant_id=current_user.tenant_id,
+    ))
+    return FinanceiroLancamentoResponse.model_validate(output.lancamento)
+

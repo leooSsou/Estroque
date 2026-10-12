@@ -272,3 +272,110 @@ def test_financeiro_bola_gerente_lojas_diferentes(client: TestClient, db_session
     assert len(lancamentos_vistos) == 1
     assert lancamentos_vistos[0]["categoria"] == "Papelaria Loja A"
     assert lancamentos_vistos[0]["loja_id"] == loja_a_id
+
+
+def test_quitar_lancamento_e_receber_crediario(client: TestClient) -> None:
+    token, _ = registrar_e_autenticar(client, "FinQuitar")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Criar Loja
+    res_loja = client.post("/lojas/", json={
+        "nome": "Loja Quitar",
+        "cnpj": gerar_cnpj_valido(),
+        "endereco": "Rua Central, 10"
+    }, headers=headers)
+    assert res_loja.status_code == 201
+    loja_id = res_loja.json()["id"]
+
+    # 2. Registrar despesa PENDENTE e dar baixa (quitar)
+    res_desp = client.post("/financeiro/despesas", json={
+        "loja_id": loja_id,
+        "valor": 850.0,
+        "categoria": "Energia Elétrica",
+        "status_pagamento": "PENDENTE"
+    }, headers=headers)
+    assert res_desp.status_code == 201
+    lancamento_id = res_desp.json()["id"]
+    assert res_desp.json()["status_pagamento"] == "PENDENTE"
+
+    res_quitar = client.patch(f"/financeiro/lancamentos/{lancamento_id}/pagar", headers=headers)
+    assert res_quitar.status_code == 200
+    assert res_quitar.json()["status_pagamento"] == "PAGO"
+    assert res_quitar.json()["data_pagamento"] is not None
+
+    # Lançamento inexistente retorna 404
+    res_404 = client.patch(f"/financeiro/lancamentos/{uuid4()}/pagar", headers=headers)
+    assert res_404.status_code == 404
+
+    # 3. Criar Cliente, Produto, Estoque e Venda no Crediário
+    res_prod = client.post("/produtos/", json={
+        "nome": "Cadeira Escritório",
+        "sku": f"CAD-{uuid4().hex[:4]}",
+        "preco_custo": 300.0,
+        "preco_venda": 500.0,
+        "markup": 0.66
+    }, headers=headers)
+    produto_id = res_prod.json()["id"]
+
+    client.post("/estoque/movimentar", json={
+        "loja_id": loja_id,
+        "produto_id": produto_id,
+        "tipo": "ENTRADA",
+        "quantidade": 5,
+        "motivo": "Estoque inicial"
+    }, headers=headers)
+
+    res_cli = client.post("/clientes/", json={
+        "nome": "Fernanda Crediário",
+        "email": "fernanda@crediario.com",
+        "documento": "12345678909",
+        "limite_credito": 2000.0
+    }, headers=headers)
+    assert res_cli.status_code == 201
+    cliente_id = res_cli.json()["id"]
+
+    res_venda = client.post("/vendas", json={
+        "loja_id": loja_id,
+        "cliente_id": cliente_id,
+        "forma_pagamento": "CREDIARIO",
+        "desconto": 0.0,
+        "itens": [{"produto_id": produto_id, "quantidade": 2}]
+    }, headers=headers)
+    assert res_venda.status_code == 201
+
+    # Verificar saldo devedor = 1000.0
+    cli_apos_venda = client.get(f"/clientes/{cliente_id}", headers=headers).json()
+    assert cli_apos_venda["saldo_devedor_crediario"] == 1000.0
+
+    # 4. Receber pagamento parcial (R$ 400.00)
+    res_rec_parcial = client.post(f"/clientes/{cliente_id}/receber-crediario", json={
+        "loja_id": loja_id,
+        "valor": 400.0
+    }, headers=headers)
+    assert res_rec_parcial.status_code == 200
+    assert res_rec_parcial.json()["saldo_devedor_crediario"] == 600.0
+
+    # Tentar receber valor maior que o saldo devedor restante (R$ 700 > R$ 600) -> 400
+    res_rec_excesso = client.post(f"/clientes/{cliente_id}/receber-crediario", json={
+        "loja_id": loja_id,
+        "valor": 700.0
+    }, headers=headers)
+    assert res_rec_excesso.status_code == 400
+
+    # 5. Receber restante (R$ 600.00)
+    res_rec_total = client.post(f"/clientes/{cliente_id}/receber-crediario", json={
+        "loja_id": loja_id,
+        "valor": 600.0
+    }, headers=headers)
+    assert res_rec_total.status_code == 200
+    assert res_rec_total.json()["saldo_devedor_crediario"] == 0.0
+
+    # Verificar que os recebimentos geraram lançamentos RECEITA PAGO no financeiro
+    res_lanc = client.get(f"/financeiro/lancamentos?loja_id={loja_id}&tipo=RECEITA", headers=headers)
+    assert res_lanc.status_code == 200
+    recebimentos = [
+        x for x in res_lanc.json()
+        if x["categoria"] == "Recebimento de Crediário" and x["status_pagamento"] == "PAGO"
+    ]
+    assert len(recebimentos) == 2
+

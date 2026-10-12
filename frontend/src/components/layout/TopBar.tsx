@@ -9,9 +9,13 @@ import {
   Check,
   ShieldCheck,
   User,
+  Plus,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { api } from '../../services/api';
 import { Loja } from '../../types';
+import { Modal } from '../common/Modal';
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -19,11 +23,44 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch }) => {
-  const { user, lojas, activeLoja, setActiveLoja, logout } = useAuth();
+  const { user, lojas, activeLoja, setActiveLoja, refreshLojas, logout } = useAuth();
+  const { toast } = useToast();
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  // Nova Filial Modal
+  const [newStoreModalOpen, setNewStoreModalOpen] = useState(false);
+  const [lojaNome, setLojaNome] = useState('');
+  const [lojaCnpj, setLojaCnpj] = useState('');
+  const [lojaEndereco, setLojaEndereco] = useState('');
+  const [submittingStore, setSubmittingStore] = useState(false);
+
   const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
+  const handleCreateLoja = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingStore(true);
+    try {
+      const nova = await api.createLoja({
+        nome: lojaNome,
+        cnpj: lojaCnpj,
+        endereco: lojaEndereco,
+        ativo: true,
+      });
+      await refreshLojas();
+      setActiveLoja(nova);
+      toast.success(`Filial "${nova.nome}" cadastrada e selecionada com sucesso!`);
+      setNewStoreModalOpen(false);
+      setLojaNome('');
+      setLojaCnpj('');
+      setLojaEndereco('');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao cadastrar nova filial.';
+      toast.error(msg);
+    } finally {
+      setSubmittingStore(false);
+    }
+  };
 
   return (
     <header className="relative h-20 bg-[#000000] sticky top-0 z-30 px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
@@ -73,31 +110,48 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
                     {lojas.length}
                   </span>
                 </div>
-                {lojas.map((loja: Loja) => (
-                  <button
-                    key={loja.id}
-                    onClick={() => {
-                      setActiveLoja(loja);
-                      setStoreDropdownOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left text-sm transition-all btn-press ${
-                      activeLoja?.id === loja.id
-                        ? 'bg-[#000000] text-emerald-400 font-semibold border border-emerald-500/40 shadow-sm'
-                        : 'text-slate-200 hover:bg-white/[0.05] hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 truncate">
-                      <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                      <div className="truncate">
-                        <div className="truncate text-xs font-semibold">{loja.nome}</div>
-                        <div className="text-[10px] text-slate-400">{loja.cnpj}</div>
+                <div className="max-h-60 overflow-y-auto space-y-1">
+                  {lojas.map((loja: Loja) => (
+                    <button
+                      key={loja.id}
+                      onClick={() => {
+                        setActiveLoja(loja);
+                        setStoreDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left text-sm transition-all btn-press ${
+                        activeLoja?.id === loja.id
+                          ? 'bg-[#000000] text-emerald-400 font-semibold border border-emerald-500/40 shadow-sm'
+                          : 'text-slate-200 hover:bg-white/[0.05] hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        <div className="truncate">
+                          <div className="truncate text-xs font-semibold">{loja.nome}</div>
+                          <div className="text-[10px] text-slate-400">{loja.cnpj}</div>
+                        </div>
                       </div>
-                    </div>
-                    {activeLoja?.id === loja.id && (
-                      <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 ml-2" />
-                    )}
-                  </button>
-                ))}
+                      {activeLoja?.id === loja.id && (
+                        <Check className="w-4 h-4 text-emerald-400 flex-shrink-0 ml-2" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {user?.role !== 'GERENTE' && (
+                  <div className="pt-2 mt-1.5 border-t border-white/[0.16]">
+                    <button
+                      onClick={() => {
+                        setStoreDropdownOpen(false);
+                        setNewStoreModalOpen(true);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-emerald-600/15 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 text-xs font-bold transition-all active:scale-95"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Nova Filial</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -178,6 +232,75 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
           )}
         </div>
       </div>
+
+      {/* Modal: Cadastrar Nova Filial */}
+      <Modal
+        isOpen={newStoreModalOpen}
+        onClose={() => setNewStoreModalOpen(false)}
+        title="Cadastrar Nova Loja / Filial"
+      >
+        <form onSubmit={handleCreateLoja} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Nome da Filial
+            </label>
+            <input
+              type="text"
+              required
+              value={lojaNome}
+              onChange={(e) => setLojaNome(e.target.value)}
+              placeholder="Ex: Filial Shopping Norte"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              CNPJ da Filial (14 dígitos válidos)
+            </label>
+            <input
+              type="text"
+              required
+              value={lojaCnpj}
+              onChange={(e) => setLojaCnpj(e.target.value)}
+              placeholder="00.000.000/0002-00"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              Endereço Completo
+            </label>
+            <input
+              type="text"
+              required
+              value={lojaEndereco}
+              onChange={(e) => setLojaEndereco(e.target.value)}
+              placeholder="Av. Central, 500 - Loja 12"
+              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+            <button
+              type="button"
+              onClick={() => setNewStoreModalOpen(false)}
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submittingStore}
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
+            >
+              {submittingStore ? 'Cadastrando...' : 'Salvar Filial'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </header>
   );
 };
+

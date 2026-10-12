@@ -38,7 +38,7 @@ export const Financeiro: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const data = await api.getFinanceiro();
+      const data = await api.getFinanceiro(activeLoja?.id);
       setLancamentos(data);
     } finally {
       setLoading(false);
@@ -63,8 +63,22 @@ export const Financeiro: React.FC = () => {
       toast.success('Despesa operacional registrada com sucesso!');
       setNewExpenseModal(false);
       loadData();
-    } catch {
-      toast.error('Erro ao registrar despesa.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao registrar despesa.';
+      toast.error(msg);
+    }
+  };
+
+  const handleQuitarLancamento = async (lancamento: FinanceiroLancamento) => {
+    try {
+      await api.quitarLancamento(lancamento.id);
+      toast.success(
+        `Baixa realizada! Lançamento "${lancamento.descricao || lancamento.categoria}" marcado como PAGO.`
+      );
+      await loadData();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao dar baixa no lançamento.';
+      toast.error(msg);
     }
   };
 
@@ -264,9 +278,21 @@ export const Financeiro: React.FC = () => {
                         {l.categoria}
                       </td>
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
-                          {l.status_pagamento}
-                        </Badge>
+                        <div className="inline-flex items-center gap-2">
+                          <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
+                            {l.status_pagamento}
+                          </Badge>
+                          {l.status_pagamento === 'PENDENTE' && (
+                            <button
+                              onClick={() => handleQuitarLancamento(l)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 text-[11px] font-bold inline-flex items-center gap-1 transition-all active:scale-95"
+                              title="Marcar lançamento como PAGO"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              <span>Dar Baixa</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td
                         className={`py-3.5 px-4 text-sm font-bold text-right whitespace-nowrap ${
