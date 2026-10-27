@@ -45,25 +45,25 @@ app.include_router(analytics_router)
 
 import os
 
-# Configuração de CORS (com fallback seguro de desenvolvimento local)
+# Configuração de CORS permissiva para desenvolvimento e nuvem (Render)
 cors_origins_str = os.getenv("CORS_ORIGINS", "")
-if cors_origins_str:
+if cors_origins_str and cors_origins_str != "*":
     allow_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allow_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 else:
-    allow_origins = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-    ]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allow_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"^https?://.*",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 @app.get("/health", tags=["Monitoramento"])
 def health_check() -> dict[str, str]:
