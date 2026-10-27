@@ -121,6 +121,15 @@ def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)) -
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="E-mail ou senha incorretos."
             )
+        except HTTPException:
+            raise
+        except Exception as err:
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Erro interno de autenticação: {err}"
+            )
     finally:
         db.info.pop("ignore_tenant_filter", None)
 
