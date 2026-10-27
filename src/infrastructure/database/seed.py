@@ -65,12 +65,18 @@ def seed() -> None:
                 "email": "admin@estroque.app",
                 "nome": "Administrador Demo",
                 "senha": "admin123",
-                "role": "ADMIN",
+                "role": "ADMIN_SAAS",
             },
         ]
 
+        # Garante que qualquer DONO ou ADMIN_SAAS existente no banco não tenha loja_atribuida_id
+        session.query(UsuarioModel).filter(
+            UsuarioModel.role.in_(["DONO", "ADMIN_SAAS"])
+        ).update({"loja_atribuida_id": None}, synchronize_session=False)
+
         for u in usuarios_padrao:
             user = session.query(UsuarioModel).filter_by(email=u["email"]).first()
+            loja_id = None if u["role"] in {"DONO", "ADMIN_SAAS"} else loja.id
             if not user:
                 user = UsuarioModel(
                     id=uuid4(),
@@ -79,13 +85,17 @@ def seed() -> None:
                     email=u["email"],
                     senha_hash=gerar_hash_senha(u["senha"]),
                     role=u["role"],
-                    loja_atribuida_id=loja.id,
+                    loja_atribuida_id=loja_id,
                 )
                 session.add(user)
                 session.flush()
                 print(f"✓ Usuário criado: {u['email']} (role: {u['role']})")
             else:
-                print(f"• Usuário já existente: {u['email']}")
+                user.senha_hash = gerar_hash_senha(u["senha"])
+                user.role = u["role"]
+                user.loja_atribuida_id = loja_id
+                session.flush()
+                print(f"• Usuário atualizado: {u['email']} (role: {u['role']})")
 
         session.commit()
         print("\n🎉 Seed concluído com sucesso!")

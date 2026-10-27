@@ -123,7 +123,21 @@ class RepositorioUsuarioSQLAlchemy(UsuarioRepository):
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    def _para_entidade(self, model: UsuarioModel) -> Usuario:
+        # Perfis DONO e ADMIN_SAAS gerenciam o tenant como um todo e não possuem loja específica atribuída
+        loja_id = None if model.role in {"DONO", "ADMIN_SAAS"} else model.loja_atribuida_id
+        return Usuario(
+            id=model.id,
+            nome=model.nome,
+            email=model.email,
+            senha_hash=model.senha_hash,
+            role=model.role,
+            tenant_id=model.tenant_id,
+            loja_atribuida_id=loja_id,
+        )
+
     def salvar(self, usuario: Usuario) -> Usuario:
+        loja_id = None if usuario.role in {"DONO", "ADMIN_SAAS"} else usuario.loja_atribuida_id
         model = self.db.query(UsuarioModel).filter(UsuarioModel.id == usuario.id).first()
         if not model:
             model = UsuarioModel(
@@ -133,7 +147,7 @@ class RepositorioUsuarioSQLAlchemy(UsuarioRepository):
                 senha_hash=usuario.senha_hash,
                 role=usuario.role,
                 tenant_id=usuario.tenant_id,
-                loja_atribuida_id=usuario.loja_atribuida_id
+                loja_atribuida_id=loja_id
             )
             self.db.add(model)
         else:
@@ -141,64 +155,29 @@ class RepositorioUsuarioSQLAlchemy(UsuarioRepository):
             model.email = usuario.email
             model.senha_hash = usuario.senha_hash
             model.role = usuario.role
-            model.loja_atribuida_id = usuario.loja_atribuida_id
+            model.loja_atribuida_id = loja_id
             model.tenant_id = usuario.tenant_id
             
         self.db.flush()
         
-        return Usuario(
-            id=model.id,
-            nome=model.nome,
-            email=model.email,
-            senha_hash=model.senha_hash,
-            role=model.role,
-            tenant_id=model.tenant_id,
-            loja_atribuida_id=model.loja_atribuida_id
-        )
+        return self._para_entidade(model)
 
     def obter_por_email(self, email: str) -> Usuario | None:
         model = self.db.query(UsuarioModel).filter(UsuarioModel.email == email).first()
         if not model:
             return None
-        return Usuario(
-            id=model.id,
-            nome=model.nome,
-            email=model.email,
-            senha_hash=model.senha_hash,
-            role=model.role,
-            tenant_id=model.tenant_id,
-            loja_atribuida_id=model.loja_atribuida_id
-        )
+        return self._para_entidade(model)
 
     def obter_por_id(self, id: UUID) -> Usuario | None:
         model = self.db.query(UsuarioModel).filter(UsuarioModel.id == id).first()
         if not model:
             return None
-        return Usuario(
-            id=model.id,
-            nome=model.nome,
-            email=model.email,
-            senha_hash=model.senha_hash,
-            role=model.role,
-            tenant_id=model.tenant_id,
-            loja_atribuida_id=model.loja_atribuida_id
-        )
+        return self._para_entidade(model)
 
     def listar_por_tenant(self, tenant_id: UUID) -> list[Usuario]:
         self.db.info["tenant_id"] = tenant_id
         models = self.db.query(UsuarioModel).filter(UsuarioModel.tenant_id == tenant_id).all()
-        return [
-            Usuario(
-                id=m.id,
-                nome=m.nome,
-                email=m.email,
-                senha_hash=m.senha_hash,
-                role=m.role,
-                tenant_id=m.tenant_id,
-                loja_atribuida_id=m.loja_atribuida_id,
-            )
-            for m in models
-        ]
+        return [self._para_entidade(m) for m in models]
 
 
 
