@@ -17,11 +17,13 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copia o restante do código para o container
 COPY . .
 
+RUN chmod +x /app/entrypoint.sh
+
 # Expõe a porta do FastAPI
 EXPOSE 8000
 
 # Define o PYTHONPATH para resolver a importação do módulo src
 ENV PYTHONPATH=/app
 
-# Comando padrão para rodar a aplicação em modo de desenvolvimento
-CMD ["uvicorn", "src.infrastructure.web.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Comando padrão: executa migrações, seed e inicia uvicorn com suporte à porta dinâmica do Render ($PORT)
+CMD ["/app/entrypoint.sh"]
