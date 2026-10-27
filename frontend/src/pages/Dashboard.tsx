@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { DashboardAnalytics, MovimentacaoEstoque } from '../types';
+import { DashboardAnalytics, MovimentacaoEstoque, CurvaABCItem } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { StatCard } from '../components/common/StatCard';
 import { Badge } from '../components/common/Badge';
@@ -21,54 +21,32 @@ import {
   Store,
   Layers,
   Sparkles,
+  Inbox,
 } from 'lucide-react';
 
-const DAILY_TREND_14D: ChartDataPoint[] = [
-  { date: '23/09', label: '23 Set', value: 2450, vendasCount: 18 },
-  { date: '24/09', label: '24 Set', value: 2890, vendasCount: 22 },
-  { date: '25/09', label: '25 Set', value: 2710, vendasCount: 19 },
-  { date: '26/09', label: '26 Set', value: 3620, vendasCount: 28 },
-  { date: '27/09', label: '27 Set', value: 3100, vendasCount: 24 },
-  { date: '28/09', label: '28 Set', value: 4890, vendasCount: 39 },
-  { date: '29/09', label: '29 Set', value: 4350, vendasCount: 35 },
-  { date: '30/09', label: '30 Set', value: 5200, vendasCount: 42 },
-  { date: '01/10', label: '01 Out', value: 4950, vendasCount: 38 },
-  { date: '02/10', label: '02 Out', value: 6100, vendasCount: 51 },
-  { date: '03/10', label: '03 Out', value: 5800, vendasCount: 47 },
-  { date: '04/10', label: '04 Out', value: 3928, vendasCount: 31 },
-  { date: '05/10', label: '05 Out', value: 4400, vendasCount: 36 },
-  { date: '06/10', label: 'Hoje', value: 5680, vendasCount: 48 },
-];
-
-const DAILY_TREND_7D: ChartDataPoint[] = [
-  { date: '30/09', label: '30 Set', value: 5200, vendasCount: 42 },
-  { date: '01/10', label: '01 Out', value: 4950, vendasCount: 38 },
-  { date: '02/10', label: '02 Out', value: 6100, vendasCount: 51 },
-  { date: '03/10', label: '03 Out', value: 5800, vendasCount: 47 },
-  { date: '04/10', label: '04 Out', value: 3928, vendasCount: 31 },
-  { date: '05/10', label: '05 Out', value: 4400, vendasCount: 36 },
-  { date: '06/10', label: 'Hoje', value: 5680, vendasCount: 48 },
-];
-
-const DAILY_TREND_30D: ChartDataPoint[] = [
-  { date: '07/09', label: '07 Set', value: 2100, vendasCount: 16 },
-  { date: '10/09', label: '10 Set', value: 2800, vendasCount: 21 },
-  { date: '13/09', label: '13 Set', value: 3400, vendasCount: 26 },
-  { date: '16/09', label: '16 Set', value: 3100, vendasCount: 23 },
-  { date: '19/09', label: '19 Set', value: 3900, vendasCount: 30 },
-  { date: '22/09', label: '22 Set', value: 4200, vendasCount: 33 },
-  { date: '25/09', label: '25 Set', value: 3800, vendasCount: 29 },
-  { date: '28/09', label: '28 Set', value: 4890, vendasCount: 39 },
-  { date: '01/10', label: '01 Out', value: 4950, vendasCount: 38 },
-  { date: '04/10', label: '04 Out', value: 3928, vendasCount: 31 },
-  { date: '06/10', label: 'Hoje', value: 5680, vendasCount: 48 },
-];
+function generateDaysArray(days: number): ChartDataPoint[] {
+  const points: ChartDataPoint[] = [];
+  const now = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 86400000);
+    const dayStr = String(d.getDate()).padStart(2, '0');
+    const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+    points.push({
+      date: `${dayStr}/${monthStr}`,
+      label: i === 0 ? 'Hoje' : `${dayStr}/${monthStr}`,
+      value: 0,
+      vendasCount: 0,
+    });
+  }
+  return points;
+}
 
 export const Dashboard: React.FC = () => {
   const { activeLoja } = useAuth();
   const navigate = useNavigate();
   const [metrics, setMetrics] = useState<DashboardAnalytics | null>(null);
   const [recentMovements, setRecentMovements] = useState<MovimentacaoEstoque[]>([]);
+  const [curvaItems, setCurvaItems] = useState<CurvaABCItem[]>([]);
   const [, setLoading] = useState(true);
   const [activePeriod, setActivePeriod] = useState<number>(14);
 
@@ -76,12 +54,14 @@ export const Dashboard: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [dashData, ledgerData] = await Promise.all([
+        const [dashData, ledgerData, abcData] = await Promise.all([
           api.getDashboardAnalytics(activeLoja?.id),
           api.getLedger(),
+          api.getCurvaABC(activeLoja?.id),
         ]);
         setMetrics(dashData);
         setRecentMovements(ledgerData.slice(0, 5));
+        setCurvaItems(abcData);
       } finally {
         setLoading(false);
       }
@@ -90,14 +70,25 @@ export const Dashboard: React.FC = () => {
   }, [activeLoja]);
 
   const currentChartData = useMemo(() => {
-    if (activePeriod === 7) return DAILY_TREND_7D;
-    if (activePeriod === 30) return DAILY_TREND_30D;
-    return DAILY_TREND_14D;
+    return generateDaysArray(activePeriod);
   }, [activePeriod]);
+
+  const classeA = useMemo(() => curvaItems.filter((i) => i.classe === 'A'), [curvaItems]);
+  const classeB = useMemo(() => curvaItems.filter((i) => i.classe === 'B'), [curvaItems]);
+  const classeC = useMemo(() => curvaItems.filter((i) => i.classe === 'C'), [curvaItems]);
+
+  const totalABC = useMemo(() => {
+    return curvaItems.reduce((acc, i) => acc + i.faturamento, 0);
+  }, [curvaItems]);
+
+  const faturamentoLiquido = metrics?.faturamento_liquido ?? 0;
+  const ticketMedio = metrics?.ticket_medio ?? 0;
+  const margemLucro = metrics?.margem_lucro ?? 0;
+  const vendasCount = faturamentoLiquido > 0 && ticketMedio > 0 ? Math.round(faturamentoLiquido / ticketMedio) : 0;
 
   return (
     <div className="space-y-6">
-      {/* 1. Header & Consolidado Card (Clean, Uncluttered, Pure Black / Graphite) */}
+      {/* 1. Header & Consolidado Card */}
       <div className="bg-[#000000] border border-white/[0.16] rounded-3xl p-6 lg:p-7 shadow-bento-dark relative overflow-hidden group hover:border-white/[0.24] transition-all duration-300">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 relative z-10">
           <div>
@@ -107,7 +98,7 @@ export const Dashboard: React.FC = () => {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             </div>
             <div className="text-3xl lg:text-4xl font-bold text-white tracking-tight whitespace-nowrap">
-              R$ {(metrics?.faturamento_liquido || 82300).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {faturamentoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </div>
 
@@ -148,38 +139,38 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. KPI Cards Row - Clean and direct without verbose text */}
+      {/* 2. KPI Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Faturamento Bruto"
-          value={`R$ ${(metrics?.faturamento_liquido || 82300).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          value={`R$ ${faturamentoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={DollarSign}
           iconColor="emerald"
-          badge={{ text: '+12.4%', trend: 'up' }}
+          badge={{ text: faturamentoLiquido > 0 ? 'Ativo' : 'Sem vendas', trend: 'up' }}
         />
 
         <StatCard
           title="Vendas Realizadas"
-          value={3612}
+          value={vendasCount}
           icon={Receipt}
           iconColor="emerald"
-          badge={{ text: '+15.2%', trend: 'up' }}
+          badge={{ text: 'Acumulado', trend: 'up' }}
         />
 
         <StatCard
           title="Ticket Médio"
-          value={`R$ ${(metrics?.ticket_medio || 310.5).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          value={`R$ ${ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={TrendingUp}
           iconColor="emerald"
-          badge={{ text: '+5.2%', trend: 'up' }}
+          badge={{ text: 'Média', trend: 'up' }}
         />
 
         <StatCard
           title="Margem de Lucro"
-          value={`${metrics?.margem_lucro ?? 43.8}%`}
+          value={`${margemLucro}%`}
           icon={Percent}
           iconColor="emerald"
-          badge={{ text: 'Saudável', trend: 'up' }}
+          badge={{ text: 'Margem', trend: 'up' }}
         />
       </div>
 
@@ -221,8 +212,8 @@ export const Dashboard: React.FC = () => {
                   id: 'A',
                   nome: 'Classe A',
                   sub: 'Alto Giro',
-                  valor: 'R$ 65.922,00',
-                  badge: '80.1%',
+                  valor: `R$ ${classeA.reduce((acc, i) => acc + i.faturamento, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                  badge: totalABC > 0 ? `${((classeA.reduce((acc, i) => acc + i.faturamento, 0) / totalABC) * 100).toFixed(1)}%` : '0%',
                   badgeColor: 'text-emerald-400',
                   pill: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
                 },
@@ -230,8 +221,8 @@ export const Dashboard: React.FC = () => {
                   id: 'B',
                   nome: 'Classe B',
                   sub: 'Médio Giro',
-                  valor: 'R$ 12.345,00',
-                  badge: '15.0%',
+                  valor: `R$ ${classeB.reduce((acc, i) => acc + i.faturamento, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                  badge: totalABC > 0 ? `${((classeB.reduce((acc, i) => acc + i.faturamento, 0) / totalABC) * 100).toFixed(1)}%` : '0%',
                   badgeColor: 'text-purple-400',
                   pill: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
                 },
@@ -239,8 +230,8 @@ export const Dashboard: React.FC = () => {
                   id: 'C',
                   nome: 'Classe C',
                   sub: 'Estoque Residual',
-                  valor: 'R$ 4.033,00',
-                  badge: '4.9%',
+                  valor: `R$ ${classeC.reduce((acc, i) => acc + i.faturamento, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                  badge: totalABC > 0 ? `${((classeC.reduce((acc, i) => acc + i.faturamento, 0) / totalABC) * 100).toFixed(1)}%` : '0%',
                   badgeColor: 'text-amber-400',
                   pill: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
                 },
@@ -280,7 +271,7 @@ export const Dashboard: React.FC = () => {
                 <Layers className="w-4 h-4 text-emerald-400" />
                 <span className="text-slate-300 font-semibold">Saúde do Catálogo</span>
               </div>
-              <span className="text-emerald-400 font-bold">98.4% Normal</span>
+              <span className="text-emerald-400 font-bold">100% Operacional</span>
             </div>
           </div>
         </BentoCard>
@@ -319,45 +310,56 @@ export const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.14]">
-              {recentMovements.map((mov) => (
-                <tr key={mov.id} className="hover:bg-white/[0.03] transition-colors group whitespace-nowrap">
-                  <td className="py-3.5 px-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
-                    {new Date(mov.data_movimentacao).toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </td>
-                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    <Badge variant={mov.tipo === 'ENTRADA' ? 'emerald' : 'danger'}>
-                      {mov.tipo === 'ENTRADA' ? (
-                        <span className="flex items-center gap-1.5 font-bold whitespace-nowrap">
-                          <ArrowDownRight className="w-4 h-4 text-emerald-400" /> ENTRADA
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1.5 font-bold whitespace-nowrap">
-                          <ArrowUpRight className="w-4 h-4 text-rose-400" /> SAÍDA
-                        </span>
-                      )}
-                    </Badge>
-                  </td>
-                  <td className="py-3.5 px-4 text-sm font-bold whitespace-nowrap">
-                    <span className={mov.tipo === 'ENTRADA' ? 'text-emerald-400' : 'text-rose-400'}>
-                      {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`} un
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-sm font-bold text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
-                    {mov.motivo}
-                  </td>
-                  <td className="py-3.5 px-4 text-sm font-semibold text-slate-300 whitespace-nowrap">
-                    {mov.responsavel || 'Operador'}
-                  </td>
-                  <td className="py-3.5 px-4 text-sm font-bold text-white text-right whitespace-nowrap">
-                    {mov.saldo_resultante ?? '—'} un
+              {recentMovements.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-10 text-center text-xs text-slate-500">
+                    <div className="flex flex-col items-center gap-2">
+                      <Inbox className="w-6 h-6 text-slate-600" />
+                      <span>Nenhuma movimentação de auditoria registrada ainda. Realize vendas ou entradas de estoque para visualizar o histórico.</span>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentMovements.map((mov) => (
+                  <tr key={mov.id} className="hover:bg-white/[0.03] transition-colors group whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
+                      {new Date(mov.data_movimentacao).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </td>
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <Badge variant={mov.tipo === 'ENTRADA' ? 'emerald' : 'danger'}>
+                        {mov.tipo === 'ENTRADA' ? (
+                          <span className="flex items-center gap-1.5 font-bold whitespace-nowrap">
+                            <ArrowDownRight className="w-4 h-4 text-emerald-400" /> ENTRADA
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1.5 font-bold whitespace-nowrap">
+                            <ArrowUpRight className="w-4 h-4 text-rose-400" /> SAÍDA
+                          </span>
+                        )}
+                      </Badge>
+                    </td>
+                    <td className="py-3.5 px-4 text-sm font-bold whitespace-nowrap">
+                      <span className={mov.tipo === 'ENTRADA' ? 'text-emerald-400' : 'text-rose-400'}>
+                        {mov.tipo === 'ENTRADA' ? `+${mov.quantidade}` : `-${mov.quantidade}`} un
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-sm font-bold text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
+                      {mov.motivo}
+                    </td>
+                    <td className="py-3.5 px-4 text-sm font-semibold text-slate-300 whitespace-nowrap">
+                      {mov.responsavel || 'Operador'}
+                    </td>
+                    <td className="py-3.5 px-4 text-sm font-bold text-white text-right whitespace-nowrap">
+                      {mov.saldo_resultante ?? '—'} un
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

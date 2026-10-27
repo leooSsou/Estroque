@@ -19,8 +19,8 @@ export const Login: React.FC = () => {
   const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
 
   // Login states
-  const [email, setEmail] = useState('dono@estroque.com.br');
-  const [password, setPassword] = useState('senha123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Register states
   const [nomeFantasia, setNomeFantasia] = useState('');
@@ -72,17 +72,6 @@ export const Login: React.FC = () => {
           ? err.message
           : 'Erro ao cadastrar empresa. Verifique se o CNPJ é válido.';
       toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async () => {
-    setLoading(true);
-    try {
-      await login('dono@estroque.com.br', 'senha123');
-      toast.success('Bem-vindo ao Estroque (Sessão de Demonstração)');
-      navigate('/');
     } finally {
       setLoading(false);
     }
@@ -388,26 +377,6 @@ export const Login: React.FC = () => {
               </div>
             </form>
           )}
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/[0.16]" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#000000] px-3 text-slate-500">ou</span>
-            </div>
-          </div>
-
-          {/* 1-Click Demo Login */}
-          <button
-            type="button"
-            onClick={handleDemoLogin}
-            disabled={loading}
-            className="w-full py-2.5 px-4 rounded-full bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95"
-          >
-            <Zap className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Entrar com Conta de Demonstração (Dono)</span>
-          </button>
         </div>
       </div>
     </div>
