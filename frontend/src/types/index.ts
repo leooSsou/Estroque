@@ -114,7 +114,13 @@ export interface AuditoriaFisica {
   itens: ItemAuditoria[];
 }
 
-export type FormaPagamento = 'DINHEIRO' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'PIX' | 'CREDIARIO';
+export type FormaPagamento = 'DINHEIRO' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'PIX' | 'CREDIARIO' | 'MULTIPLO';
+
+export interface PagamentoVenda {
+  id?: string;
+  forma_pagamento: FormaPagamento;
+  valor: number;
+}
 
 export interface ItemVenda {
   id: string;
@@ -132,13 +138,14 @@ export interface Venda {
   cliente_id?: string | null;
   cliente_nome?: string;
   usuario_id: string;
-  status: 'CONCLUIDA' | 'CANCELADA';
+  status: 'CONCLUIDA' | 'CANCELADA' | 'PAGO' | 'PENDENTE';
   forma_pagamento: FormaPagamento;
   valor_total: number;
   desconto: number;
   data_venda: string;
   tenant_id: string;
   itens: ItemVenda[];
+  pagamentos?: PagamentoVenda[];
 }
 
 export interface FinanceiroLancamento {

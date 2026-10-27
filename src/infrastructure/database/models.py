@@ -232,6 +232,22 @@ class VendaModel(HasTenant, Base):
     )
 
     itens = relationship("ItemVendaModel", back_populates="venda", cascade="all, delete-orphan")
+    pagamentos = relationship("PagamentoVendaModel", back_populates="venda", cascade="all, delete-orphan")
+
+
+class PagamentoVendaModel(Base):
+    """
+    Representação física da tabela pagamentos_venda (Split Payment).
+    """
+    __tablename__ = "pagamentos_venda"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    venda_id: Mapped[UUID] = mapped_column(ForeignKey("vendas.id", ondelete="CASCADE"), nullable=False)
+    forma_pagamento: Mapped[str] = mapped_column(String(20), nullable=False)
+    valor: Mapped[float] = mapped_column(Float, nullable=False)
+    tenant_id: Mapped[UUID] = mapped_column(nullable=False)
+
+    venda = relationship("VendaModel", back_populates="pagamentos")
 
 
 class ItemVendaModel(Base):

@@ -371,12 +371,26 @@ class ItemVendaRequest(BaseModel):
     quantidade: int = Field(..., gt=0, description="Quantidade vendida.")
 
 
+class PagamentoVendaRequest(BaseModel):
+    forma_pagamento: str = Field(..., description="Forma de pagamento (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO).")
+    valor: float = Field(..., gt=0, description="Valor pago nesta forma.")
+
+
+class PagamentoVendaResponse(BaseModel):
+    id: UUID
+    forma_pagamento: str
+    valor: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class RegistrarVendaRequest(BaseModel):
     loja_id: UUID = Field(..., description="ID da loja de origem da venda.")
-    cliente_id: UUID | None = Field(None, description="ID do cliente (obrigatório se forma_pagamento for CREDIARIO).")
-    forma_pagamento: str = Field(..., description="Forma de pagamento (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO).")
+    cliente_id: UUID | None = Field(None, description="ID do cliente (obrigatório se forma_pagamento ou parcela for CREDIARIO).")
+    forma_pagamento: str | None = Field(None, description="Forma de pagamento único (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO).")
     desconto: float = Field(default=0.0, ge=0.0, description="Valor do desconto aplicado.")
     itens: list[ItemVendaRequest] = Field(..., min_length=1, description="Lista de produtos e quantidades.")
+    pagamentos: list[PagamentoVendaRequest] | None = Field(None, description="Lista de pagamentos para Split Payment.")
 
 
 class ItemVendaResponse(BaseModel):
@@ -401,6 +415,7 @@ class VendaResponse(BaseModel):
     data_venda: datetime | None = None
     tenant_id: UUID
     itens: list[ItemVendaResponse]
+    pagamentos: list[PagamentoVendaResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

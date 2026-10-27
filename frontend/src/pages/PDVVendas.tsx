@@ -73,6 +73,12 @@ export const PDVVendas: React.FC = () => {
   const [valorRecebido, setValorRecebido] = useState<number | ''>('');
   const [catalogFilter, setCatalogFilter] = useState<'TODOS' | 'DISPONIVEL' | 'ESGOTADO'>('TODOS');
 
+  // Split Payment (Múltiplas Formas de Pagamento)
+  const [modoPagamento, setModoPagamento] = useState<'SIMPLES' | 'SPLIT'>('SIMPLES');
+  const [splitPagamentos, setSplitPagamentos] = useState<{ forma_pagamento: FormaPagamento; valor: number }[]>([]);
+  const [novoSplitForma, setNovoSplitForma] = useState<FormaPagamento>('DINHEIRO');
+  const [novoSplitValor, setNovoSplitValor] = useState<number | ''>('');
+
   // Pause / Hold Sale Modal State
   const [pauseModalOpen, setPauseModalOpen] = useState(false);
   const [pauseObservacao, setPauseObservacao] = useState('');
@@ -148,7 +154,56 @@ export const PDVVendas: React.FC = () => {
 
   // Credit limit validation check
   const crediarioExcedido =
+    modoPagamento === 'SIMPLES' &&
     formaPagamento === 'CREDIARIO' && (!selectedCliente || valorTotal > limiteDisponivel);
+
+  // Split Payment calculations & helpers
+  const totalSplitPago = useMemo(() => {
+    return Number(splitPagamentos.reduce((acc, p) => acc + p.valor, 0).toFixed(2));
+  }, [splitPagamentos]);
+
+  const restanteSplit = useMemo(() => {
+    return Number(Math.max(0, valorTotal - totalSplitPago).toFixed(2));
+  }, [valorTotal, totalSplitPago]);
+
+  const splitCrediarioTotal = useMemo(() => {
+    return splitPagamentos
+      .filter((p) => p.forma_pagamento === 'CREDIARIO')
+      .reduce((acc, p) => acc + p.valor, 0);
+  }, [splitPagamentos]);
+
+  const splitCrediarioExcedido =
+    modoPagamento === 'SPLIT' &&
+    splitCrediarioTotal > 0 &&
+    (!selectedCliente || splitCrediarioTotal > limiteDisponivel);
+
+  const handleAddSplitPayment = () => {
+    const val = typeof novoSplitValor === 'number' ? novoSplitValor : restanteSplit;
+    if (val <= 0) {
+      toast.error('Informe um valor maior que zero para o pagamento.');
+      return;
+    }
+    if (val > restanteSplit) {
+      toast.error(`O valor (R$ ${val.toFixed(2)}) ultrapassa o saldo restante (R$ ${restanteSplit.toFixed(2)}).`);
+      return;
+    }
+    if (novoSplitForma === 'CREDIARIO') {
+      if (!selectedCliente) {
+        toast.error('Selecione um cliente antes de adicionar pagamento em Crediário.');
+        return;
+      }
+      if (splitCrediarioTotal + val > limiteDisponivel) {
+        toast.error('O valor no crediário ultrapassa o limite disponível do cliente.');
+        return;
+      }
+    }
+    setSplitPagamentos((prev) => [...prev, { forma_pagamento: novoSplitForma, valor: val }]);
+    setNovoSplitValor('');
+  };
+
+  const handleRemoveSplitPayment = (index: number) => {
+    setSplitPagamentos((prev) => prev.filter((_, i) => i !== index));
+  };
 
   // Add item to cart
   const handleAddToCart = (prod: Produto) => {
@@ -196,27 +251,43 @@ export const PDVVendas: React.FC = () => {
       return;
     }
 
-    if (formaPagamento === 'CREDIARIO') {
-      if (!selectedCliente) {
-        toast.error('Selecione um cliente para prosseguir com venda no Crediário.');
+    if (modoPagamento === 'SPLIT') {
+      if (splitPagamentos.length === 0) {
+        toast.error('Adicione as formas de pagamento para finalizar a venda dividida.');
         return;
       }
-      if (crediarioExcedido) {
-        toast.error('Limite de crediário do cliente excedido! Venda bloqueada.');
+      if (restanteSplit > 0) {
+        toast.error(`Faltam R$ ${restanteSplit.toFixed(2)} para cobrir o total da venda.`);
         return;
       }
-    }
+      if (splitCrediarioExcedido) {
+        toast.error('Limite de crediário do cliente excedido para a parcela solicitada.');
+        return;
+      }
+    } else {
+      if (formaPagamento === 'CREDIARIO') {
+        if (!selectedCliente) {
+          toast.error('Selecione um cliente para prosseguir com venda no Crediário.');
+          return;
+        }
+        if (crediarioExcedido) {
+          toast.error('Limite de crediário do cliente excedido! Venda bloqueada.');
+          return;
+        }
+      }
 
-    if (formaPagamento === 'DINHEIRO' && typeof valorRecebido === 'number' && valorRecebido < valorTotal) {
-      toast.error('Valor recebido em dinheiro é inferior ao total da venda!');
-      return;
+      if (formaPagamento === 'DINHEIRO' && typeof valorRecebido === 'number' && valorRecebido < valorTotal) {
+        toast.error('Valor recebido em dinheiro é inferior ao total da venda!');
+        return;
+      }
     }
 
     try {
       const sale = await api.registrarVenda({
         loja_id: activeLoja?.id || '11111111-1111-1111-1111-111111111111',
         cliente_id: selectedClienteId || null,
-        forma_pagamento: formaPagamento,
+        forma_pagamento: modoPagamento === 'SPLIT' ? 'MULTIPLO' : formaPagamento,
+        pagamentos: modoPagamento === 'SPLIT' ? splitPagamentos : undefined,
         desconto,
         itens: cart.map((c) => ({
           produto_id: c.produto.id,
@@ -232,6 +303,8 @@ export const PDVVendas: React.FC = () => {
       setCart([]);
       setDesconto(0);
       setValorRecebido('');
+      setSplitPagamentos([]);
+      setModoPagamento('SIMPLES');
       toast.success('Venda concluída com sucesso! Baixa no estoque efetuada.');
 
       // Refresh data
@@ -787,39 +860,169 @@ export const PDVVendas: React.FC = () => {
                 )}
               </div>
 
-              {/* Payment Methods Selector */}
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-300">Forma de Pagamento</label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
-                  {[
-                    { id: 'PIX', label: 'PIX', icon: QrCode },
-                    { id: 'CARTAO_CREDITO', label: 'Crédito', icon: CreditCard },
-                    { id: 'CARTAO_DEBITO', label: 'Débito', icon: CreditCard },
-                    { id: 'DINHEIRO', label: 'Dinheiro', icon: Banknote },
-                    { id: 'CREDIARIO', label: 'Crediário', icon: CalendarClock },
-                  ].map((pm) => {
-                    const Icon = pm.icon;
-                    return (
-                      <button
-                        key={pm.id}
-                        type="button"
-                        onClick={() => setFormaPagamento(pm.id as FormaPagamento)}
-                        className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold btn-press ${
-                          formaPagamento === pm.id
-                            ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20'
-                            : 'bg-[#000000] text-slate-300 border border-white/[0.16] hover:bg-white/[0.06]'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" />
-                        <span>{pm.label}</span>
-                      </button>
-                    );
-                  })}
+              {/* Payment Methods Selector & Split Payment Toggle */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-300">Forma de Pagamento</label>
+                  <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#000000] border border-white/[0.16] text-[11px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setModoPagamento('SIMPLES')}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        modoPagamento === 'SIMPLES'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Único
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModoPagamento('SPLIT');
+                        if (splitPagamentos.length === 0 && valorTotal > 0) {
+                          setNovoSplitValor(valorTotal);
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        modoPagamento === 'SPLIT'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Dividir (Split)
+                    </button>
+                  </div>
                 </div>
+
+                {modoPagamento === 'SIMPLES' ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
+                    {[
+                      { id: 'PIX', label: 'PIX', icon: QrCode },
+                      { id: 'CARTAO_CREDITO', label: 'Crédito', icon: CreditCard },
+                      { id: 'CARTAO_DEBITO', label: 'Débito', icon: CreditCard },
+                      { id: 'DINHEIRO', label: 'Dinheiro', icon: Banknote },
+                      { id: 'CREDIARIO', label: 'Crediário', icon: CalendarClock },
+                    ].map((pm) => {
+                      const Icon = pm.icon;
+                      return (
+                        <button
+                          key={pm.id}
+                          type="button"
+                          onClick={() => setFormaPagamento(pm.id as FormaPagamento)}
+                          className={`py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-xs font-bold btn-press ${
+                            formaPagamento === pm.id
+                              ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20'
+                              : 'bg-[#000000] text-slate-300 border border-white/[0.16] hover:bg-white/[0.06]'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          <span>{pm.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* Split Payment Management Panel */
+                  <div className="p-3.5 rounded-2xl bg-[#000000] border border-emerald-500/30 space-y-3">
+                    <div className="flex items-center justify-between text-xs pb-2 border-b border-white/[0.14]">
+                      <span className="font-semibold text-slate-300">Resumo da Divisão:</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-400">
+                          Pago: <strong className="text-white">R$ {totalSplitPago.toFixed(2)}</strong>
+                        </span>
+                        <span className={`font-bold ${restanteSplit > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                          {restanteSplit > 0 ? `Faltam: R$ ${restanteSplit.toFixed(2)}` : '✓ 100% Coberto'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Pagamentos já adicionados */}
+                    {splitPagamentos.length > 0 && (
+                      <div className="space-y-1.5">
+                        {splitPagamentos.map((p, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between p-2 rounded-xl bg-[#000000] border border-white/[0.12] text-xs"
+                          >
+                            <span className="font-bold text-white">{p.forma_pagamento}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-emerald-400">R$ {p.valor.toFixed(2)}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSplitPayment(idx)}
+                                className="w-6 h-6 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 flex items-center justify-center transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Formulário para adicionar nova parcela */}
+                    {restanteSplit > 0 && (
+                      <div className="space-y-2 pt-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-bold">
+                          {[
+                            { id: 'DINHEIRO', label: 'Dinheiro' },
+                            { id: 'PIX', label: 'PIX' },
+                            { id: 'CARTAO_CREDITO', label: 'Crédito' },
+                            { id: 'CARTAO_DEBITO', label: 'Débito' },
+                            { id: 'CREDIARIO', label: 'Crediário' },
+                          ].map((pm) => (
+                            <button
+                              key={pm.id}
+                              type="button"
+                              onClick={() => setNovoSplitForma(pm.id as FormaPagamento)}
+                              className={`py-1.5 px-2 rounded-lg text-center transition-all ${
+                                novoSplitForma === pm.id
+                                  ? 'bg-emerald-600 text-white font-bold'
+                                  : 'bg-[#000000] text-slate-300 border border-white/[0.14] hover:bg-white/[0.06]'
+                              }`}
+                            >
+                              {pm.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1">
+                          <div className="relative flex-1">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-bold">
+                              R$
+                            </span>
+                            <input
+                              type="number"
+                              min="0.01"
+                              step="0.01"
+                              max={restanteSplit}
+                              value={novoSplitValor}
+                              onChange={(e) =>
+                                setNovoSplitValor(e.target.value === '' ? '' : parseFloat(e.target.value))
+                              }
+                              placeholder={restanteSplit.toFixed(2)}
+                              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white font-bold focus:border-emerald-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleAddSplitPayment}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all flex items-center gap-1 active:scale-95"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Adicionar</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Dinheiro Change Calculator */}
-              {formaPagamento === 'DINHEIRO' && (
+              {/* Dinheiro Change Calculator (Apenas em Modo Simples) */}
+              {modoPagamento === 'SIMPLES' && formaPagamento === 'DINHEIRO' && (
                 <div className="p-3.5 rounded-2xl bg-[#000000] border border-amber-500/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
@@ -871,12 +1074,12 @@ export const PDVVendas: React.FC = () => {
               )}
 
               {/* Credit Limit Alert if Exceeded */}
-              {crediarioExcedido && (
+              {(crediarioExcedido || splitCrediarioExcedido) && (
                 <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-2 text-xs text-rose-300">
                   <AlertTriangle className="w-5 h-5 flex-shrink-0 text-rose-400" />
                   <span>
                     {selectedCliente
-                      ? `Valor total (R$ ${valorTotal.toFixed(2)}) ultrapassa o limite disponível do cliente (R$ ${limiteDisponivel.toFixed(2)})!`
+                      ? `Valor solicitado em crediário ultrapassa o limite disponível do cliente (R$ ${limiteDisponivel.toFixed(2)})!`
                       : 'Para vender no crediário é obrigatório selecionar um cliente cadastrado.'}
                   </span>
                 </div>
@@ -912,11 +1115,19 @@ export const PDVVendas: React.FC = () => {
 
                 <button
                   onClick={handleFinalizeSale}
-                  disabled={cart.length === 0 || crediarioExcedido || Boolean(dinheiroInsuficiente)}
+                  disabled={
+                    cart.length === 0 ||
+                    (modoPagamento === 'SIMPLES' && (crediarioExcedido || Boolean(dinheiroInsuficiente))) ||
+                    (modoPagamento === 'SPLIT' && (restanteSplit > 0 || splitPagamentos.length === 0 || Boolean(splitCrediarioExcedido)))
+                  }
                   className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-base font-bold shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
                 >
                   <CheckCircle2 className="w-5 h-5" />
-                  <span>Finalizar Venda & Emitir Cupom</span>
+                  <span>
+                    {modoPagamento === 'SPLIT'
+                      ? `Finalizar Venda Dividida (${splitPagamentos.length} ${splitPagamentos.length === 1 ? 'pagamento' : 'pagamentos'})`
+                      : 'Finalizar Venda & Emitir Cupom'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1734,10 +1945,22 @@ export const PDVVendas: React.FC = () => {
                 </div>
               ) : null}
 
-              <div className="flex justify-between text-slate-300">
-                <span>Forma de Pagamento:</span>
-                <span className="font-bold text-white">{receiptSale?.forma_pagamento}</span>
-              </div>
+              {receiptSale?.pagamentos && receiptSale.pagamentos.length > 1 ? (
+                <div className="space-y-1 pt-1 border-t border-white/[0.12]">
+                  <span className="text-[11px] font-bold text-slate-300">Pagamentos Divididos:</span>
+                  {receiptSale.pagamentos.map((p, idx) => (
+                    <div key={idx} className="flex justify-between text-xs text-white">
+                      <span className="text-slate-400">• {p.forma_pagamento}:</span>
+                      <span className="font-semibold text-emerald-400">R$ {p.valor.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex justify-between text-slate-300">
+                  <span>Forma de Pagamento:</span>
+                  <span className="font-bold text-white">{receiptSale?.forma_pagamento}</span>
+                </div>
+              )}
 
               <div className="flex justify-between text-sm font-bold text-white pt-1.5 border-t border-white/[0.16]">
                 <span>TOTAL:</span>
