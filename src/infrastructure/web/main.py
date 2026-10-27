@@ -72,7 +72,8 @@ def health_check() -> dict[str, str]:
     """
     return {
         "status": "healthy",
-        "message": "Estroque API operacional"
+        "message": "Estroque API operacional",
+        "version": "1.0.1-limiter-fix",
     }
 
 if __name__ == "__main__":
