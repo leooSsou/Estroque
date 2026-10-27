@@ -29,17 +29,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const lista = await api.getLojas();
       setLojas(lista);
-      if (lista.length > 0 && !activeLoja) {
+      if (lista.length > 0) {
         const savedLojaId = localStorage.getItem('estroque_active_loja_id');
         const found = lista.find((l) => l.id === savedLojaId) || lista[0];
         setActiveLojaState(found);
+      } else {
+        setActiveLojaState(null);
       }
     } catch {
       const fallback = storage.getLojas();
       setLojas(fallback);
-      if (fallback.length > 0 && !activeLoja) {
-        setActiveLojaState(fallback[0]);
-      }
+      setActiveLojaState(fallback[0] || null);
     }
   };
 
@@ -47,14 +47,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const init = async () => {
       setIsLoading(true);
       try {
+        const token = api.getToken();
+        if (!token) {
+          setUser(null);
+          setLojas([]);
+          setActiveLojaState(null);
+          return;
+        }
         const currentUser = await api.getMe();
         setUser(currentUser);
         await refreshLojas();
       } catch {
-        setUser(storage.getUser());
-        const lojasList = storage.getLojas();
-        setLojas(lojasList);
-        setActiveLojaState(lojasList[0] || null);
+        api.logout();
+        storage.clearUser();
+        setUser(null);
+        setLojas([]);
+        setActiveLojaState(null);
       } finally {
         setIsLoading(false);
       }
@@ -93,8 +101,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     api.logout();
+    storage.clearUser();
     setUser(null);
     setToken(null);
+    setLojas([]);
+    setActiveLojaState(null);
   };
 
   return (

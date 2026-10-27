@@ -18,312 +18,93 @@ import {
 
 const STORAGE_PREFIX = 'estroque_saas_';
 
-const DEFAULT_LOJAS: Loja[] = [
+const DEFAULT_LOJAS: Loja[] = [];
+const DEFAULT_USER: User | null = null;
+const DEFAULT_FORNECEDORES: Fornecedor[] = [];
+const DEFAULT_CLIENTES: Cliente[] = [];
+const DEFAULT_PRODUTOS: Produto[] = [];
+const DEFAULT_LEDGER: MovimentacaoEstoque[] = [];
+const DEFAULT_TRANSFERENCIAS: TransferenciaEstoque[] = [];
+const DEFAULT_FINANCEIRO: FinanceiroLancamento[] = [];
+
+// Fixtures para testes unitários automatizados
+export const DEMO_LOJAS: Loja[] = [
   {
     id: '11111111-1111-1111-1111-111111111111',
-    nome: 'Loja Matriz - São Paulo',
+    nome: 'Loja Matriz',
     cnpj: '12.345.678/0001-90',
-    endereco: 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP',
+    endereco: 'Av. Principal, 1000 - Centro',
     tenant_id: '00000000-0000-0000-0000-000000000001',
     ativo: true,
   },
   {
     id: '22222222-2222-2222-2222-222222222222',
-    nome: 'Filial 01 - Campinas',
+    nome: 'Filial 01',
     cnpj: '12.345.678/0002-71',
-    endereco: 'Rua Barão de Jaguara, 550 - Centro, Campinas - SP',
+    endereco: 'Rua das Flores, 500 - Bairro',
     tenant_id: '00000000-0000-0000-0000-000000000001',
     ativo: true,
   },
 ];
 
-const DEFAULT_USER: User = {
+export const DEMO_USER: User = {
   id: '33333333-3333-3333-3333-333333333333',
-  nome: 'Jonathas Silva',
-  email: 'dono@estroque.com.br',
+  nome: 'Administrador',
+  email: 'admin@estroque.app',
   role: 'DONO',
   tenant_id: '00000000-0000-0000-0000-000000000001',
 };
 
-const DEFAULT_FORNECEDORES: Fornecedor[] = [
-  {
-    id: '44444444-4444-4444-4444-444444444441',
-    nome_fantasia: 'TechDistribuidora Brasil',
-    razao_social: 'TechDistribuidora de Eletrônicos Ltda',
-    cnpj: '45.123.890/0001-12',
-    email: 'comercial@techdistribuidora.com.br',
-    telefone: '(11) 3456-7890',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-  },
-  {
-    id: '44444444-4444-4444-4444-444444444442',
-    nome_fantasia: 'Alpha Suprimentos & Moda',
-    razao_social: 'Alpha Suprimentos Comerciais S.A.',
-    cnpj: '33.987.654/0001-55',
-    email: 'contato@alphasuprimentos.com',
-    telefone: '(19) 3210-9876',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-  },
-];
-
-const DEFAULT_CLIENTES: Cliente[] = [
+export const DEMO_CLIENTES: Cliente[] = [
   {
     id: '55555555-5555-5555-5555-555555555551',
-    nome: 'Carlos Eduardo Mendes',
-    email: 'carlos.mendes@email.com',
+    nome: 'Cliente Demonstração',
+    email: 'cliente@teste.com',
     documento: '284.918.472-88',
     telefone: '(11) 98765-4321',
-    limite_credito: 1500.0,
-    saldo_devedor_crediario: 320.0,
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-  },
-  {
-    id: '55555555-5555-5555-5555-555555555552',
-    nome: 'Mariana Lima Rocha',
-    email: 'mariana.rocha@empresa.com.br',
-    documento: '49.123.876/0001-09',
-    telefone: '(19) 99123-4567',
-    limite_credito: 4500.0,
+    limite_credito: 2000.0,
     saldo_devedor_crediario: 0.0,
     tenant_id: '00000000-0000-0000-0000-000000000001',
     ativo: true,
   },
-  {
-    id: '55555555-5555-5555-5555-555555555553',
-    nome: 'Roberto Viana Filho',
-    email: 'roberto.viana@gmail.com',
-    documento: '192.834.765-10',
-    telefone: '(11) 97654-1234',
-    limite_credito: 800.0,
-    saldo_devedor_crediario: 750.0,
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-  },
 ];
 
-const DEFAULT_PRODUTOS: Produto[] = [
+export const DEMO_PRODUTOS: Produto[] = [
   {
     id: '66666666-6666-6666-6666-666666666661',
-    nome: 'Teclado Mecânico RGB Pro Wireless',
-    sku: 'TEC-MEC-01',
+    nome: 'Produto Teste A',
+    sku: 'PRD-TEST-01',
     codigo_barras: '7891234560012',
-    categoria: 'Periféricos',
-    preco_custo: 140.0,
-    markup: 71.4, // Preço = 140 * (1 + 0.714) = 240
-    preco_venda: 239.9,
-    fornecedor_id: '44444444-4444-4444-4444-444444444441',
+    categoria: 'Geral',
+    preco_custo: 50.0,
+    markup: 100.0,
+    preco_venda: 100.0,
     tenant_id: '00000000-0000-0000-0000-000000000001',
     ativo: true,
     estoque_por_loja: {
-      '11111111-1111-1111-1111-111111111111': 42,
-      '22222222-2222-2222-2222-222222222222': 18,
+      '11111111-1111-1111-1111-111111111111': 50,
+      '22222222-2222-2222-2222-222222222222': 20,
     },
-    estoque_total: 60,
-    estoque_minimo: 15,
-  },
-  {
-    id: '66666666-6666-6666-6666-666666666662',
-    nome: 'Mouse Gamer Óptico 16000 DPI Sensor PixArt',
-    sku: 'MOU-GAM-02',
-    codigo_barras: '7891234560029',
-    categoria: 'Periféricos',
-    preco_custo: 75.0,
-    markup: 86.6,
-    preco_venda: 139.9,
-    fornecedor_id: '44444444-4444-4444-4444-444444444441',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-    estoque_por_loja: {
-      '11111111-1111-1111-1111-111111111111': 25,
-      '22222222-2222-2222-2222-222222222222': 9,
-    },
-    estoque_total: 34,
+    estoque_total: 70,
     estoque_minimo: 10,
   },
   {
-    id: '66666666-6666-6666-6666-666666666663',
-    nome: 'Headset Gamer Surround 7.1 Cancelamento Ruído',
-    sku: 'HEA-SUR-03',
-    codigo_barras: '7891234560036',
-    categoria: 'Áudio',
-    preco_custo: 110.0,
-    markup: 81.8,
-    preco_venda: 199.9,
-    fornecedor_id: '44444444-4444-4444-4444-444444444441',
+    id: '66666666-6666-6666-6666-666666666662',
+    nome: 'Produto Teste B',
+    sku: 'PRD-TEST-02',
+    codigo_barras: '7891234560029',
+    categoria: 'Geral',
+    preco_custo: 25.0,
+    markup: 100.0,
+    preco_venda: 50.0,
     tenant_id: '00000000-0000-0000-0000-000000000001',
     ativo: true,
     estoque_por_loja: {
-      '11111111-1111-1111-1111-111111111111': 4,
-      '22222222-2222-2222-2222-222222222222': 0, // Ruptura na filial!
+      '11111111-1111-1111-1111-111111111111': 30,
+      '22222222-2222-2222-2222-222222222222': 10,
     },
-    estoque_total: 4,
-    estoque_minimo: 8,
-  },
-  {
-    id: '66666666-6666-6666-6666-666666666664',
-    nome: 'Monitor UltraWide 29" IPS 75Hz FreeSync',
-    sku: 'MON-ULT-04',
-    codigo_barras: '7891234560043',
-    categoria: 'Monitores',
-    preco_custo: 680.0,
-    markup: 54.4,
-    preco_venda: 1049.9,
-    fornecedor_id: '44444444-4444-4444-4444-444444444441',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-    estoque_por_loja: {
-      '11111111-1111-1111-1111-111111111111': 12,
-      '22222222-2222-2222-2222-222222222222': 5,
-    },
-    estoque_total: 17,
-    estoque_minimo: 6,
-  },
-  {
-    id: '66666666-6666-6666-6666-666666666665',
-    nome: 'Webcam 4K UltraHD com Microfone Estéreo',
-    sku: 'WEB-4K-05',
-    codigo_barras: '7891234560050',
-    categoria: 'Streaming',
-    preco_custo: 160.0,
-    markup: 81.2,
-    preco_venda: 289.9,
-    fornecedor_id: '44444444-4444-4444-4444-444444444441',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-    estoque_por_loja: {
-      '11111111-1111-1111-1111-111111111111': 0, // Ruptura total
-      '22222222-2222-2222-2222-222222222222': 0,
-    },
-    estoque_total: 0,
+    estoque_total: 40,
     estoque_minimo: 5,
-  },
-  {
-    id: '66666666-6666-6666-6666-666666666666',
-    nome: 'Cadeira Ergonômica Mesh Ajuste 3D',
-    sku: 'CAD-ERG-06',
-    codigo_barras: '7891234560067',
-    categoria: 'Móveis',
-    preco_custo: 450.0,
-    markup: 66.6,
-    preco_venda: 749.9,
-    fornecedor_id: '44444444-4444-4444-4444-444444444442',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    ativo: true,
-    estoque_por_loja: {
-      '11111111-1111-1111-1111-111111111111': 8,
-      '22222222-2222-2222-2222-222222222222': 3,
-    },
-    estoque_total: 11,
-    estoque_minimo: 4,
-  },
-];
-
-const DEFAULT_LEDGER: MovimentacaoEstoque[] = [
-  {
-    id: '77777777-7777-7777-7777-777777777771',
-    loja_id: '11111111-1111-1111-1111-111111111111',
-    produto_id: '66666666-6666-6666-6666-666666666661',
-    tipo: 'ENTRADA',
-    quantidade: 50,
-    motivo: 'Recebimento de NF-e 004.891 TechDistribuidora',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    data_movimentacao: new Date(Date.now() - 86400000 * 2).toISOString(),
-    responsavel: 'Jonathas Silva',
-    saldo_anterior: 0,
-    saldo_resultante: 50,
-  },
-  {
-    id: '77777777-7777-7777-7777-777777777772',
-    loja_id: '11111111-1111-1111-1111-111111111111',
-    produto_id: '66666666-6666-6666-6666-666666666661',
-    tipo: 'SAIDA',
-    quantidade: 8,
-    motivo: 'Venda Balcão PDV #00129',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    data_movimentacao: new Date(Date.now() - 86400000).toISOString(),
-    responsavel: 'Operador Caixa 01',
-    saldo_anterior: 50,
-    saldo_resultante: 42,
-  },
-  {
-    id: '77777777-7777-7777-7777-777777777773',
-    loja_id: '22222222-2222-2222-2222-222222222222',
-    produto_id: '66666666-6666-6666-6666-666666666662',
-    tipo: 'ENTRADA',
-    quantidade: 10,
-    motivo: 'Transferência recebida da Matriz #TRF-902',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    data_movimentacao: new Date(Date.now() - 3600000 * 5).toISOString(),
-    responsavel: 'Gerente Campinas',
-    saldo_anterior: 0,
-    saldo_resultante: 10,
-  },
-];
-
-const DEFAULT_TRANSFERENCIAS: TransferenciaEstoque[] = [
-  {
-    id: '88888888-8888-8888-8888-888888888881',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    loja_origem_id: '11111111-1111-1111-1111-111111111111',
-    loja_destino_id: '22222222-2222-2222-2222-222222222222',
-    produto_id: '66666666-6666-6666-6666-666666666661',
-    quantidade: 10,
-    status: 'DESPACHADO',
-    solicitado_por_id: '33333333-3333-3333-3333-333333333333',
-    aprovado_por_id: '33333333-3333-3333-3333-333333333333',
-    criado_em: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-  {
-    id: '88888888-8888-8888-8888-888888888882',
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    loja_origem_id: '11111111-1111-1111-1111-111111111111',
-    loja_destino_id: '22222222-2222-2222-2222-222222222222',
-    produto_id: '66666666-6666-6666-6666-666666666663',
-    quantidade: 4,
-    status: 'SOLICITADO',
-    solicitado_por_id: '33333333-3333-3333-3333-333333333333',
-    criado_em: new Date(Date.now() - 3600000 * 2).toISOString(),
-  },
-];
-
-const DEFAULT_FINANCEIRO: FinanceiroLancamento[] = [
-  {
-    id: '99999999-9999-9999-9999-999999999991',
-    loja_id: '11111111-1111-1111-1111-111111111111',
-    tipo: 'RECEITA',
-    valor: 4890.5,
-    categoria: 'Vendas Balcão',
-    status_pagamento: 'PAGO',
-    data_lancamento: new Date().toISOString(),
-    data_pagamento: new Date().toISOString(),
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    descricao: 'Recebimentos PDV do dia',
-  },
-  {
-    id: '99999999-9999-9999-9999-999999999992',
-    loja_id: '11111111-1111-1111-1111-111111111111',
-    tipo: 'DESPESA',
-    valor: 1250.0,
-    categoria: 'Aluguel & Condomínio',
-    status_pagamento: 'PAGO',
-    data_lancamento: new Date(Date.now() - 86400000 * 3).toISOString(),
-    data_pagamento: new Date(Date.now() - 86400000 * 3).toISOString(),
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    descricao: 'Aluguel Loja Matriz',
-  },
-  {
-    id: '99999999-9999-9999-9999-999999999993',
-    loja_id: '11111111-1111-1111-1111-111111111111',
-    tipo: 'DESPESA',
-    valor: 380.0,
-    categoria: 'Energia Elétrica & Internet',
-    status_pagamento: 'PENDENTE',
-    data_lancamento: new Date().toISOString(),
-    tenant_id: '00000000-0000-0000-0000-000000000001',
-    descricao: 'Conta de Energia CPFL',
   },
 ];
 
@@ -348,13 +129,50 @@ class StorageService {
     }
   }
 
-  // Auth & Lojas
-  getUser(): User {
-    return this.get<User>('user', DEFAULT_USER);
+  // Método auxiliar para testes automatizados
+  seedDemoData(): void {
+    this.set('user', DEMO_USER);
+    this.set('lojas', DEMO_LOJAS);
+    this.set('clientes', DEMO_CLIENTES);
+    this.set('produtos', DEMO_PRODUTOS);
+    this.set('ledger', []);
+    this.set('transferencias', []);
+    this.set('financeiro', []);
+    this.set('vendas', []);
+    this.set('vendas_espera', []);
+    this.set('caixa_turno', {
+      aberto: true,
+      operador_nome: DEMO_USER.nome,
+      data_abertura: new Date(Date.now() - 3600000 * 4).toISOString(),
+      fundo_inicial: 200.0,
+      operacoes: [
+        {
+          id: 'op-init-1',
+          tipo: 'ABERTURA',
+          valor: 200.0,
+          motivo: 'Fundo de troco inicial do turno',
+          data_hora: new Date(Date.now() - 3600000 * 4).toISOString(),
+          operador_nome: DEMO_USER.nome,
+        },
+      ],
+    });
   }
 
-  setUser(user: User): void {
-    this.set('user', user);
+  // Auth & Lojas
+  getUser(): User | null {
+    return this.get<User | null>('user', DEFAULT_USER);
+  }
+
+  setUser(user: User | null): void {
+    if (user) {
+      this.set('user', user);
+    } else {
+      localStorage.removeItem(STORAGE_PREFIX + 'user');
+    }
+  }
+
+  clearUser(): void {
+    localStorage.removeItem(STORAGE_PREFIX + 'user');
   }
 
   getLojas(): Loja[] {
@@ -363,10 +181,11 @@ class StorageService {
 
   addLoja(loja: Omit<Loja, 'id' | 'tenant_id'>): Loja {
     const lojas = this.getLojas();
+    const user = this.getUser();
     const newLoja: Loja = {
       ...loja,
       id: crypto.randomUUID ? crypto.randomUUID() : `loja-${Date.now()}`,
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
     };
     lojas.push(newLoja);
     this.set('lojas', lojas);
@@ -380,6 +199,7 @@ class StorageService {
 
   addProduto(prod: Omit<Produto, 'id' | 'tenant_id' | 'estoque_total'> & { estoque_inicial?: number; loja_id?: string }): Produto {
     const produtos = this.getProdutos();
+    const user = this.getUser();
     const id = crypto.randomUUID ? crypto.randomUUID() : `prod-${Date.now()}`;
     const estoquePorLoja: Record<string, number> = {};
     if (prod.loja_id && prod.estoque_inicial) {
@@ -389,7 +209,7 @@ class StorageService {
     const newProd: Produto = {
       ...prod,
       id,
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
       estoque_por_loja: estoquePorLoja,
       estoque_total: prod.estoque_inicial || 0,
       estoque_minimo: prod.estoque_minimo || 5,
@@ -398,7 +218,7 @@ class StorageService {
     produtos.push(newProd);
     this.set('produtos', produtos);
 
-    // If initial stock provided, record in ledger
+    // Registra no ledger se houver estoque inicial
     if (prod.loja_id && prod.estoque_inicial && prod.estoque_inicial > 0) {
       this.addMovimentacao({
         loja_id: prod.loja_id,
@@ -448,6 +268,7 @@ class StorageService {
     }
 
     const ledger = this.getLedger();
+    const user = this.getUser();
     const newEntry: MovimentacaoEstoque = {
       id: crypto.randomUUID ? crypto.randomUUID() : `mov-${Date.now()}`,
       loja_id: mov.loja_id,
@@ -455,9 +276,9 @@ class StorageService {
       tipo: mov.tipo,
       quantidade: mov.quantidade,
       motivo: mov.motivo,
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
       data_movimentacao: new Date().toISOString(),
-      responsavel: this.getUser().nome,
+      responsavel: user?.nome || 'Operador',
       saldo_anterior: prevStock,
       saldo_resultante: newStock,
     };
@@ -474,11 +295,12 @@ class StorageService {
 
   addCliente(cliente: Omit<Cliente, 'id' | 'tenant_id' | 'saldo_devedor_crediario'>): Cliente {
     const clientes = this.getClientes();
+    const user = this.getUser();
     const newCliente: Cliente = {
       ...cliente,
       id: crypto.randomUUID ? crypto.randomUUID() : `cli-${Date.now()}`,
       saldo_devedor_crediario: 0,
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
     };
     clientes.push(newCliente);
     this.set('clientes', clientes);
@@ -501,10 +323,11 @@ class StorageService {
 
   addFornecedor(fornecedor: Omit<Fornecedor, 'id' | 'tenant_id'>): Fornecedor {
     const fornecedores = this.getFornecedores();
+    const user = this.getUser();
     const newFornecedor: Fornecedor = {
       ...fornecedor,
       id: crypto.randomUUID ? crypto.randomUUID() : `forn-${Date.now()}`,
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
     };
     fornecedores.push(newFornecedor);
     this.set('fornecedores', fornecedores);
@@ -523,15 +346,16 @@ class StorageService {
     quantidade: number;
   }): TransferenciaEstoque {
     const transferencias = this.getTransferencias();
+    const user = this.getUser();
     const newTransfer: TransferenciaEstoque = {
       id: crypto.randomUUID ? crypto.randomUUID() : `trf-${Date.now()}`,
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
       loja_origem_id: dados.loja_origem_id,
       loja_destino_id: dados.loja_destino_id,
       produto_id: dados.produto_id,
       quantidade: dados.quantidade,
       status: 'SOLICITADO',
-      solicitado_por_id: this.getUser().id,
+      solicitado_por_id: user?.id || '',
       criado_em: new Date().toISOString(),
     };
     transferencias.unshift(newTransfer);
@@ -539,62 +363,67 @@ class StorageService {
     return newTransfer;
   }
 
-  despacharTransferencia(id: string): TransferenciaEstoque | null {
+  despacharTransferencia(id: string): TransferenciaEstoque {
     const transferencias = this.getTransferencias();
-    const trf = transferencias.find((t) => t.id === id);
-    if (!trf) return null;
+    const index = transferencias.findIndex((t) => t.id === id);
+    if (index === -1) throw new Error('Transferência não encontrada.');
 
-    trf.status = 'DESPACHADO';
-    trf.aprovado_por_id = this.getUser().id;
+    const t = transferencias[index];
+    if (t.status !== 'SOLICITADO') throw new Error('Status inválido para despacho.');
 
-    // Saída na origem
+    // Baixa do estoque de origem
     this.addMovimentacao({
-      loja_id: trf.loja_origem_id,
-      produto_id: trf.produto_id,
+      loja_id: t.loja_origem_id,
+      produto_id: t.produto_id,
       tipo: 'SAIDA',
-      quantidade: trf.quantidade,
-      motivo: `Despacho de transferência interlojas #${trf.id.slice(0, 8)}`,
+      quantidade: t.quantidade,
+      motivo: `Despacho de Transferência #${t.id.slice(0, 8)}`,
     });
 
+    t.status = 'DESPACHADO';
+    transferencias[index] = t;
     this.set('transferencias', transferencias);
-    return trf;
+    return t;
   }
 
-  receberTransferencia(id: string, quantidadeRecebida: number, justificativa?: string): TransferenciaEstoque | null {
+  receberTransferencia(id: string, quantidadeRecebida: number, justificativa?: string): TransferenciaEstoque {
     const transferencias = this.getTransferencias();
-    const trf = transferencias.find((t) => t.id === id);
-    if (!trf) return null;
+    const index = transferencias.findIndex((t) => t.id === id);
+    if (index === -1) throw new Error('Transferência não encontrada.');
 
-    trf.quantidade_recebida = quantidadeRecebida;
-    trf.justificativa = justificativa;
-    trf.status = quantidadeRecebida === trf.quantidade ? 'RECEBIDO' : 'DIVERGENTE';
+    const t = transferencias[index];
+    if (t.status !== 'DESPACHADO') throw new Error('Transferência não está em trânsito.');
 
-    // Entrada no destino com a quantidade física recebida
     this.addMovimentacao({
-      loja_id: trf.loja_destino_id,
-      produto_id: trf.produto_id,
+      loja_id: t.loja_destino_id,
+      produto_id: t.produto_id,
       tipo: 'ENTRADA',
       quantidade: quantidadeRecebida,
-      motivo: `Recebimento de transferência #${trf.id.slice(0, 8)}${justificativa ? ` (${justificativa})` : ''}`,
+      motivo: `Recebimento de Transferência #${t.id.slice(0, 8)}${justificativa ? ` (${justificativa})` : ''}`,
     });
 
+    t.status = 'RECEBIDO';
+    t.quantidade_recebida = quantidadeRecebida;
+    t.justificativa = justificativa;
+
+    transferencias[index] = t;
     this.set('transferencias', transferencias);
-    return trf;
+    return t;
   }
 
-  // Vendas (PDV)
+  // Vendas
   getVendas(lojaId?: string, dataInicio?: string, dataFim?: string): Venda[] {
     let vendas = this.get<Venda[]>('vendas', []);
     if (lojaId) {
       vendas = vendas.filter((v) => v.loja_id === lojaId);
     }
     if (dataInicio) {
-      const inicio = new Date(dataInicio).getTime();
-      vendas = vendas.filter((v) => new Date(v.data_venda).getTime() >= inicio);
+      const dInicio = new Date(dataInicio).getTime();
+      vendas = vendas.filter((v) => new Date(v.data_venda).getTime() >= dInicio);
     }
     if (dataFim) {
-      const fim = new Date(dataFim).getTime();
-      vendas = vendas.filter((v) => new Date(v.data_venda).getTime() <= fim);
+      const dFim = new Date(dataFim).getTime();
+      vendas = vendas.filter((v) => new Date(v.data_venda).getTime() <= dFim);
     }
     return vendas;
   }
@@ -602,76 +431,92 @@ class StorageService {
   registrarVenda(dados: {
     loja_id: string;
     cliente_id?: string | null;
-    forma_pagamento: Venda['forma_pagamento'];
-    desconto: number;
-    itens: { produto_id: string; quantidade: number; preco_unitario: number; produto_nome?: string; sku?: string }[];
+    forma_pagamento: 'DINHEIRO' | 'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'CREDIARIO';
+    desconto?: number;
+    itens: {
+      produto_id: string;
+      produto_nome?: string;
+      sku?: string;
+      quantidade: number;
+      preco_unitario: number;
+    }[];
   }): Venda {
-    const produtos = this.getProdutos();
     const vendas = this.getVendas();
+    const subtotal = dados.itens.reduce((acc, i) => acc + i.quantidade * i.preco_unitario, 0);
+    const desconto = dados.desconto || 0;
+    const valorTotal = Math.max(0, subtotal - desconto);
 
-    let subtotal = 0;
+    // 1. Baixa no estoque
     for (const item of dados.itens) {
-      subtotal += item.quantidade * item.preco_unitario;
-
-      // Movimenta o estoque para cada produto vendido
       this.addMovimentacao({
         loja_id: dados.loja_id,
         produto_id: item.produto_id,
         tipo: 'SAIDA',
         quantidade: item.quantidade,
-        motivo: `Venda PDV balcão #${vendas.length + 1}`,
+        motivo: 'Venda Balcão PDV',
       });
     }
 
-    const valorTotal = Math.max(0, subtotal - dados.desconto);
-
-    // Se for CREDIARIO, lança saldo devedor no cliente
-    if (dados.forma_pagamento === 'CREDIARIO' && dados.cliente_id) {
-      const clientes = this.getClientes();
-      const cli = clientes.find((c) => c.id === dados.cliente_id);
-      if (cli) {
-        cli.saldo_devedor_crediario += valorTotal;
-        this.set('clientes', clientes);
+    // 2. Se for crediário, valida limite e atualiza saldo devedor do cliente
+    let clienteObj: Cliente | null = null;
+    if (dados.forma_pagamento === 'CREDIARIO') {
+      if (!dados.cliente_id) {
+        throw new Error('Venda no crediário exige identificação do cliente.');
       }
+      const clientes = this.getClientes();
+      const cliIndex = clientes.findIndex((c) => c.id === dados.cliente_id);
+      if (cliIndex === -1) throw new Error('Cliente não encontrado.');
+
+      clienteObj = clientes[cliIndex];
+      const limiteDisponivel = clienteObj.limite_credito - clienteObj.saldo_devedor_crediario;
+      if (valorTotal > limiteDisponivel) {
+        throw new Error(
+          `Limite de crediário insuficiente. Disponível: R$ ${limiteDisponivel.toFixed(2)}, Necessário: R$ ${valorTotal.toFixed(2)}`
+        );
+      }
+
+      clientes[cliIndex].saldo_devedor_crediario += valorTotal;
+      this.set('clientes', clientes);
     }
 
-    // Registra no financeiro como receita
-    this.addLancamentoFinanceiro({
-      loja_id: dados.loja_id,
-      tipo: 'RECEITA',
-      valor: valorTotal,
-      categoria: `Venda PDV (${dados.forma_pagamento})`,
-      status_pagamento: dados.forma_pagamento === 'CREDIARIO' ? 'PENDENTE' : 'PAGO',
-      descricao: `Venda PDV balcão com ${dados.itens.length} itens`,
-    });
-
-    const clienteObj = dados.cliente_id ? this.getClientes().find((c) => c.id === dados.cliente_id) : undefined;
-
+    const user = this.getUser();
     const novaVenda: Venda = {
       id: crypto.randomUUID ? crypto.randomUUID() : `ven-${Date.now()}`,
       loja_id: dados.loja_id,
       cliente_id: dados.cliente_id,
       cliente_nome: clienteObj?.nome,
-      usuario_id: this.getUser().id,
+      usuario_id: user?.id || '',
       status: 'CONCLUIDA',
       forma_pagamento: dados.forma_pagamento,
       valor_total: valorTotal,
-      desconto: dados.desconto,
+      desconto,
       data_venda: new Date().toISOString(),
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
       itens: dados.itens.map((i) => ({
         id: crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}`,
         produto_id: i.produto_id,
-        produto_nome: i.produto_nome,
-        sku: i.sku,
+        produto_nome: i.produto_nome || '',
+        sku: i.sku || '',
         quantidade: i.quantidade,
         preco_unitario: i.preco_unitario,
-        tenant_id: DEFAULT_USER.tenant_id,
+        tenant_id: user?.tenant_id || '',
       })),
     };
 
     vendas.unshift(novaVenda);
     this.set('vendas', vendas);
+
+    // Registra lançamento financeiro de receita da venda
+    this.addLancamentoFinanceiro({
+      loja_id: dados.loja_id,
+      tipo: 'RECEITA',
+      valor: valorTotal,
+      categoria: `Venda PDV #${novaVenda.id.slice(0, 8)} (${dados.forma_pagamento})`,
+      status_pagamento: dados.forma_pagamento === 'CREDIARIO' ? 'PENDENTE' : 'PAGO',
+      data_pagamento: dados.forma_pagamento === 'CREDIARIO' ? undefined : new Date().toISOString(),
+      descricao: `Venda balcão - ${dados.itens.length} itens`,
+    });
+
     return novaVenda;
   }
 
@@ -704,73 +549,64 @@ class StorageService {
       }
     }
 
-    // 3. Registra estorno no financeiro
+    // 3. Lança compensação financeira
     this.addLancamentoFinanceiro({
       loja_id: venda.loja_id,
       tipo: 'DESPESA',
       valor: venda.valor_total,
       categoria: 'Estorno de Venda PDV',
       status_pagamento: 'PAGO',
-      descricao: `Estorno da venda #${venda.id.slice(0, 8)}`,
+      descricao: `Devolução / Cancelamento de venda PDV`,
     });
 
-    const vendaAtualizada: Venda = {
-      ...venda,
-      status: 'CANCELADA',
-    };
-    vendas[index] = vendaAtualizada;
+    venda.status = 'CANCELADA';
+    vendas[index] = venda;
     this.set('vendas', vendas);
-    return vendaAtualizada;
+    return venda;
   }
 
-  // Vendas em Espera (Hold)
+  // Vendas em Espera (Hold Queue)
   getVendasEspera(): VendaEmEspera[] {
     return this.get<VendaEmEspera[]>('vendas_espera', []);
   }
 
   salvarVendaEspera(dados: Omit<VendaEmEspera, 'id' | 'codigo' | 'criado_em'>): VendaEmEspera {
     const lista = this.getVendasEspera();
-    const count = lista.length + 1;
-    const nova: VendaEmEspera = {
+    const seq = String(lista.length + 1).padStart(3, '0');
+    const hold: VendaEmEspera = {
       ...dados,
-      id: crypto.randomUUID ? crypto.randomUUID() : `esp-${Date.now()}`,
-      codigo: `ESP-${String(count).padStart(3, '0')}`,
+      id: crypto.randomUUID ? crypto.randomUUID() : `hold-${Date.now()}`,
+      codigo: `ESP-${seq}`,
       criado_em: new Date().toISOString(),
     };
-    lista.unshift(nova);
+    lista.unshift(hold);
     this.set('vendas_espera', lista);
-    return nova;
+    return hold;
   }
 
   removerVendaEspera(id: string): void {
-    const lista = this.getVendasEspera().filter((v) => v.id !== id);
+    let lista = this.getVendasEspera();
+    lista = lista.filter((h) => h.id !== id);
     this.set('vendas_espera', lista);
   }
 
   // Operações de Caixa (Turno)
   getCaixaTurno(): CaixaTurno {
+    const user = this.getUser();
     return this.get<CaixaTurno>('caixa_turno', {
-      aberto: true,
-      operador_nome: this.getUser().nome || 'Operador Padrão',
-      data_abertura: new Date(Date.now() - 3600000 * 4).toISOString(),
-      fundo_inicial: 200.0,
-      operacoes: [
-        {
-          id: 'op-init-1',
-          tipo: 'ABERTURA',
-          valor: 200.0,
-          motivo: 'Fundo de troco inicial do turno',
-          data_hora: new Date(Date.now() - 3600000 * 4).toISOString(),
-          operador_nome: this.getUser().nome || 'Operador Padrão',
-        },
-      ],
+      aberto: false,
+      operador_nome: user?.nome || 'Operador',
+      data_abertura: new Date().toISOString(),
+      fundo_inicial: 0.0,
+      operacoes: [],
     });
   }
 
   abrirCaixa(fundoInicial: number): CaixaTurno {
+    const user = this.getUser();
     const novoTurno: CaixaTurno = {
       aberto: true,
-      operador_nome: this.getUser().nome || 'Operador Padrão',
+      operador_nome: user?.nome || 'Operador',
       data_abertura: new Date().toISOString(),
       fundo_inicial: fundoInicial,
       operacoes: [
@@ -780,7 +616,7 @@ class StorageService {
           valor: fundoInicial,
           motivo: 'Abertura de caixa e fundo de troco inicial',
           data_hora: new Date().toISOString(),
-          operador_nome: this.getUser().nome || 'Operador Padrão',
+          operador_nome: user?.nome || 'Operador',
         },
       ],
     };
@@ -801,15 +637,17 @@ class StorageService {
     caixa.operacoes.unshift(op);
     this.set('caixa_turno', caixa);
 
-    // Lança no financeiro como despesa
-    this.addLancamentoFinanceiro({
-      loja_id: this.getLojas()[0]?.id || '11111111-1111-1111-1111-111111111111',
-      tipo: 'DESPESA',
-      valor,
-      categoria: 'Sangria de Caixa (Cofre)',
-      status_pagamento: 'PAGO',
-      descricao: `Sangria de caixa: ${motivo}`,
-    });
+    const lojas = this.getLojas();
+    if (lojas.length > 0) {
+      this.addLancamentoFinanceiro({
+        loja_id: lojas[0].id,
+        tipo: 'DESPESA',
+        valor,
+        categoria: 'Sangria de Caixa (Cofre)',
+        status_pagamento: 'PAGO',
+        descricao: `Sangria de caixa: ${motivo}`,
+      });
+    }
 
     return op;
   }
@@ -827,15 +665,17 @@ class StorageService {
     caixa.operacoes.unshift(op);
     this.set('caixa_turno', caixa);
 
-    // Lança no financeiro como receita/aporte
-    this.addLancamentoFinanceiro({
-      loja_id: this.getLojas()[0]?.id || '11111111-1111-1111-1111-111111111111',
-      tipo: 'RECEITA',
-      valor,
-      categoria: 'Suprimento de Caixa (Troco)',
-      status_pagamento: 'PAGO',
-      descricao: `Reforço de troco: ${motivo}`,
-    });
+    const lojas = this.getLojas();
+    if (lojas.length > 0) {
+      this.addLancamentoFinanceiro({
+        loja_id: lojas[0].id,
+        tipo: 'RECEITA',
+        valor,
+        categoria: 'Suprimento de Caixa (Troco)',
+        status_pagamento: 'PAGO',
+        descricao: `Reforço de troco: ${motivo}`,
+      });
+    }
 
     return op;
   }
@@ -855,15 +695,16 @@ class StorageService {
       .filter((o) => o.tipo === 'SANGRIA')
       .reduce((acc, o) => acc + o.valor, 0);
 
-    const esperadoGaveta = caixa.fundo_inicial + vendasDinheiro + suprimentos - sangrias;
-    const diferenca = valorContado - esperadoGaveta;
+    const saldoEsperado = caixa.fundo_inicial + vendasDinheiro + suprimentos - sangrias;
+    const diferenca = valorContado - saldoEsperado;
 
-    const obsText = observacao ? ` • Obs: ${observacao}` : '';
     const opFechamento: OperacaoCaixa = {
       id: `op-fechamento-${Date.now()}`,
       tipo: 'FECHAMENTO',
       valor: valorContado,
-      motivo: `Fechamento de turno. Esperado: R$ ${esperadoGaveta.toFixed(2)}. Diferença: R$ ${diferenca.toFixed(2)}${obsText}`,
+      motivo: `Fechamento de caixa. Saldo esperado: R$ ${saldoEsperado.toFixed(2)}. Diferença: R$ ${diferenca.toFixed(2)}${
+        observacao ? ` - ${observacao}` : ''
+      }`,
       data_hora: new Date().toISOString(),
       operador_nome: caixa.operador_nome,
     };
@@ -882,11 +723,12 @@ class StorageService {
 
   addLancamentoFinanceiro(lancamento: Omit<FinanceiroLancamento, 'id' | 'tenant_id' | 'data_lancamento'>): FinanceiroLancamento {
     const lista = this.getFinanceiro();
+    const user = this.getUser();
     const novo: FinanceiroLancamento = {
       ...lancamento,
       id: crypto.randomUUID ? crypto.randomUUID() : `fin-${Date.now()}`,
       data_lancamento: new Date().toISOString(),
-      tenant_id: DEFAULT_USER.tenant_id,
+      tenant_id: user?.tenant_id || '',
     };
     lista.unshift(novo);
     this.set('financeiro', lista);
@@ -901,17 +743,17 @@ class StorageService {
 
     // Filtra vendas por loja se especificada
     const vendasFiltradas = lojaId ? vendas.filter((v) => v.loja_id === lojaId) : vendas;
-    const faturamentoBruto = vendasFiltradas.reduce((acc, v) => acc + v.valor_total + v.desconto, 0) || 82300.0;
-    const descontoTotal = vendasFiltradas.reduce((acc, v) => acc + v.desconto, 0) || 1240.0;
+    const faturamentoBruto = vendasFiltradas.reduce((acc, v) => acc + v.valor_total + (v.desconto || 0), 0);
+    const descontoTotal = vendasFiltradas.reduce((acc, v) => acc + (v.desconto || 0), 0);
     const faturamentoLiquido = faturamentoBruto - descontoTotal;
-    const countVendas = vendasFiltradas.length || 265;
-    const ticketMedio = faturamentoLiquido / countVendas;
+    const countVendas = vendasFiltradas.length;
+    const ticketMedio = countVendas > 0 ? faturamentoLiquido / countVendas : 0;
 
     // CMV estimado (aprox. 56% das vendas)
     const cmv = faturamentoLiquido * 0.562;
     const despesas = financeiro.filter((f) => f.tipo === 'DESPESA').reduce((acc, f) => acc + f.valor, 0);
     const lucroLiquido = faturamentoLiquido - cmv - despesas;
-    const margemLucro = (lucroLiquido / faturamentoLiquido) * 100;
+    const margemLucro = faturamentoLiquido > 0 ? (lucroLiquido / faturamentoLiquido) * 100 : 0;
 
     let estoqueCritico = 0;
     let rupturas = 0;
@@ -930,23 +772,23 @@ class StorageService {
       cmv: Math.round(cmv * 100) / 100,
       lucro_liquido: Math.round(lucroLiquido * 100) / 100,
       margem_lucro: Math.round(margemLucro * 10) / 10,
-      estoque_critico_count: estoqueCritico || 2,
-      ruptura_count: rupturas || 1,
+      estoque_critico_count: estoqueCritico,
+      ruptura_count: rupturas,
     };
   }
 
   getCurvaABC(): CurvaABCItem[] {
     const produtos = this.getProdutos();
-    // Simula curva Pareto com base nos produtos
-    const items: { p: Produto; faturamento: number }[] = produtos.map((p, idx) => {
-      // Cria faturamentos ponderados
-      const base = idx === 0 ? 35000 : idx === 1 ? 24000 : idx === 2 ? 12000 : idx === 3 ? 6000 : idx === 4 ? 2500 : 1200;
-      return { p, faturamento: base };
+    if (produtos.length === 0) return [];
+
+    const items: { p: Produto; faturamento: number }[] = produtos.map((p) => {
+      return { p, faturamento: p.preco_venda * (p.estoque_total || 1) };
     });
 
     const faturamentoTotal = items.reduce((acc, i) => acc + i.faturamento, 0);
-    let acumulado = 0;
+    if (faturamentoTotal <= 0) return [];
 
+    let acumulado = 0;
     return items.map(({ p, faturamento }) => {
       const percentual = (faturamento / faturamentoTotal) * 100;
       acumulado += percentual;

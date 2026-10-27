@@ -115,42 +115,48 @@ export const Analytics: React.FC = () => {
         title="Curva Acumulada de Pareto"
       >
         <div className="space-y-4 pt-2">
-          {curvaItems.map((item, idx) => (
-            <div key={item.produto_id} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2.5 truncate max-w-lg">
-                  <span className="w-6 h-6 rounded-full bg-[#000000] text-emerald-400 border border-white/[0.16] flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    {idx + 1}
-                  </span>
-                  <span className="font-bold text-sm md:text-base text-white truncate">{item.nome}</span>
-                  <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'purple' : 'amber'}>
-                    Classe {item.classe}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-emerald-400 font-bold text-sm md:text-base">
-                    R$ {item.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                  <span className="text-slate-300 font-bold text-sm w-14 text-right">
-                    {item.percentual_acumulado}%
-                  </span>
-                </div>
-              </div>
-
-              <div className="w-full h-3 rounded-full bg-[#000000] border border-white/[0.16] overflow-hidden p-0.5">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    item.classe === 'A'
-                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-400'
-                      : item.classe === 'B'
-                      ? 'bg-gradient-to-r from-purple-600 to-purple-400'
-                      : 'bg-gradient-to-r from-amber-600 to-amber-400'
-                  }`}
-                  style={{ width: `${item.percentual_acumulado}%` }}
-                />
-              </div>
+          {curvaItems.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-500">
+              Nenhum produto cadastrado no catálogo ou sem histórico de movimentação para gerar a curva ABC.
             </div>
-          ))}
+          ) : (
+            curvaItems.map((item, idx) => (
+              <div key={item.produto_id} className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2.5 truncate max-w-lg">
+                    <span className="w-6 h-6 rounded-full bg-[#000000] text-emerald-400 border border-white/[0.16] flex items-center justify-center font-bold text-xs flex-shrink-0">
+                      {idx + 1}
+                    </span>
+                    <span className="font-bold text-sm md:text-base text-white truncate">{item.nome}</span>
+                    <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'purple' : 'amber'}>
+                      Classe {item.classe}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-emerald-400 font-bold text-sm md:text-base">
+                      R$ {item.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-slate-300 font-bold text-sm w-14 text-right">
+                      {item.percentual_acumulado}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="w-full h-3 rounded-full bg-[#000000] border border-white/[0.16] overflow-hidden p-0.5">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      item.classe === 'A'
+                        ? 'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                        : item.classe === 'B'
+                        ? 'bg-gradient-to-r from-purple-600 to-purple-400'
+                        : 'bg-gradient-to-r from-amber-600 to-amber-400'
+                    }`}
+                    style={{ width: `${item.percentual_acumulado}%` }}
+                  />
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </BentoCard>
 
@@ -172,54 +178,62 @@ export const Analytics: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.14]">
-              {curvaItems.map((item) => (
-                <tr key={item.produto_id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
-                  <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
-                    {item.nome}
-                  </td>
-                  <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
-                    {item.sku}
-                  </td>
-                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'purple' : 'amber'}>
-                      Classe {item.classe}
-                    </Badge>
-                  </td>
-                  <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
-                    {item.faturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </td>
-                  <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
-                    {item.giro_dias || 25} dias
-                  </td>
-                  <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
-                    {item.estoque_atual ?? 12} un
-                  </td>
-                  <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                    {item.classe === 'A' ? (
-                      <button
-                        onClick={() => handleAction(item, 'Emitir Pedido de Compra')}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all btn-press whitespace-nowrap"
-                      >
-                        Comprar com Fornecedor
-                      </button>
-                    ) : item.classe === 'B' ? (
-                      <button
-                        onClick={() => handleAction(item, 'Acompanhar Giro')}
-                        className="px-4 py-2 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/[0.16] text-xs font-bold transition-all btn-press"
-                      >
-                        Monitorar Giro
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleAction(item, 'Criar Promoção de Queima')}
-                        className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all btn-press"
-                      >
-                        Criar Desconto / Promoção
-                      </button>
-                    )}
+              {curvaItems.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-xs text-slate-500">
+                    Nenhum produto classificado para recomendação de reposição.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                curvaItems.map((item) => (
+                  <tr key={item.produto_id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
+                      {item.nome}
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
+                      {item.sku}
+                    </td>
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <Badge variant={item.classe === 'A' ? 'emerald' : item.classe === 'B' ? 'purple' : 'amber'}>
+                        Classe {item.classe}
+                      </Badge>
+                    </td>
+                    <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
+                      {item.faturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </td>
+                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
+                      {item.giro_dias || 25} dias
+                    </td>
+                    <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
+                      {item.estoque_atual ?? 0} un
+                    </td>
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      {item.classe === 'A' ? (
+                        <button
+                          onClick={() => handleAction(item, 'Emitir Pedido de Compra')}
+                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all btn-press whitespace-nowrap"
+                        >
+                          Comprar com Fornecedor
+                        </button>
+                      ) : item.classe === 'B' ? (
+                        <button
+                          onClick={() => handleAction(item, 'Acompanhar Giro')}
+                          className="px-4 py-2 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/[0.16] text-xs font-bold transition-all btn-press"
+                        >
+                          Monitorar Giro
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleAction(item, 'Criar Promoção de Queima')}
+                          className="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all btn-press"
+                        >
+                          Criar Desconto / Promoção
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

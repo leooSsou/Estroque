@@ -284,81 +284,92 @@ export const Produtos: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.14]">
-              {filtered.map((prod) => {
-                const stock = activeLoja?.id
-                  ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
-                  : prod.estoque_total ?? 0;
-                const minStock = prod.estoque_minimo || 5;
-                const margemBruta =
-                  prod.preco_venda > 0
-                    ? ((prod.preco_venda - prod.preco_custo) / prod.preco_venda) * 100
-                    : 0;
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="py-12 text-center text-xs text-slate-500">
+                    <div className="flex flex-col items-center gap-2">
+                      <Package className="w-8 h-8 text-slate-600" />
+                      <span>Nenhum produto cadastrado no catálogo. Clique em "Novo Produto" para começar.</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((prod) => {
+                  const stock = activeLoja?.id
+                    ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
+                    : prod.estoque_total ?? 0;
+                  const minStock = prod.estoque_minimo || 5;
+                  const margemBruta =
+                    prod.preco_venda > 0
+                      ? ((prod.preco_venda - prod.preco_custo) / prod.preco_venda) * 100
+                      : 0;
 
-                return (
-                  <tr key={prod.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
-                          <Package className="w-4 h-4" />
+                  return (
+                    <tr key={prod.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
+                            <Package className="w-4 h-4" />
+                          </div>
+                          <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
+                            {prod.nome}
+                          </span>
                         </div>
-                        <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
-                          {prod.nome}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
-                      {prod.sku}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
-                      {prod.categoria || 'Geral'}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
-                      {prod.codigo_barras ? (
-                        <span className="flex items-center gap-1.5">
-                          <Barcode className="w-4 h-4 text-slate-400" />
-                          {prod.codigo_barras}
-                        </span>
-                      ) : (
-                        <span className="text-slate-500">—</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
-                      {prod.preco_custo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-bold text-emerald-400 whitespace-nowrap">
-                      +{prod.markup.toFixed(1)}%
-                    </td>
-                    <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
-                      {prod.preco_venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
-                      {margemBruta.toFixed(1)}%
-                    </td>
-                    <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
-                      {stock} un
-                    </td>
-                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                      {stock === 0 ? (
-                        <Badge variant="danger">Ruptura</Badge>
-                      ) : stock <= minStock ? (
-                        <Badge variant="amber">Baixo</Badge>
-                      ) : (
-                        <Badge variant="emerald">Normal</Badge>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <button
-                        onClick={() => openMarkupModal(prod)}
-                        className="px-3.5 py-2 rounded-lg bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/[0.16] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
-                        title="Simular e Ajustar Markup"
-                      >
-                        <Calculator className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Markup</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
+                        {prod.sku}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
+                        {prod.categoria || 'Geral'}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
+                        {prod.codigo_barras ? (
+                          <span className="flex items-center gap-1.5">
+                            <Barcode className="w-4 h-4 text-slate-400" />
+                            {prod.codigo_barras}
+                          </span>
+                        ) : (
+                          <span className="text-slate-500">—</span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
+                        {prod.preco_custo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-bold text-emerald-400 whitespace-nowrap">
+                        +{prod.markup.toFixed(1)}%
+                      </td>
+                      <td className="py-3.5 px-4 text-sm font-bold text-emerald-400 whitespace-nowrap">
+                        {prod.preco_venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-300 whitespace-nowrap">
+                        {margemBruta.toFixed(1)}%
+                      </td>
+                      <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
+                        {stock} un
+                      </td>
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        {stock === 0 ? (
+                          <Badge variant="danger">Ruptura</Badge>
+                        ) : stock <= minStock ? (
+                          <Badge variant="amber">Baixo</Badge>
+                        ) : (
+                          <Badge variant="emerald">Normal</Badge>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <button
+                          onClick={() => openMarkupModal(prod)}
+                          className="px-3.5 py-2 rounded-lg bg-[#000000] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/[0.16] text-xs font-bold transition-all inline-flex items-center gap-1.5 btn-press shadow-sm whitespace-nowrap"
+                          title="Simular e Ajustar Markup"
+                        >
+                          <Calculator className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Markup</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

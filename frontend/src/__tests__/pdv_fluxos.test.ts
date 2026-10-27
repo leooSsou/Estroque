@@ -25,6 +25,7 @@ async function runTestSuite() {
 
   async function testCase(name: string, fn: () => void | Promise<void>) {
     localStorage.clear();
+    storage.seedDemoData();
     try {
       await fn();
       console.log(`  [PASS] ${name}`);

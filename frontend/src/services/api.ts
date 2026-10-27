@@ -58,7 +58,7 @@ class ApiClient {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
@@ -109,7 +109,10 @@ class ApiClient {
       }),
     });
 
-    if (res.isBackend && res.error) {
+    if (res.error) {
+      if (res.error === 'BACKEND_OFFLINE') {
+        throw new Error('Não foi possível conectar ao servidor. Verifique se a API está online.');
+      }
       throw new Error(res.error);
     }
 
@@ -125,24 +128,7 @@ class ApiClient {
       return auth;
     }
 
-    // Fallback offline
-    const demoToken = 'mock-jwt-token-donodemo';
-    this.setToken(demoToken);
-    const newUser: User = {
-      id: crypto.randomUUID ? crypto.randomUUID() : `usr-${Date.now()}`,
-      nome: dados.dono_nome,
-      email: dados.dono_email,
-      role: 'DONO',
-      tenant_id: '00000000-0000-0000-0000-000000000001',
-    };
-    storage.setUser(newUser);
-    storage.addLoja({
-      nome: `Matriz - ${dados.nome_fantasia}`,
-      cnpj: dados.cnpj,
-      endereco: dados.endereco_loja || 'Endereço Matriz Principal',
-      ativo: true,
-    });
-    return { user: newUser, token: demoToken };
+    throw new Error('Falha no cadastro da empresa.');
   }
 
   async login(email: string, senha: string): Promise<{ user: User; token: string }> {
@@ -157,33 +143,14 @@ class ApiClient {
       return { user: userRes, token: res.data.access_token };
     }
 
-    // Se o backend está online e o usuário clicou na conta demo num banco recém-criado,
-    // provisionamos automaticamente o tenant de demonstração no PostgreSQL real
-    if (res.isBackend && email === 'dono@estroque.com.br') {
-      try {
-        return await this.registerTenant({
-          nome_fantasia: 'Estroque Varejo Matriz',
-          razao_social: 'Estroque Comercio Varejista Ltda',
-          cnpj: '11.222.333/0001-81',
-          endereco_loja: 'Av. Paulista, 1000 - São Paulo, SP',
-          dono_nome: 'Jonathas Silva',
-          dono_email: 'dono@estroque.com.br',
-          dono_senha: senha || 'senha123',
-        });
-      } catch {
-        // Caso já exista com outra senha ou erro, segue para fallback
+    if (res.error) {
+      if (res.error === 'BACKEND_OFFLINE') {
+        throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão ou se a API está online.');
       }
-    }
-
-    if (res.isBackend && res.error && email !== 'dono@estroque.com.br') {
       throw new Error(res.error);
     }
 
-    // Local / Demo Login fallback
-    const demoToken = 'mock-jwt-token-donodemo';
-    this.setToken(demoToken);
-    const user = storage.getUser();
-    return { user, token: demoToken };
+    throw new Error('Credenciais inválidas.');
   }
 
   async getMe(): Promise<User> {
@@ -192,11 +159,16 @@ class ApiClient {
       storage.setUser(res.data);
       return res.data;
     }
-    return storage.getUser();
+    const localUser = storage.getUser();
+    if (localUser && this.token) {
+      return localUser;
+    }
+    throw new Error('Não autenticado');
   }
 
   logout() {
     this.setToken(null);
+    storage.setUser(null);
   }
 
   // --- LOJAS ---
@@ -670,7 +642,8 @@ class ApiClient {
     if (res.data && Array.isArray(res.data)) {
       return res.data;
     }
-    return [storage.getUser()];
+    const current = storage.getUser();
+    return current ? [current] : [];
   }
 
   async createUsuario(dados: {
