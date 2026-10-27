@@ -15,6 +15,12 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("A variável de ambiente DATABASE_URL não foi configurada.")
 
+# Corrige prefixo legado do PostgreSQL padrão em serviços de nuvem (Render, Heroku, Supabase)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+
 # Configuração do engine do SQLAlchemy (PostgreSQL/SQLite)
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
