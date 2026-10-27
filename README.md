@@ -4,6 +4,8 @@
 
 **Plataforma SaaS Multi-tenant Completa para Gestão de Estoque, Retaguarda e PDV Frente de Caixa Multiloja.**
 
+[![Live Demo](https://img.shields.io/badge/Demo%20Online-estroque--web.onrender.com-00B4D8?style=for-the-badge&logo=render&logoColor=white)](https://estroque-web.onrender.com/)
+
 [![CI Pipeline](https://github.com/leooSsou/Estroque/actions/workflows/ci.yml/badge.svg)](https://github.com/leooSsou/Estroque/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/badge/Release-v1.0.1--beta-10B981.svg)](https://github.com/leooSsou/Estroque/releases)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-0B2B26.svg)](#-arquitetura)
@@ -17,6 +19,8 @@
 ---
 
 ## 📌 Visão Geral
+
+> 🌐 **Acesse a demonstração online em produção:** [https://estroque-web.onrender.com/](https://estroque-web.onrender.com/)
 
 O **ESTROQUE** é um ERP e sistema de retaguarda multi-tenant de alta performance desenvolvido para redes varejistas e operações comerciais com múltiplas filiais. 
 
