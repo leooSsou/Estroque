@@ -432,7 +432,7 @@ PgSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=pg_engine)
 
 try:
     with pg_engine.connect() as conn:
-        postgres_available = True
+        postgres_available = not pg_url.startswith("sqlite")
 except Exception:
     postgres_available = False
 

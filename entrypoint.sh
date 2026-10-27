@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
+# Em ambientes em nuvem de container único (ex.: Render) sem Redis dedicado, usar fallback em memória para rate limiting
+if [ -z "$REDIS_URL" ] && [ -z "$REDIS_HOST" ]; then
+    export REDIS_HOST="memory"
+fi
+
 echo "📦 Executando migrações do banco de dados (Alembic)..."
 alembic upgrade head || echo "Aviso: Falha ao executar migrações, continuando..."
 
