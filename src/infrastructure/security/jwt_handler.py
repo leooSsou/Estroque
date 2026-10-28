@@ -6,7 +6,18 @@ from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
 
 # Carrega variáveis de ambiente ou utiliza fallbacks para desenvolvimento
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "saas_super_secret_dev_key_12345!")
+ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
+DEFAULT_DEV_SECRET = "saas_super_secret_dev_key_12345!"
+_secret = os.getenv("JWT_SECRET_KEY")
+
+if not _secret:
+    if ENVIRONMENT in {"production", "prod"}:
+        raise RuntimeError("CRITICAL: JWT_SECRET_KEY é obrigatória em ambiente de produção.")
+    _secret = DEFAULT_DEV_SECRET
+elif ENVIRONMENT in {"production", "prod"} and _secret == DEFAULT_DEV_SECRET:
+    raise RuntimeError("CRITICAL: JWT_SECRET_KEY de desenvolvimento não pode ser usada em produção.")
+
+SECRET_KEY = _secret
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 

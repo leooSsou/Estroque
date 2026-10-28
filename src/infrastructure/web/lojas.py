@@ -10,6 +10,7 @@ from src.domain.exceptions.business import (
 )
 from src.infrastructure.database.repositorios_concrete import RepositorioLojaSQLAlchemy
 from src.infrastructure.database.session import get_db
+from src.infrastructure.web.authorization import exigir_permissao
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     LojaCreateRequest,
@@ -35,7 +36,9 @@ def criar_loja(
 ) -> LojaResponse:
     """
     Cadastra uma nova filial (Loja) vinculada ao Tenant do usuário autenticado.
+    Apenas DONO e ADMIN_SAAS podem criar lojas.
     """
+    exigir_permissao(current_user, ["DONO", "ADMIN_SAAS"])
     repo = RepositorioLojaSQLAlchemy(db)
     use_case = CriarLoja(repo)
     
@@ -109,7 +112,9 @@ def atualizar_loja(
     """
     Atualiza os dados de uma loja existente.
     O CNPJ e o Tenant permanecem imutáveis.
+    Apenas DONO e ADMIN_SAAS podem atualizar dados cadastrais de lojas.
     """
+    exigir_permissao(current_user, ["DONO", "ADMIN_SAAS"])
     repo = RepositorioLojaSQLAlchemy(db)
     use_case = AtualizarLoja(repo)
     

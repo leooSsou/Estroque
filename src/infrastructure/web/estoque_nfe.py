@@ -19,6 +19,8 @@ from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeIn
 
 router = APIRouter(prefix="/estoque", tags=["Estoque & NF-e"])
 
+MAX_XML_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+
 @router.post("/importar-xml", response_model=ImportarNFeResponse, status_code=status.HTTP_200_OK)
 def importar_xml_nfe(
     file: UploadFile = File(..., description="Arquivo XML da Nota Fiscal Eletrônica (NF-e v4.00)"),
@@ -38,7 +40,14 @@ def importar_xml_nfe(
         )
 
     try:
-        xml_bytes = file.file.read()
+        xml_bytes = file.file.read(MAX_XML_SIZE_BYTES + 1)
+        if len(xml_bytes) > MAX_XML_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                detail="Arquivo XML excede o tamanho máximo permitido de 5MB."
+            )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -178,6 +178,12 @@ def criar_usuario_equipe(
             detail="Apenas o proprietário (DONO) pode cadastrar novos colaboradores.",
         )
 
+    if data.role == "ADMIN_SAAS" and current_user.role != "ADMIN_SAAS":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Apenas super-administradores da plataforma podem conceder o perfil ADMIN_SAAS.",
+        )
+
     loja_repo = RepositorioLojaSQLAlchemy(db)
     usuario_repo = RepositorioUsuarioSQLAlchemy(db)
     servico_cripto = BcryptServicoCriptografia()

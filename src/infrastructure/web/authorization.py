@@ -5,6 +5,17 @@ from fastapi import HTTPException, status
 from src.domain.entities.usuario import Usuario
 
 
+def exigir_permissao(user: Usuario, papeis_permitidos: list[str] | set[str]) -> None:
+    """
+    Exige que o usuário possua um dos papéis de permissão especificados.
+    """
+    if user.role not in papeis_permitidos:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Acesso negado: Perfil '{user.role}' não possui permissão para esta operação."
+        )
+
+
 def exigir_acesso_loja(loja_id: UUID, user: Usuario) -> None:
     """
     Exige que o usuário tenha acesso à loja especificada.

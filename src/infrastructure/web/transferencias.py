@@ -90,8 +90,8 @@ def despachar_transferencia(
     transferencia = transferencia_repo.obter_por_id(id, current_user.tenant_id)
     if not transferencia:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transferência não encontrada.")
-    from src.infrastructure.web.authorization import verificar_acesso_transferencia
-    verificar_acesso_transferencia(transferencia.loja_origem_id, transferencia.loja_destino_id, current_user)
+    from src.infrastructure.web.authorization import exigir_acesso_loja
+    exigir_acesso_loja(transferencia.loja_origem_id, current_user)
 
     use_case = DespacharTransferencia(transferencia_repo, saldo_repo, movimentacao_repo)
     input_data = DespacharTransferenciaInput(
@@ -128,8 +128,8 @@ def confirmar_recebimento(
     transferencia = transferencia_repo.obter_por_id(id, current_user.tenant_id)
     if not transferencia:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transferência não encontrada.")
-    from src.infrastructure.web.authorization import verificar_acesso_transferencia
-    verificar_acesso_transferencia(transferencia.loja_origem_id, transferencia.loja_destino_id, current_user)
+    from src.infrastructure.web.authorization import exigir_acesso_loja
+    exigir_acesso_loja(transferencia.loja_destino_id, current_user)
 
     use_case = ConfirmarRecebimento(transferencia_repo, saldo_repo, movimentacao_repo)
     input_data = ConfirmarRecebimentoInput(
