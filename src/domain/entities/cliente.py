@@ -16,6 +16,7 @@ class Cliente:
     ativo: bool = True
     limite_credito: float = 0.0
     saldo_devedor_crediario: float = 0.0
+    credito_loja: float = 0.0
 
     def __post_init__(self) -> None:
         if not isinstance(self.nome, str) or not self.nome.strip():
@@ -58,6 +59,9 @@ class Cliente:
 
         if not isinstance(self.saldo_devedor_crediario, (int, float)) or self.saldo_devedor_crediario < 0:
             raise ValueError("O saldo devedor do crediário deve ser um número maior ou igual a zero.")
+
+        if not isinstance(self.credito_loja, (int, float)) or self.credito_loja < 0:
+            raise ValueError("O crédito em loja deve ser um número maior ou igual a zero.")
 
     @staticmethod
     def _validar_cpf(cpf: str) -> bool:

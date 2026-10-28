@@ -162,6 +162,7 @@ class ClienteUpdateRequest(BaseModel):
     ativo: bool = Field(..., description="Status de atividade do cliente.")
     limite_credito: float = Field(default=0.0, ge=0.0, description="Limite de crédito do cliente.")
     saldo_devedor_crediario: float = Field(default=0.0, ge=0.0, description="Saldo devedor do crediário.")
+    credito_loja: float = Field(default=0.0, ge=0.0, description="Saldo de crédito do cliente na loja.")
 
 
 class ClienteResponse(BaseModel):
@@ -176,6 +177,7 @@ class ClienteResponse(BaseModel):
     ativo: bool
     limite_credito: float
     saldo_devedor_crediario: float
+    credito_loja: float = 0.0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -387,10 +389,56 @@ class PagamentoVendaResponse(BaseModel):
 class RegistrarVendaRequest(BaseModel):
     loja_id: UUID = Field(..., description="ID da loja de origem da venda.")
     cliente_id: UUID | None = Field(None, description="ID do cliente (obrigatório se forma_pagamento ou parcela for CREDIARIO).")
-    forma_pagamento: str | None = Field(None, description="Forma de pagamento único (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO).")
+    forma_pagamento: str | None = Field(None, description="Forma de pagamento único (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO, CREDITO_LOJA).")
     desconto: float = Field(default=0.0, ge=0.0, description="Valor do desconto aplicado.")
     itens: list[ItemVendaRequest] = Field(..., min_length=1, description="Lista de produtos e quantidades.")
     pagamentos: list[PagamentoVendaRequest] | None = Field(None, description="Lista de pagamentos para Split Payment.")
+
+
+class ItemDevolucaoRequest(BaseModel):
+    item_venda_id: UUID = Field(..., description="ID do item da venda original.")
+    quantidade: int = Field(..., gt=0, description="Quantidade a ser devolvida.")
+    retornar_ao_estoque: bool = Field(default=True, description="Se o produto volta ao estoque vendável.")
+    condicao: str = Field(default="PERFEITO", pattern="^(PERFEITO|AVARIADO)$", description="Condição física do item.")
+
+
+class RegistrarDevolucaoRequest(BaseModel):
+    tipo: str = Field(default="DEVOLUCAO", pattern="^(DEVOLUCAO|TROCA)$", description="Tipo de operação (DEVOLUCAO ou TROCA).")
+    tipo_resolucao: str = Field(..., pattern="^(CREDITO_LOJA|REEMBOLSO_CAIXA|ABATIMENTO_CREDIARIO)$", description="Forma de resolução financeira.")
+    motivo: str = Field(..., min_length=1, max_length=255, description="Motivo da devolução ou troca.")
+    itens: list[ItemDevolucaoRequest] = Field(..., min_length=1, description="Lista de itens a serem devolvidos.")
+
+
+class ItemDevolucaoResponse(BaseModel):
+    id: UUID
+    devolucao_id: UUID | None = None
+    item_venda_id: UUID
+    produto_id: UUID
+    quantidade: int
+    preco_unitario: float
+    valor_total: float
+    retornar_ao_estoque: bool
+    condicao: str
+    tenant_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DevolucaoResponse(BaseModel):
+    id: UUID
+    venda_id: UUID
+    loja_id: UUID
+    usuario_id: UUID
+    cliente_id: UUID | None = None
+    tipo: str
+    tipo_resolucao: str
+    valor_total: float
+    motivo: str
+    data_devolucao: datetime | None = None
+    tenant_id: UUID
+    itens: list[ItemDevolucaoResponse] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ItemVendaResponse(BaseModel):
@@ -416,6 +464,7 @@ class VendaResponse(BaseModel):
     tenant_id: UUID
     itens: list[ItemVendaResponse]
     pagamentos: list[PagamentoVendaResponse] = Field(default_factory=list)
+    devolucoes: list[DevolucaoResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

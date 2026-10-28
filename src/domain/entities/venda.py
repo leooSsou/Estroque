@@ -30,9 +30,9 @@ class Venda:
             raise ValueError("O loja_id deve ser um UUID válido.")
         if not isinstance(self.usuario_id, UUID):
             raise ValueError("O usuario_id deve ser um UUID válido.")
-        if self.status not in ("PENDENTE", "PAGO", "CANCELADO", "CANCELADA"):
+        if self.status not in ("PENDENTE", "PAGO", "CANCELADO", "CANCELADA", "PARCIALMENTE_DEVOLVIDA", "DEVOLVIDA"):
             raise ValueError("Status inválido.")
-        if self.forma_pagamento not in ("DINHEIRO", "CARTAO_CREDITO", "CARTAO_DEBITO", "PIX", "CREDIARIO", "MULTIPLO"):
+        if self.forma_pagamento not in ("DINHEIRO", "CARTAO_CREDITO", "CARTAO_DEBITO", "PIX", "CREDIARIO", "CREDITO_LOJA", "MULTIPLO"):
             raise ValueError("Forma de pagamento inválida.")
         if not isinstance(self.valor_total, (int, float)) or self.valor_total < 0:
             raise ValueError("O valor total da venda deve ser maior ou igual a zero.")
@@ -59,6 +59,11 @@ class Venda:
             tem_crediario = any(p.forma_pagamento == "CREDIARIO" for p in self.pagamentos)
             if tem_crediario and not self.cliente_id:
                 raise ValueError("O cliente_id é obrigatório para vendas com parcela em crediário.")
+            tem_credito_loja = any(p.forma_pagamento == "CREDITO_LOJA" for p in self.pagamentos)
+            if tem_credito_loja and not self.cliente_id:
+                raise ValueError("O cliente_id é obrigatório para vendas com parcela em crédito da loja.")
         else:
             if self.forma_pagamento == "CREDIARIO" and not self.cliente_id:
                 raise ValueError("O cliente_id é obrigatório para vendas realizadas no crediário.")
+            if self.forma_pagamento == "CREDITO_LOJA" and not self.cliente_id:
+                raise ValueError("O cliente_id é obrigatório para vendas pagas com crédito da loja.")

@@ -105,6 +105,7 @@ class AtualizarClienteInput:
     tenant_id: UUID
     limite_credito: float = 0.0
     saldo_devedor_crediario: float = 0.0
+    credito_loja: float | None = None
 
 
 @dataclass(frozen=True)
@@ -126,6 +127,11 @@ class AtualizarCliente:
             raise ClienteNaoEncontradoException(str(input_data.id))
 
         # 2. Cria nova instância (documento e tenant permanecem imutáveis)
+        credito_loja = (
+            input_data.credito_loja
+            if input_data.credito_loja is not None
+            else getattr(cliente, "credito_loja", 0.0)
+        )
         cliente_atualizado = Cliente(
             nome=input_data.nome,
             email=input_data.email,
@@ -134,7 +140,8 @@ class AtualizarCliente:
             id=cliente.id,
             ativo=input_data.ativo,
             limite_credito=input_data.limite_credito,
-            saldo_devedor_crediario=input_data.saldo_devedor_crediario
+            saldo_devedor_crediario=input_data.saldo_devedor_crediario,
+            credito_loja=credito_loja,
         )
 
         # 3. Salva no banco

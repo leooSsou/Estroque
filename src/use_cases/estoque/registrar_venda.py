@@ -146,26 +146,38 @@ class RegistrarVendaAdministrativa:
                 )
             )
 
-        # 5. Se houver crediário, valida o cliente e o limite de crédito sobre a parcela no crediário
+        # 5. Se houver crediário ou crédito de loja, valida o cliente e limites
         valor_crediario = round(sum(p.valor for p in pagamentos_entidade if p.forma_pagamento == "CREDIARIO"), 2)
-        if valor_crediario > 0:
+        valor_credito_loja = round(sum(p.valor for p in pagamentos_entidade if p.forma_pagamento == "CREDITO_LOJA"), 2)
+
+        if valor_crediario > 0 or valor_credito_loja > 0:
             if not input_data.cliente_id:
-                raise ValueError("O cliente_id é obrigatório para vendas realizadas no crediário.")
+                raise ValueError("O cliente_id é obrigatório para vendas realizadas no crediário ou com crédito da loja.")
 
             cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
             if not cliente or not cliente.ativo:
                 raise ClienteNaoEncontradoException(str(input_data.cliente_id))
 
-            novo_saldo_devedor = cliente.saldo_devedor_crediario + valor_crediario
-            if novo_saldo_devedor > cliente.limite_credito:
-                raise LimiteCreditoExcedidoException(
-                    cliente_id=str(cliente.id),
-                    limite=cliente.limite_credito,
-                    saldo_atual=cliente.saldo_devedor_crediario,
-                    solicitado=valor_crediario,
-                )
+            novo_saldo_devedor = cliente.saldo_devedor_crediario
+            novo_credito_loja = cliente.credito_loja
 
-            # Atualiza saldo devedor do cliente apenas com o valor correspondente ao crediário
+            if valor_crediario > 0:
+                novo_saldo_devedor = cliente.saldo_devedor_crediario + valor_crediario
+                if novo_saldo_devedor > cliente.limite_credito:
+                    raise LimiteCreditoExcedidoException(
+                        cliente_id=str(cliente.id),
+                        limite=cliente.limite_credito,
+                        saldo_atual=cliente.saldo_devedor_crediario,
+                        solicitado=valor_crediario,
+                    )
+
+            if valor_credito_loja > 0:
+                if cliente.credito_loja < valor_credito_loja:
+                    raise ValueError(
+                        f"Saldo de crédito em loja insuficiente. Disponível: R$ {cliente.credito_loja:.2f}, Solicitado: R$ {valor_credito_loja:.2f}."
+                    )
+                novo_credito_loja = round(cliente.credito_loja - valor_credito_loja, 2)
+
             cliente_atualizado = Cliente(
                 id=cliente.id,
                 nome=cliente.nome,
@@ -175,6 +187,7 @@ class RegistrarVendaAdministrativa:
                 ativo=cliente.ativo,
                 limite_credito=cliente.limite_credito,
                 saldo_devedor_crediario=novo_saldo_devedor,
+                credito_loja=novo_credito_loja,
             )
             self.cliente_repo.salvar(cliente_atualizado)
 

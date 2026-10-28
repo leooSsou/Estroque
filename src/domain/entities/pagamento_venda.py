@@ -7,6 +7,7 @@ FORMAS_PAGAMENTO_PERMITIDAS = {
     "CARTAO_DEBITO",
     "PIX",
     "CREDIARIO",
+    "CREDITO_LOJA",
 }
 
 

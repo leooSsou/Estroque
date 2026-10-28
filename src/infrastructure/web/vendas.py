@@ -14,6 +14,7 @@ from src.domain.exceptions.business import (
 )
 from src.infrastructure.database.repositorios_concrete import (
     RepositorioClienteSQLAlchemy,
+    RepositorioDevolucaoSQLAlchemy,
     RepositorioEstoqueMovimentacaoSQLAlchemy,
     RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioFinanceiroLancamentoSQLAlchemy,
@@ -24,8 +25,18 @@ from src.infrastructure.database.repositorios_concrete import (
 from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import exigir_acesso_loja
 from src.infrastructure.web.dependencies import get_current_user
-from src.infrastructure.web.schemas import RegistrarVendaRequest, VendaResponse
+from src.infrastructure.web.schemas import (
+    DevolucaoResponse,
+    RegistrarDevolucaoRequest,
+    RegistrarVendaRequest,
+    VendaResponse,
+)
 from src.use_cases.estoque.estornar_venda import EstornarVenda, EstornarVendaInput
+from src.use_cases.estoque.registrar_devolucao import (
+    ItemDevolucaoInput,
+    RegistrarDevolucao,
+    RegistrarDevolucaoInput,
+)
 from src.use_cases.estoque.registrar_venda import (
     RegistrarVendaAdministrativa,
     RegistrarVendaAdministrativaInput,
@@ -187,3 +198,96 @@ def estornar_venda(
         return VendaResponse.model_validate(resultado.venda)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/{id}/devolver", response_model=DevolucaoResponse, status_code=status.HTTP_201_CREATED)
+def registrar_devolucao_venda(
+    id: UUID,
+    request: RegistrarDevolucaoRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> DevolucaoResponse:
+    """
+    Registra a devolução ou troca (parcial ou total) dos itens de uma venda realizada.
+    Recompõe o estoque físico (se indicado), trata a resolução financeira (Vale-Crédito,
+    Reembolso no Caixa ou Abatimento no Crediário) e atualiza o status da venda.
+    """
+    venda_repo = RepositorioVendaSQLAlchemy(db)
+    venda = venda_repo.obter_por_id(id, current_user.tenant_id)
+    if not venda:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venda não encontrada.")
+
+    exigir_acesso_loja(venda.loja_id, current_user)
+
+    use_case = RegistrarDevolucao(
+        venda_repo=venda_repo,
+        devolucao_repo=RepositorioDevolucaoSQLAlchemy(db),
+        saldo_repo=RepositorioEstoqueSaldoSQLAlchemy(db),
+        movimentacao_repo=RepositorioEstoqueMovimentacaoSQLAlchemy(db),
+        cliente_repo=RepositorioClienteSQLAlchemy(db),
+        financeiro_repo=RepositorioFinanceiroLancamentoSQLAlchemy(db),
+    )
+
+    itens_input = [
+        ItemDevolucaoInput(
+            item_venda_id=item.item_venda_id,
+            quantidade=item.quantidade,
+            retornar_ao_estoque=item.retornar_ao_estoque,
+            condicao=item.condicao,
+        )
+        for item in request.itens
+    ]
+
+    try:
+        resultado = use_case.executar(RegistrarDevolucaoInput(
+            venda_id=id,
+            usuario_id=current_user.id,
+            tipo_resolucao=request.tipo_resolucao,
+            motivo=request.motivo,
+            itens=itens_input,
+            tenant_id=current_user.tenant_id,
+            tipo=request.tipo,
+        ))
+        return DevolucaoResponse.model_validate(resultado.devolucao)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/{id}/devolucoes", response_model=list[DevolucaoResponse], status_code=status.HTTP_200_OK)
+def listar_devolucoes_venda(
+    id: UUID,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> list[DevolucaoResponse]:
+    """
+    Lista todas as devoluções e trocas realizadas para uma determinada venda.
+    """
+    venda_repo = RepositorioVendaSQLAlchemy(db)
+    venda = venda_repo.obter_por_id(id, current_user.tenant_id)
+    if not venda:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venda não encontrada.")
+
+    exigir_acesso_loja(venda.loja_id, current_user)
+
+    devolucao_repo = RepositorioDevolucaoSQLAlchemy(db)
+    devolucoes = devolucao_repo.listar_por_venda(id, current_user.tenant_id)
+    return [DevolucaoResponse.model_validate(d) for d in devolucoes]
+
+
+@router.get("/devolucoes/todas", response_model=list[DevolucaoResponse], status_code=status.HTTP_200_OK)
+def listar_todas_devolucoes(
+    loja_id: UUID | None = None,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+) -> list[DevolucaoResponse]:
+    """
+    Lista todas as devoluções do tenant, respeitando isolamento de loja física para gerentes.
+    """
+    if current_user.role == "GERENTE":
+        loja_id = current_user.loja_atribuida_id
+    elif loja_id:
+        exigir_acesso_loja(loja_id, current_user)
+
+    devolucao_repo = RepositorioDevolucaoSQLAlchemy(db)
+    devolucoes = devolucao_repo.listar_por_tenant(current_user.tenant_id, loja_id=loja_id)
+    return [DevolucaoResponse.model_validate(d) for d in devolucoes]

@@ -65,6 +65,7 @@ export interface Cliente {
   telefone?: string;
   limite_credito: number;
   saldo_devedor_crediario: number;
+  credito_loja?: number;
   tenant_id: string;
   ativo: boolean;
 }
@@ -114,12 +115,56 @@ export interface AuditoriaFisica {
   itens: ItemAuditoria[];
 }
 
-export type FormaPagamento = 'DINHEIRO' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'PIX' | 'CREDIARIO' | 'MULTIPLO';
+export type FormaPagamento = 'DINHEIRO' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'PIX' | 'CREDIARIO' | 'CREDITO_LOJA' | 'MULTIPLO';
 
 export interface PagamentoVenda {
   id?: string;
   forma_pagamento: FormaPagamento;
   valor: number;
+}
+
+export type TipoDevolucao = 'DEVOLUCAO' | 'TROCA';
+export type TipoResolucaoDevolucao = 'CREDITO_LOJA' | 'REEMBOLSO_CAIXA' | 'ABATIMENTO_CREDIARIO';
+
+export interface ItemDevolucao {
+  id: string;
+  devolucao_id?: string;
+  item_venda_id: string;
+  produto_id: string;
+  produto_nome?: string;
+  quantidade: number;
+  preco_unitario: number;
+  valor_total: number;
+  retornar_ao_estoque: boolean;
+  condicao: 'PERFEITO' | 'AVARIADO';
+  tenant_id: string;
+}
+
+export interface Devolucao {
+  id: string;
+  venda_id: string;
+  loja_id: string;
+  usuario_id: string;
+  cliente_id?: string | null;
+  tipo: TipoDevolucao;
+  tipo_resolucao: TipoResolucaoDevolucao;
+  valor_total: number;
+  motivo: string;
+  data_devolucao: string;
+  tenant_id: string;
+  itens: ItemDevolucao[];
+}
+
+export interface RegistrarDevolucaoPayload {
+  tipo: TipoDevolucao;
+  tipo_resolucao: TipoResolucaoDevolucao;
+  motivo: string;
+  itens: {
+    item_venda_id: string;
+    quantidade: number;
+    retornar_ao_estoque: boolean;
+    condicao: 'PERFEITO' | 'AVARIADO';
+  }[];
 }
 
 export interface ItemVenda {
@@ -138,7 +183,7 @@ export interface Venda {
   cliente_id?: string | null;
   cliente_nome?: string;
   usuario_id: string;
-  status: 'CONCLUIDA' | 'CANCELADA' | 'PAGO' | 'PENDENTE';
+  status: 'CONCLUIDA' | 'CANCELADA' | 'PAGO' | 'PENDENTE' | 'PARCIALMENTE_DEVOLVIDA' | 'DEVOLVIDA';
   forma_pagamento: FormaPagamento;
   valor_total: number;
   desconto: number;
@@ -146,6 +191,7 @@ export interface Venda {
   tenant_id: string;
   itens: ItemVenda[];
   pagamentos?: PagamentoVenda[];
+  devolucoes?: Devolucao[];
 }
 
 export interface FinanceiroLancamento {
