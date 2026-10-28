@@ -10,6 +10,8 @@ import {
   Venda,
   FormaPagamento,
   PagamentoVenda,
+  Devolucao,
+  RegistrarDevolucaoPayload,
   VendaEmEspera,
   CaixaTurno,
   OperacaoCaixa,
@@ -625,6 +627,26 @@ class ApiClient {
     }
     if (res.data) return res.data;
     return storage.estornarVenda(id);
+  }
+
+  async devolverVenda(id: string, payload: RegistrarDevolucaoPayload): Promise<Devolucao> {
+    const res = await this.request<Devolucao>(`/vendas/${id}/devolver`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res.isBackend && res.error) {
+      throw new Error(res.error);
+    }
+    if (res.data) return res.data;
+    return storage.devolverVenda(id, payload);
+  }
+
+  async obterDevolucoesVenda(id: string): Promise<Devolucao[]> {
+    const res = await this.request<Devolucao[]>(`/vendas/${id}/devolucoes`);
+    if (res.data && Array.isArray(res.data)) {
+      return res.data;
+    }
+    return storage.obterDevolucoesVenda(id);
   }
 
   // --- VENDAS EM ESPERA (HOLD) ---

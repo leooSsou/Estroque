@@ -10,6 +10,9 @@ import {
   Venda,
   FormaPagamento,
   PagamentoVenda,
+  Devolucao,
+  ItemDevolucao,
+  RegistrarDevolucaoPayload,
   FinanceiroLancamento,
   DashboardAnalytics,
   CurvaABCItem,
@@ -488,6 +491,24 @@ class StorageService {
       this.set('clientes', clientes);
     }
 
+    const valorCreditoLoja = (dados.pagamentos || [])
+      .filter((p) => p.forma_pagamento === 'CREDITO_LOJA')
+      .reduce((sum, p) => sum + p.valor, 0) + (dados.forma_pagamento === 'CREDITO_LOJA' && !dados.pagamentos ? valorTotal : 0);
+
+    if (valorCreditoLoja > 0) {
+      if (!dados.cliente_id) throw new Error('Cliente é obrigatório para compras com crédito da loja.');
+      const clientes = this.getClientes();
+      const cliIndex = clientes.findIndex((c) => c.id === dados.cliente_id);
+      if (cliIndex === -1) throw new Error('Cliente não encontrado.');
+      const cli = clientes[cliIndex];
+      const disponivel = cli.credito_loja || 0;
+      if (disponivel < valorCreditoLoja) {
+        throw new Error(`Saldo de crédito em loja insuficiente (Disponível: R$ ${disponivel.toFixed(2)}).`);
+      }
+      cli.credito_loja = Math.max(0, disponivel - valorCreditoLoja);
+      this.set('clientes', clientes);
+    }
+
     const user = this.getUser();
     const novaVenda: Venda = {
       id: crypto.randomUUID ? crypto.randomUUID() : `ven-${Date.now()}`,
@@ -573,6 +594,100 @@ class StorageService {
     vendas[index] = venda;
     this.set('vendas', vendas);
     return venda;
+  }
+
+  devolverVenda(vendaId: string, payload: RegistrarDevolucaoPayload): Devolucao {
+    const vendas = this.getVendas();
+    const index = vendas.findIndex((v) => v.id === vendaId);
+    if (index === -1) throw new Error('Venda não encontrada.');
+    const venda = vendas[index];
+
+    let valorTotalDevolucao = 0;
+    const itensDevolucao: ItemDevolucao[] = [];
+
+    for (const itemIn of payload.itens) {
+      const itemVenda = venda.itens.find((iv) => iv.id === itemIn.item_venda_id);
+      if (!itemVenda) throw new Error(`Item ${itemIn.item_venda_id} não encontrado na venda.`);
+      const val = itemIn.quantidade * itemVenda.preco_unitario;
+      valorTotalDevolucao += val;
+
+      itensDevolucao.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : `itemdev-${Date.now()}`,
+        item_venda_id: itemVenda.id,
+        produto_id: itemVenda.produto_id,
+        produto_nome: itemVenda.produto_nome,
+        quantidade: itemIn.quantidade,
+        preco_unitario: itemVenda.preco_unitario,
+        valor_total: val,
+        retornar_ao_estoque: itemIn.retornar_ao_estoque,
+        condicao: itemIn.condicao,
+        tenant_id: venda.tenant_id,
+      });
+
+      if (itemIn.retornar_ao_estoque) {
+        this.addMovimentacao({
+          loja_id: venda.loja_id,
+          produto_id: itemVenda.produto_id,
+          tipo: 'ENTRADA',
+          quantidade: itemIn.quantidade,
+          motivo: `Devolução de venda #${venda.id.slice(0, 8)} (${payload.motivo})`,
+        });
+      }
+    }
+
+    if (payload.tipo_resolucao === 'CREDITO_LOJA' && venda.cliente_id) {
+      const clientes = this.getClientes();
+      const cli = clientes.find((c) => c.id === venda.cliente_id);
+      if (cli) {
+        cli.credito_loja = (cli.credito_loja || 0) + valorTotalDevolucao;
+        this.set('clientes', clientes);
+      }
+    } else if (payload.tipo_resolucao === 'ABATIMENTO_CREDIARIO' && venda.cliente_id) {
+      const clientes = this.getClientes();
+      const cli = clientes.find((c) => c.id === venda.cliente_id);
+      if (cli) {
+        cli.saldo_devedor_crediario = Math.max(0, cli.saldo_devedor_crediario - valorTotalDevolucao);
+        this.set('clientes', clientes);
+      }
+    } else if (payload.tipo_resolucao === 'REEMBOLSO_CAIXA') {
+      this.addLancamentoFinanceiro({
+        loja_id: venda.loja_id,
+        tipo: 'DESPESA',
+        valor: valorTotalDevolucao,
+        categoria: 'Reembolso / Devolução de Venda',
+        status_pagamento: 'PAGO',
+        descricao: `Devolução de venda #${venda.id.slice(0, 8)}`,
+      });
+    }
+
+    const devolucao: Devolucao = {
+      id: crypto.randomUUID ? crypto.randomUUID() : `dev-${Date.now()}`,
+      venda_id: venda.id,
+      loja_id: venda.loja_id,
+      usuario_id: venda.usuario_id,
+      cliente_id: venda.cliente_id,
+      tipo: payload.tipo,
+      tipo_resolucao: payload.tipo_resolucao,
+      valor_total: valorTotalDevolucao,
+      motivo: payload.motivo,
+      data_devolucao: new Date().toISOString(),
+      tenant_id: venda.tenant_id,
+      itens: itensDevolucao,
+    };
+
+    const devolucoes = this.get<Devolucao[]>('devolucoes', []);
+    devolucoes.unshift(devolucao);
+    this.set('devolucoes', devolucoes);
+
+    venda.status = 'PARCIALMENTE_DEVOLVIDA';
+    this.set('vendas', vendas);
+
+    return devolucao;
+  }
+
+  obterDevolucoesVenda(vendaId: string): Devolucao[] {
+    const devolucoes = this.get<Devolucao[]>('devolucoes', []);
+    return devolucoes.filter((d) => d.venda_id === vendaId);
   }
 
   // Vendas em Espera (Hold Queue)

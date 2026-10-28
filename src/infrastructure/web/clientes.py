@@ -129,7 +129,8 @@ def atualizar_cliente(
         ativo=request.ativo,
         tenant_id=current_user.tenant_id,
         limite_credito=request.limite_credito,
-        saldo_devedor_crediario=request.saldo_devedor_crediario
+        saldo_devedor_crediario=request.saldo_devedor_crediario,
+        credito_loja=request.credito_loja
     )
     
     try:

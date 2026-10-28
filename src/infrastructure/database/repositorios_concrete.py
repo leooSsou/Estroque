@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.domain.entities.auditoria_fisica import AuditoriaFisica, AuditoriaFisicaItem
 from src.domain.entities.cliente import Cliente
+from src.domain.entities.devolucao import Devolucao, ItemDevolucao
 from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
 from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
@@ -22,6 +23,7 @@ from src.domain.repositories.auditoria_fisica_repository import (
     AuditoriaFisicaRepository,
 )
 from src.domain.repositories.cliente_repository import ClienteRepository
+from src.domain.repositories.devolucao_repository import DevolucaoRepository
 from src.domain.repositories.estoque_movimentacao_repository import (
     EstoqueMovimentacaoRepository,
 )
@@ -42,10 +44,12 @@ from src.infrastructure.database.models import (
     AuditoriaFisicaItemModel,
     AuditoriaFisicaModel,
     ClienteModel,
+    DevolucaoModel,
     EstoqueMovimentacaoModel,
     EstoqueSaldoModel,
     FinanceiroLancamentoModel,
     FornecedorModel,
+    ItemDevolucaoModel,
     ItemVendaModel,
     LojaModel,
     PagamentoVendaModel,
@@ -421,7 +425,8 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
                 tenant_id=cliente.tenant_id,
                 ativo=cliente.ativo,
                 limite_credito=cliente.limite_credito,
-                saldo_devedor_crediario=cliente.saldo_devedor_crediario
+                saldo_devedor_crediario=cliente.saldo_devedor_crediario,
+                credito_loja=cliente.credito_loja
             )
             self.db.add(model)
         else:
@@ -431,6 +436,7 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             model.ativo = cliente.ativo
             model.limite_credito = cliente.limite_credito
             model.saldo_devedor_crediario = cliente.saldo_devedor_crediario
+            model.credito_loja = cliente.credito_loja
             
         self.db.flush()
         
@@ -442,7 +448,8 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             tenant_id=model.tenant_id,
             ativo=model.ativo,
             limite_credito=model.limite_credito,
-            saldo_devedor_crediario=model.saldo_devedor_crediario
+            saldo_devedor_crediario=model.saldo_devedor_crediario,
+            credito_loja=getattr(model, "credito_loja", 0.0)
         )
 
     def obter_por_id(self, id: UUID, tenant_id: UUID) -> Cliente | None:
@@ -458,7 +465,8 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             tenant_id=model.tenant_id,
             ativo=model.ativo,
             limite_credito=model.limite_credito,
-            saldo_devedor_crediario=model.saldo_devedor_crediario
+            saldo_devedor_crediario=model.saldo_devedor_crediario,
+            credito_loja=getattr(model, "credito_loja", 0.0)
         )
 
     def obter_por_documento(self, documento: str, tenant_id: UUID) -> Cliente | None:
@@ -475,7 +483,8 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
             tenant_id=model.tenant_id,
             ativo=model.ativo,
             limite_credito=model.limite_credito,
-            saldo_devedor_crediario=model.saldo_devedor_crediario
+            saldo_devedor_crediario=model.saldo_devedor_crediario,
+            credito_loja=getattr(model, "credito_loja", 0.0)
         )
 
     def listar_todos(self, tenant_id: UUID) -> list[Cliente]:
@@ -490,7 +499,8 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
                 tenant_id=m.tenant_id,
                 ativo=m.ativo,
                 limite_credito=m.limite_credito,
-                saldo_devedor_crediario=m.saldo_devedor_crediario
+                saldo_devedor_crediario=m.saldo_devedor_crediario,
+                credito_loja=getattr(m, "credito_loja", 0.0)
             )
             for m in models
         ]
@@ -1110,5 +1120,113 @@ class RepositorioFinanceiroLancamentoSQLAlchemy(FinanceiroLancamentoRepository):
         
         models = query.all()
         return [self._to_entity(m) for m in models]
+
+
+class RepositorioDevolucaoSQLAlchemy(DevolucaoRepository):
+    """
+    Implementação concreta do repositório de Devoluções e Trocas usando SQLAlchemy.
+    """
+    def __init__(self, db: Session) -> None:
+        self.db = db
+
+    def _para_entidade(self, model: DevolucaoModel) -> Devolucao:
+        itens = [
+            ItemDevolucao(
+                id=item_m.id,
+                devolucao_id=item_m.devolucao_id,
+                item_venda_id=item_m.item_venda_id,
+                produto_id=item_m.produto_id,
+                quantidade=item_m.quantidade,
+                preco_unitario=item_m.preco_unitario,
+                valor_total=item_m.valor_total,
+                retornar_ao_estoque=item_m.retornar_ao_estoque,
+                condicao=item_m.condicao,
+                tenant_id=item_m.tenant_id,
+            )
+            for item_m in model.itens
+        ]
+        return Devolucao(
+            id=model.id,
+            venda_id=model.venda_id,
+            loja_id=model.loja_id,
+            usuario_id=model.usuario_id,
+            cliente_id=model.cliente_id,
+            tipo=model.tipo,
+            tipo_resolucao=model.tipo_resolucao,
+            valor_total=model.valor_total,
+            motivo=model.motivo,
+            tenant_id=model.tenant_id,
+            itens=itens,
+            data_devolucao=model.data_devolucao,
+        )
+
+    def salvar(self, devolucao: Devolucao) -> Devolucao:
+        self.db.info["tenant_id"] = devolucao.tenant_id
+        model = self.db.query(DevolucaoModel).filter(DevolucaoModel.id == devolucao.id).first()
+        if not model:
+            model = DevolucaoModel(
+                id=devolucao.id,
+                venda_id=devolucao.venda_id,
+                loja_id=devolucao.loja_id,
+                usuario_id=devolucao.usuario_id,
+                cliente_id=devolucao.cliente_id,
+                tipo=devolucao.tipo,
+                tipo_resolucao=devolucao.tipo_resolucao,
+                valor_total=devolucao.valor_total,
+                motivo=devolucao.motivo,
+                tenant_id=devolucao.tenant_id,
+                data_devolucao=devolucao.data_devolucao,
+            )
+            self.db.add(model)
+            for item in devolucao.itens:
+                item_m = ItemDevolucaoModel(
+                    id=item.id,
+                    devolucao_id=devolucao.id,
+                    item_venda_id=item.item_venda_id,
+                    produto_id=item.produto_id,
+                    quantidade=item.quantidade,
+                    preco_unitario=item.preco_unitario,
+                    valor_total=item.valor_total,
+                    retornar_ao_estoque=item.retornar_ao_estoque,
+                    condicao=item.condicao,
+                    tenant_id=devolucao.tenant_id,
+                )
+                self.db.add(item_m)
+        self.db.flush()
+        return self._para_entidade(model)
+
+    def obter_por_id(self, id: UUID, tenant_id: UUID) -> Devolucao | None:
+        self.db.info["tenant_id"] = tenant_id
+        model = self.db.query(DevolucaoModel).filter(DevolucaoModel.id == id).first()
+        if not model:
+            return None
+        return self._para_entidade(model)
+
+    def listar_por_venda(self, venda_id: UUID, tenant_id: UUID) -> list[Devolucao]:
+        self.db.info["tenant_id"] = tenant_id
+        models = (
+            self.db.query(DevolucaoModel)
+            .filter(DevolucaoModel.venda_id == venda_id)
+            .order_by(DevolucaoModel.data_devolucao.desc())
+            .all()
+        )
+        return [self._para_entidade(m) for m in models]
+
+    def listar_por_tenant(self, tenant_id: UUID, loja_id: UUID | None = None) -> list[Devolucao]:
+        self.db.info["tenant_id"] = tenant_id
+        query = self.db.query(DevolucaoModel)
+        if loja_id:
+            query = query.filter(DevolucaoModel.loja_id == loja_id)
+        models = query.order_by(DevolucaoModel.data_devolucao.desc()).all()
+        return [self._para_entidade(m) for m in models]
+
+    def obter_total_devolvido_por_item_venda(self, item_venda_id: UUID, tenant_id: UUID) -> int:
+        self.db.info["tenant_id"] = tenant_id
+        itens = self.db.query(ItemDevolucaoModel).filter(
+            ItemDevolucaoModel.item_venda_id == item_venda_id,
+            ItemDevolucaoModel.tenant_id == tenant_id
+        ).all()
+        return sum(i.quantidade for i in itens)
+
 
 

@@ -93,6 +93,22 @@ export const PDVVendas: React.FC = () => {
   const [searchHistorico, setSearchHistorico] = useState('');
   const [statusFilterHistorico, setStatusFilterHistorico] = useState<'TODAS' | 'CONCLUIDA' | 'CANCELADA'>('TODAS');
 
+  // Devolucao / Troca Modal State (Tab 3)
+  const [devolucaoModalOpen, setDevolucaoModalOpen] = useState(false);
+  const [vendaParaDevolucao, setVendaParaDevolucao] = useState<Venda | null>(null);
+  const [itensDevolucaoSelecionados, setItensDevolucaoSelecionados] = useState<{
+    [itemVendaId: string]: {
+      quantidade: number;
+      retornar_ao_estoque: boolean;
+      condicao: 'PERFEITO' | 'AVARIADO';
+      selecionado: boolean;
+    };
+  }>({});
+  const [tipoDevolucao, setTipoDevolucao] = useState<'DEVOLUCAO' | 'TROCA'>('DEVOLUCAO');
+  const [tipoResolucao, setTipoResolucao] = useState<'CREDITO_LOJA' | 'REEMBOLSO_CAIXA' | 'ABATIMENTO_CREDIARIO'>('CREDITO_LOJA');
+  const [motivoDevolucao, setMotivoDevolucao] = useState('');
+  const [isSubmittingDevolucao, setIsSubmittingDevolucao] = useState(false);
+
   // Cash Operations Modals (Tab 4)
   const [sangriaModalOpen, setSangriaModalOpen] = useState(false);
   const [sangriaValor, setSangriaValor] = useState<number | ''>('');
@@ -157,6 +173,13 @@ export const PDVVendas: React.FC = () => {
     modoPagamento === 'SIMPLES' &&
     formaPagamento === 'CREDIARIO' && (!selectedCliente || valorTotal > limiteDisponivel);
 
+  // Vale-Crédito validation check
+  const creditoLojaDisponivel = selectedCliente?.credito_loja || 0;
+  const creditoLojaExcedido =
+    modoPagamento === 'SIMPLES' &&
+    formaPagamento === 'CREDITO_LOJA' &&
+    (!selectedCliente || valorTotal > creditoLojaDisponivel);
+
   // Split Payment calculations & helpers
   const totalSplitPago = useMemo(() => {
     return Number(splitPagamentos.reduce((acc, p) => acc + p.valor, 0).toFixed(2));
@@ -172,10 +195,21 @@ export const PDVVendas: React.FC = () => {
       .reduce((acc, p) => acc + p.valor, 0);
   }, [splitPagamentos]);
 
+  const splitCreditoLojaTotal = useMemo(() => {
+    return splitPagamentos
+      .filter((p) => p.forma_pagamento === 'CREDITO_LOJA')
+      .reduce((acc, p) => acc + p.valor, 0);
+  }, [splitPagamentos]);
+
   const splitCrediarioExcedido =
     modoPagamento === 'SPLIT' &&
     splitCrediarioTotal > 0 &&
     (!selectedCliente || splitCrediarioTotal > limiteDisponivel);
+
+  const splitCreditoLojaExcedido =
+    modoPagamento === 'SPLIT' &&
+    splitCreditoLojaTotal > 0 &&
+    (!selectedCliente || splitCreditoLojaTotal > creditoLojaDisponivel);
 
   const handleAddSplitPayment = () => {
     const val = typeof novoSplitValor === 'number' ? novoSplitValor : restanteSplit;
@@ -197,12 +231,96 @@ export const PDVVendas: React.FC = () => {
         return;
       }
     }
+    if (novoSplitForma === 'CREDITO_LOJA') {
+      if (!selectedCliente) {
+        toast.error('Selecione um cliente para utilizar Vale-Crédito.');
+        return;
+      }
+      if (splitCreditoLojaTotal + val > creditoLojaDisponivel) {
+        toast.error(`Saldo de Vale-Crédito insuficiente. Disponível: R$ ${creditoLojaDisponivel.toFixed(2)}`);
+        return;
+      }
+    }
     setSplitPagamentos((prev) => [...prev, { forma_pagamento: novoSplitForma, valor: val }]);
     setNovoSplitValor('');
   };
 
   const handleRemoveSplitPayment = (index: number) => {
     setSplitPagamentos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const totalDevolucaoCalculado = useMemo(() => {
+    if (!vendaParaDevolucao) return 0;
+    let sum = 0;
+    for (const item of vendaParaDevolucao.itens || []) {
+      const cfg = itensDevolucaoSelecionados[item.id];
+      if (cfg && cfg.selecionado && cfg.quantidade > 0) {
+        sum += cfg.quantidade * item.preco_unitario;
+      }
+    }
+    return Number(sum.toFixed(2));
+  }, [vendaParaDevolucao, itensDevolucaoSelecionados]);
+
+  const abrirModalDevolucao = (v: Venda) => {
+    setVendaParaDevolucao(v);
+    const initialMap: typeof itensDevolucaoSelecionados = {};
+    for (const it of v.itens || []) {
+      initialMap[it.id] = {
+        quantidade: 1,
+        retornar_ao_estoque: true,
+        condicao: 'PERFEITO',
+        selecionado: true,
+      };
+    }
+    setItensDevolucaoSelecionados(initialMap);
+    setTipoDevolucao('DEVOLUCAO');
+    if (v.cliente_id) {
+      setTipoResolucao('CREDITO_LOJA');
+    } else {
+      setTipoResolucao('REEMBOLSO_CAIXA');
+    }
+    setMotivoDevolucao('');
+    setDevolucaoModalOpen(true);
+  };
+
+  const handleConfirmarDevolucao = async () => {
+    if (!vendaParaDevolucao) return;
+    const itensParaDevolver = Object.entries(itensDevolucaoSelecionados)
+      .filter(([_, config]) => config.selecionado && config.quantidade > 0)
+      .map(([itemVendaId, config]) => ({
+        item_venda_id: itemVendaId,
+        quantidade: config.quantidade,
+        retornar_ao_estoque: config.retornar_ao_estoque,
+        condicao: config.condicao,
+      }));
+
+    if (itensParaDevolver.length === 0) {
+      toast.warning('Selecione ao menos um item para devolução com quantidade maior que zero.');
+      return;
+    }
+
+    if (!motivoDevolucao.trim()) {
+      toast.warning('Por favor, informe o motivo da devolução ou troca.');
+      return;
+    }
+
+    setIsSubmittingDevolucao(true);
+    try {
+      await api.devolverVenda(vendaParaDevolucao.id, {
+        tipo: tipoDevolucao,
+        tipo_resolucao: tipoResolucao,
+        motivo: motivoDevolucao.trim(),
+        itens: itensParaDevolver,
+      });
+
+      toast.success('Troca/Devolução registrada com sucesso!');
+      setDevolucaoModalOpen(false);
+      await loadInitialData();
+    } catch (err: any) {
+      toast.error(err.message || 'Erro ao registrar devolução.');
+    } finally {
+      setIsSubmittingDevolucao(false);
+    }
   };
 
   // Add item to cart
@@ -264,6 +382,10 @@ export const PDVVendas: React.FC = () => {
         toast.error('Limite de crediário do cliente excedido para a parcela solicitada.');
         return;
       }
+      if (splitCreditoLojaExcedido) {
+        toast.error('Saldo de Vale-Crédito do cliente insuficiente para a parcela solicitada.');
+        return;
+      }
     } else {
       if (formaPagamento === 'CREDIARIO') {
         if (!selectedCliente) {
@@ -272,6 +394,17 @@ export const PDVVendas: React.FC = () => {
         }
         if (crediarioExcedido) {
           toast.error('Limite de crediário do cliente excedido! Venda bloqueada.');
+          return;
+        }
+      }
+
+      if (formaPagamento === 'CREDITO_LOJA') {
+        if (!selectedCliente) {
+          toast.error('Selecione um cliente para utilizar Vale-Crédito.');
+          return;
+        }
+        if (creditoLojaExcedido) {
+          toast.error('Saldo de Vale-Crédito do cliente insuficiente! Venda bloqueada.');
           return;
         }
       }
@@ -895,6 +1028,29 @@ export const PDVVendas: React.FC = () => {
                   </div>
                 </div>
 
+                {selectedCliente && (selectedCliente.credito_loja || 0) > 0 && (
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-medium">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                      <span>Cliente possui <strong>R$ {selectedCliente.credito_loja?.toFixed(2)}</strong> em Vale-Crédito!</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (modoPagamento === 'SIMPLES') {
+                          setFormaPagamento('CREDITO_LOJA');
+                        } else {
+                          setNovoSplitForma('CREDITO_LOJA');
+                          setNovoSplitValor(Math.min(restanteSplit, selectedCliente.credito_loja || 0));
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-[11px] transition-all cursor-pointer shadow-sm"
+                    >
+                      Usar Crédito
+                    </button>
+                  </div>
+                )}
+
                 {modoPagamento === 'SIMPLES' ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
                     {[
@@ -903,6 +1059,7 @@ export const PDVVendas: React.FC = () => {
                       { id: 'CARTAO_DEBITO', label: 'Débito', icon: CreditCard },
                       { id: 'DINHEIRO', label: 'Dinheiro', icon: Banknote },
                       { id: 'CREDIARIO', label: 'Crediário', icon: CalendarClock },
+                      { id: 'CREDITO_LOJA', label: 'Vale-Crédito', icon: Wallet },
                     ].map((pm) => {
                       const Icon = pm.icon;
                       return (
@@ -971,6 +1128,7 @@ export const PDVVendas: React.FC = () => {
                             { id: 'CARTAO_CREDITO', label: 'Crédito' },
                             { id: 'CARTAO_DEBITO', label: 'Débito' },
                             { id: 'CREDIARIO', label: 'Crediário' },
+                            { id: 'CREDITO_LOJA', label: 'Vale-Crédito' },
                           ].map((pm) => (
                             <button
                               key={pm.id}
@@ -1367,10 +1525,16 @@ export const PDVVendas: React.FC = () => {
                           R$ {v.valor_total.toFixed(2)}
                         </td>
                         <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                          {v.status === 'CONCLUIDA' ? (
+                          {v.status === 'CONCLUIDA' || v.status === 'PAGO' ? (
                             <Badge variant="emerald">Concluída</Badge>
+                          ) : v.status === 'PARCIALMENTE_DEVOLVIDA' ? (
+                            <Badge variant="warning">Devolução Parcial</Badge>
+                          ) : v.status === 'DEVOLVIDA' ? (
+                            <Badge variant="purple">Devolvida</Badge>
+                          ) : v.status === 'PENDENTE' ? (
+                            <Badge variant="warning">Fiado (Pendente)</Badge>
                           ) : (
-                            <Badge variant="danger">Cancelada / Estornada</Badge>
+                            <Badge variant="danger">Cancelada</Badge>
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
@@ -1387,7 +1551,18 @@ export const PDVVendas: React.FC = () => {
                               <span>Cupom</span>
                             </button>
 
-                            {v.status === 'CONCLUIDA' && (
+                            {v.status !== 'CANCELADA' && v.status !== 'DEVOLVIDA' && (
+                              <button
+                                onClick={() => abrirModalDevolucao(v)}
+                                className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-xs font-semibold text-amber-400 flex items-center gap-1 border border-amber-500/30 active:scale-95"
+                                title="Troca ou Devolução Parcial de Itens"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Troca/Devolução</span>
+                              </button>
+                            )}
+
+                            {(v.status === 'CONCLUIDA' || v.status === 'PAGO' || v.status === 'PENDENTE') && (
                               <button
                                 onClick={() => {
                                   setVendaParaEstorno(v);
@@ -1668,6 +1843,229 @@ export const PDVVendas: React.FC = () => {
             >
               <RotateCcw className="w-4 h-4" />
               <span>Confirmar Estorno</span>
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 2.1 Modal Troca e Devolução Parcial */}
+      <Modal
+        isOpen={devolucaoModalOpen}
+        onClose={() => setDevolucaoModalOpen(false)}
+        title="Troca / Devolução de Itens da Venda"
+        subtitle={vendaParaDevolucao ? `Cupom #${vendaParaDevolucao.id.slice(0, 8)} - ${vendaParaDevolucao.cliente_nome || 'Consumidor Final'}` : ''}
+      >
+        <div className="space-y-4">
+          <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+            Selecione os produtos e quantidades a devolver. O estoque da filial será recomposto e a resolução financeira aplicada.
+          </div>
+
+          {/* Lista de itens da venda */}
+          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+            <span className="text-xs font-bold text-slate-300">Itens Comprados na Venda:</span>
+            {vendaParaDevolucao?.itens?.map((item) => {
+              const cfg = itensDevolucaoSelecionados[item.id] || {
+                quantidade: 1,
+                retornar_ao_estoque: true,
+                condicao: 'PERFEITO',
+                selecionado: false,
+              };
+              return (
+                <div
+                  key={item.id}
+                  className={`p-3 rounded-xl border transition-all ${
+                    cfg.selecionado
+                      ? 'bg-white/[0.04] border-emerald-500/40'
+                      : 'bg-[#000000] border-white/[0.12] opacity-60'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={cfg.selecionado}
+                        onChange={(e) =>
+                          setItensDevolucaoSelecionados((prev) => ({
+                            ...prev,
+                            [item.id]: { ...cfg, selecionado: e.target.checked },
+                          }))
+                        }
+                        className="rounded border-white/[0.2] text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <div>
+                        <div className="text-xs font-bold text-white">
+                          {item.produto_nome || `Produto #${item.produto_id.slice(0, 8)}`}
+                        </div>
+                        <div className="text-[11px] text-slate-400">
+                          Preço unitário: R$ {item.preco_unitario.toFixed(2)} (Comprado: {item.quantidade} un)
+                        </div>
+                      </div>
+                    </label>
+
+                    {cfg.selecionado && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <label className="text-[10px] text-slate-400 font-bold">Qtd:</label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={item.quantidade}
+                            value={cfg.quantidade}
+                            onChange={(e) => {
+                              const val = Math.max(1, Math.min(item.quantidade, parseInt(e.target.value) || 1));
+                              setItensDevolucaoSelecionados((prev) => ({
+                                ...prev,
+                                [item.id]: { ...cfg, quantidade: val },
+                              }));
+                            }}
+                            className="w-14 px-2 py-1 rounded-lg bg-[#000000] border border-white/[0.16] text-xs font-bold text-white text-center focus:border-emerald-500 focus:outline-none"
+                          />
+                        </div>
+                        <span className="text-xs font-bold text-emerald-400 min-w-16 text-right">
+                          R$ {(cfg.quantidade * item.preco_unitario).toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {cfg.selecionado && (
+                    <div className="mt-2.5 pt-2 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                      <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 select-none">
+                        <input
+                          type="checkbox"
+                          checked={cfg.retornar_ao_estoque}
+                          onChange={(e) =>
+                            setItensDevolucaoSelecionados((prev) => ({
+                              ...prev,
+                              [item.id]: { ...cfg, retornar_ao_estoque: e.target.checked },
+                            }))
+                          }
+                          className="rounded border-white/[0.2] text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <span>Retornar ao estoque vendável</span>
+                      </label>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-400">Estado:</span>
+                        <select
+                          value={cfg.condicao}
+                          onChange={(e) =>
+                            setItensDevolucaoSelecionados((prev) => ({
+                              ...prev,
+                              [item.id]: { ...cfg, condicao: e.target.value as any },
+                            }))
+                          }
+                          className="px-2 py-0.5 rounded-lg bg-[#000000] border border-white/[0.16] text-slate-300 text-[11px]"
+                        >
+                          <option value="PERFEITO">Perfeito</option>
+                          <option value="AVARIADO">Avariado / Defeito</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Resolução Financeira */}
+          <div className="space-y-1.5 pt-2 border-t border-white/[0.12]">
+            <label className="text-xs font-bold text-slate-300">Resolução Financeira da Devolução:</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setTipoResolucao('CREDITO_LOJA')}
+                disabled={!vendaParaDevolucao?.cliente_id}
+                className={`p-2.5 rounded-xl border text-left transition-all ${
+                  tipoResolucao === 'CREDITO_LOJA'
+                    ? 'bg-purple-600/20 border-purple-500 text-white'
+                    : 'bg-[#000000] border-white/[0.12] text-slate-400 hover:text-white'
+                } ${!vendaParaDevolucao?.cliente_id ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <div className="text-xs font-bold flex items-center gap-1.5">
+                  <Wallet className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Vale-Crédito</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-1">Crédito para o cliente em futuras compras</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTipoResolucao('REEMBOLSO_CAIXA')}
+                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  tipoResolucao === 'REEMBOLSO_CAIXA'
+                    ? 'bg-emerald-600/20 border-emerald-500 text-white'
+                    : 'bg-[#000000] border-white/[0.12] text-slate-400 hover:text-white'
+                }`}
+              >
+                <div className="text-xs font-bold flex items-center gap-1.5">
+                  <Banknote className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Reembolso Caixa</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-1">Devolução em dinheiro/saída do caixa</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTipoResolucao('ABATIMENTO_CREDIARIO')}
+                disabled={!vendaParaDevolucao?.cliente_id}
+                className={`p-2.5 rounded-xl border text-left transition-all ${
+                  tipoResolucao === 'ABATIMENTO_CREDIARIO'
+                    ? 'bg-amber-600/20 border-amber-500 text-white'
+                    : 'bg-[#000000] border-white/[0.12] text-slate-400 hover:text-white'
+                } ${!vendaParaDevolucao?.cliente_id ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <div className="text-xs font-bold flex items-center gap-1.5">
+                  <CalendarClock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Abater Crediário</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-1">Amortiza do fiado do cliente</div>
+              </button>
+            </div>
+            {!vendaParaDevolucao?.cliente_id && (
+              <p className="text-[10px] text-slate-400 italic">
+                * Venda sem cliente identificado permite apenas Reembolso direto no Caixa.
+              </p>
+            )}
+          </div>
+
+          {/* Motivo da devolução */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-300">Motivo da Troca / Devolução:</label>
+            <input
+              type="text"
+              required
+              value={motivoDevolucao}
+              onChange={(e) => setMotivoDevolucao(e.target.value)}
+              placeholder="Ex: Tamanho incorreto, produto com avaria no tecido, arrependimento..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white focus:border-emerald-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Total calculado e botões */}
+          <div className="p-3 rounded-xl bg-white/[0.04] border border-white/[0.12] flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-300">Total a Devolver/Creditar:</span>
+            <span className="text-base font-bold text-emerald-400">
+              R$ {totalDevolucaoCalculado.toFixed(2)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/[0.16]">
+            <button
+              type="button"
+              onClick={() => setDevolucaoModalOpen(false)}
+              className="h-10 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs font-semibold text-slate-300 hover:text-white border border-white/[0.16] transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={isSubmittingDevolucao || totalDevolucaoCalculado <= 0}
+              onClick={handleConfirmarDevolucao}
+              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>{isSubmittingDevolucao ? 'Processando...' : 'Confirmar Devolução'}</span>
             </button>
           </div>
         </div>

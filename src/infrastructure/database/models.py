@@ -100,6 +100,7 @@ class ClienteModel(HasTenant, Base):
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     limite_credito: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     saldo_devedor_crediario: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    credito_loja: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
 
     __table_args__ = (
         UniqueConstraint("documento", "tenant_id", name="uq_clientes_documento_tenant"),
@@ -221,7 +222,7 @@ class VendaModel(HasTenant, Base):
     loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
     cliente_id: Mapped[UUID | None] = mapped_column(ForeignKey("clientes.id", ondelete="RESTRICT"), nullable=True)
     usuario_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDENTE")
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="PENDENTE")
     forma_pagamento: Mapped[str] = mapped_column(String(20), nullable=False)
     valor_total: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     desconto: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
@@ -233,6 +234,7 @@ class VendaModel(HasTenant, Base):
 
     itens = relationship("ItemVendaModel", back_populates="venda", cascade="all, delete-orphan")
     pagamentos = relationship("PagamentoVendaModel", back_populates="venda", cascade="all, delete-orphan")
+    devolucoes = relationship("DevolucaoModel", back_populates="venda", cascade="all, delete-orphan")
 
 
 class PagamentoVendaModel(Base):
@@ -286,4 +288,52 @@ class FinanceiroLancamentoModel(HasTenant, Base):
     data_pagamento: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     loja = relationship("LojaModel")
+
+
+class DevolucaoModel(HasTenant, Base):
+    """
+    Representação física da tabela devolucoes.
+    """
+    __tablename__ = "devolucoes"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    venda_id: Mapped[UUID] = mapped_column(ForeignKey("vendas.id", ondelete="CASCADE"), nullable=False)
+    loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    usuario_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    cliente_id: Mapped[UUID | None] = mapped_column(ForeignKey("clientes.id", ondelete="RESTRICT"), nullable=True)
+    tipo: Mapped[str] = mapped_column(String(20), nullable=False, default="DEVOLUCAO")  # DEVOLUCAO, TROCA
+    tipo_resolucao: Mapped[str] = mapped_column(String(30), nullable=False)  # CREDITO_LOJA, REEMBOLSO_CAIXA, ABATIMENTO_CREDIARIO
+    valor_total: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    motivo: Mapped[str] = mapped_column(String(255), nullable=False)
+    data_devolucao: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+
+    venda = relationship("VendaModel", back_populates="devolucoes")
+    itens = relationship("ItemDevolucaoModel", back_populates="devolucao", cascade="all, delete-orphan")
+
+
+class ItemDevolucaoModel(Base):
+    """
+    Representação física da tabela itens_devolucao.
+    """
+    __tablename__ = "itens_devolucao"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    devolucao_id: Mapped[UUID] = mapped_column(ForeignKey("devolucoes.id", ondelete="CASCADE"), nullable=False)
+    item_venda_id: Mapped[UUID] = mapped_column(ForeignKey("itens_venda.id", ondelete="RESTRICT"), nullable=False)
+    produto_id: Mapped[UUID] = mapped_column(ForeignKey("produtos.id", ondelete="RESTRICT"), nullable=False)
+    quantidade: Mapped[int] = mapped_column(nullable=False)
+    preco_unitario: Mapped[float] = mapped_column(Float, nullable=False)
+    valor_total: Mapped[float] = mapped_column(Float, nullable=False)
+    retornar_ao_estoque: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    condicao: Mapped[str] = mapped_column(String(20), default="PERFEITO", nullable=False)
+    tenant_id: Mapped[UUID] = mapped_column(nullable=False)
+
+    devolucao = relationship("DevolucaoModel", back_populates="itens")
+    item_venda = relationship("ItemVendaModel")
+    produto = relationship("ProdutoModel")
+
 
