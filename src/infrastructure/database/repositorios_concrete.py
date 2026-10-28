@@ -68,6 +68,19 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    def _para_entidade(self, model: TenantModel) -> Tenant:
+        return Tenant(
+            id=model.id,
+            nome_fantasia=model.nome_fantasia,
+            razao_social=model.razao_social,
+            cnpj=model.cnpj,
+            data_cadastro=model.data_cadastro,
+            ativo=model.ativo if model.ativo is not None else True,
+            plano=model.plano or "PRO",
+            limite_lojas=model.limite_lojas or 5,
+            limite_usuarios=model.limite_usuarios or 10,
+        )
+
     def salvar(self, tenant: Tenant) -> Tenant:
         model = self.db.query(TenantModel).filter(TenantModel.id == tenant.id).first()
         if not model:
@@ -76,7 +89,11 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
                 nome_fantasia=tenant.nome_fantasia,
                 razao_social=tenant.razao_social,
                 cnpj=tenant.cnpj,
-                data_cadastro=tenant.data_cadastro
+                data_cadastro=tenant.data_cadastro,
+                ativo=tenant.ativo,
+                plano=tenant.plano,
+                limite_lojas=tenant.limite_lojas,
+                limite_usuarios=tenant.limite_usuarios,
             )
             self.db.add(model)
         else:
@@ -84,42 +101,42 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
             model.razao_social = tenant.razao_social
             model.cnpj = tenant.cnpj
             model.data_cadastro = tenant.data_cadastro
+            model.ativo = tenant.ativo
+            model.plano = tenant.plano
+            model.limite_lojas = tenant.limite_lojas
+            model.limite_usuarios = tenant.limite_usuarios
             
         # O commit agora é delegado para a transação geral da rota/caso de uso.
         # Apenas damos flush para carregar possíveis IDs e gerados pelo banco.
         self.db.flush()
         
-        return Tenant(
-            id=model.id,
-            nome_fantasia=model.nome_fantasia,
-            razao_social=model.razao_social,
-            cnpj=model.cnpj,
-            data_cadastro=model.data_cadastro
-        )
+        return self._para_entidade(model)
 
     def obter_por_cnpj(self, cnpj: str) -> Tenant | None:
         model = self.db.query(TenantModel).filter(TenantModel.cnpj == cnpj).first()
         if not model:
             return None
-        return Tenant(
-            id=model.id,
-            nome_fantasia=model.nome_fantasia,
-            razao_social=model.razao_social,
-            cnpj=model.cnpj,
-            data_cadastro=model.data_cadastro
-        )
+        return self._para_entidade(model)
 
     def obter_por_id(self, id: UUID) -> Tenant | None:
         model = self.db.query(TenantModel).filter(TenantModel.id == id).first()
         if not model:
             return None
-        return Tenant(
-            id=model.id,
-            nome_fantasia=model.nome_fantasia,
-            razao_social=model.razao_social,
-            cnpj=model.cnpj,
-            data_cadastro=model.data_cadastro
-        )
+        return self._para_entidade(model)
+
+    def listar_todos(self, busca: str | None = None, apenas_ativos: bool | None = None) -> list[Tenant]:
+        query = self.db.query(TenantModel)
+        if apenas_ativos is not None:
+            query = query.filter(TenantModel.ativo == apenas_ativos)
+        if busca and busca.strip():
+            termo = f"%{busca.strip()}%"
+            query = query.filter(
+                (TenantModel.nome_fantasia.ilike(termo)) |
+                (TenantModel.razao_social.ilike(termo)) |
+                (TenantModel.cnpj.ilike(termo))
+            )
+        models = query.order_by(TenantModel.data_cadastro.desc()).all()
+        return [self._para_entidade(m) for m in models]
 
 
 class RepositorioUsuarioSQLAlchemy(UsuarioRepository):

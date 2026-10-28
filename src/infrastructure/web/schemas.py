@@ -577,3 +577,45 @@ class CurvaABCOResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class TenantAdminResponse(BaseModel):
+    id: UUID
+    nome_fantasia: str
+    razao_social: str
+    cnpj: str
+    data_cadastro: datetime
+    ativo: bool
+    plano: str
+    limite_lojas: int
+    limite_usuarios: int
+    total_lojas: int = 0
+    total_usuarios: int = 0
+    total_vendas_valor: float = 0.0
+    total_vendas_qtd: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AlterarStatusTenantRequest(BaseModel):
+    ativo: bool
+
+
+class AlterarPlanoTenantRequest(BaseModel):
+    plano: str = Field(..., pattern="^(STARTER|PRO|ENTERPRISE|starter|pro|enterprise)$")
+    limite_lojas: int | None = Field(default=None, ge=1)
+    limite_usuarios: int | None = Field(default=None, ge=1)
+
+
+class PlataformaDashboardResponse(BaseModel):
+    total_tenants: int
+    tenants_ativos: int
+    tenants_suspensos: int
+    total_lojas: int
+    total_usuarios: int
+    mrr_estimado: float
+    gmv_total: float
+    total_vendas: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+

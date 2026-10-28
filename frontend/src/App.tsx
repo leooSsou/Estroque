@@ -16,6 +16,7 @@ import { PDVVendas } from './pages/PDVVendas';
 import { Financeiro } from './pages/Financeiro';
 import { Contatos } from './pages/Contatos';
 import { Analytics } from './pages/Analytics';
+import { SuperAdmin } from './pages/SuperAdmin';
 
 const ROUTE_TITLES: Record<string, string> = {
   '/': 'Visão Geral',
@@ -29,6 +30,7 @@ const ROUTE_TITLES: Record<string, string> = {
   '/financeiro': 'Financeiro',
   '/contatos': 'Contatos',
   '/analytics': 'Curva ABC',
+  '/admin': 'Painel Super-Admin',
   '/login': 'Login',
 };
 
@@ -45,6 +47,7 @@ const PageTitleUpdater: React.FC = () => {
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -59,6 +62,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (user.role === 'ADMIN_SAAS' && location.pathname === '/') {
+    return <Navigate to="/admin" replace />;
   }
 
   return <>{children}</>;
@@ -92,6 +99,7 @@ export const App: React.FC = () => {
               <Route path="financeiro" element={<Financeiro />} />
               <Route path="contatos" element={<Contatos />} />
               <Route path="analytics" element={<Analytics />} />
+              <Route path="admin" element={<SuperAdmin />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

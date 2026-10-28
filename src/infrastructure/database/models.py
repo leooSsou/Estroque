@@ -36,6 +36,10 @@ class TenantModel(Base):
         server_default=text("CURRENT_TIMESTAMP"),
         nullable=False
     )
+    ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    plano: Mapped[str] = mapped_column(String(20), default="PRO", nullable=False)
+    limite_lojas: Mapped[int] = mapped_column(default=5, nullable=False)
+    limite_usuarios: Mapped[int] = mapped_column(default=10, nullable=False)
 
 class UsuarioModel(HasTenant, Base):
     """

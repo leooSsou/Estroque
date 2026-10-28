@@ -4,9 +4,11 @@ from uuid import UUID
 from src.domain.entities.loja import Loja
 from src.domain.exceptions.business import (
     CnpjLojaEmUsoException,
+    LimitePlanoAtingidoException,
     LojaNaoEncontradaException,
 )
 from src.domain.repositories.loja_repository import LojaRepository
+from src.domain.repositories.tenant_repository import TenantRepository
 
 
 @dataclass(frozen=True)
@@ -26,10 +28,19 @@ class CriarLoja:
     """
     Caso de Uso: Criar uma nova filial/Loja para um Tenant específico.
     """
-    def __init__(self, loja_repo: LojaRepository) -> None:
+    def __init__(self, loja_repo: LojaRepository, tenant_repo: TenantRepository | None = None) -> None:
         self.loja_repo = loja_repo
+        self.tenant_repo = tenant_repo
 
     def executar(self, input_data: CriarLojaInput) -> CriarLojaOutput:
+        # Validação de limite de lojas por plano do tenant
+        if self.tenant_repo:
+            tenant = self.tenant_repo.obter_por_id(input_data.tenant_id)
+            if tenant:
+                lojas_existentes = self.loja_repo.listar_todas(input_data.tenant_id)
+                if len(lojas_existentes) >= tenant.limite_lojas:
+                    raise LimitePlanoAtingidoException("lojas", tenant.limite_lojas)
+
         # 1. Verifica se já existe outra loja com o mesmo CNPJ para o tenant
         loja_existente = self.loja_repo.obter_por_cnpj(input_data.cnpj, input_data.tenant_id)
         if loja_existente:

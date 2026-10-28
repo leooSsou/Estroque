@@ -24,6 +24,9 @@ import {
   ImportarNFeResponse,
   AuditarEstoqueResponse,
   RegisterTenantPayload,
+  TenantAdmin,
+  PlataformaDashboardMetrics,
+  AlterarPlanoPayload,
 } from '../types';
 import { storage } from './storage';
 
@@ -33,15 +36,19 @@ class ApiClient {
   private token: string | null = null;
 
   constructor() {
-    this.token = localStorage.getItem('estroque_access_token');
+    if (typeof localStorage !== 'undefined') {
+      this.token = localStorage.getItem('estroque_access_token');
+    }
   }
 
   setToken(token: string | null) {
     this.token = token;
-    if (token) {
-      localStorage.setItem('estroque_access_token', token);
-    } else {
-      localStorage.removeItem('estroque_access_token');
+    if (typeof localStorage !== 'undefined') {
+      if (token) {
+        localStorage.setItem('estroque_access_token', token);
+      } else {
+        localStorage.removeItem('estroque_access_token');
+      }
     }
   }
 
@@ -910,6 +917,61 @@ class ApiClient {
     const res = await this.request<{ itens: CurvaABCItem[] }>(endpoint);
     if (res.data?.itens) return res.data.itens;
     return storage.getCurvaABC();
+  }
+
+  // --- SUPER-ADMIN PLATAFORMA ---
+  async getPlataformaDashboard(): Promise<PlataformaDashboardMetrics> {
+    const res = await this.request<PlataformaDashboardMetrics>('/admin/dashboard');
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    return {
+      total_tenants: 1,
+      tenants_ativos: 1,
+      tenants_suspensos: 0,
+      total_lojas: 1,
+      total_usuarios: 1,
+      mrr_estimado: 249.0,
+      gmv_total: 0.0,
+      total_vendas: 0,
+    };
+  }
+
+  async getAdminTenants(busca?: string, apenasAtivos?: boolean): Promise<TenantAdmin[]> {
+    const params = new URLSearchParams();
+    if (busca) params.append('busca', busca);
+    if (apenasAtivos !== undefined) params.append('apenas_ativos', String(apenasAtivos));
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await this.request<TenantAdmin[]>(`/admin/tenants${qs}`);
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    return [];
+  }
+
+  async getAdminTenantDetalhe(tenantId: string): Promise<TenantAdmin> {
+    const res = await this.request<TenantAdmin>(`/admin/tenants/${tenantId}`);
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    throw new Error('Tenant não encontrado');
+  }
+
+  async alterarStatusTenant(tenantId: string, ativo: boolean): Promise<TenantAdmin> {
+    const res = await this.request<TenantAdmin>(`/admin/tenants/${tenantId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ativo }),
+    });
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    throw new Error('Falha ao alterar status do tenant');
+  }
+
+  async alterarPlanoTenant(tenantId: string, payload: AlterarPlanoPayload): Promise<TenantAdmin> {
+    const res = await this.request<TenantAdmin>(`/admin/tenants/${tenantId}/plano`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    throw new Error('Falha ao alterar plano do tenant');
   }
 }
 

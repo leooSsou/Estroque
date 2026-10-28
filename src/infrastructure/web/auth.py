@@ -6,7 +6,9 @@ from src.domain.exceptions.business import (
     CnpjEmUsoException,
     CredenciaisInvalidasException,
     EmailEmUsoException,
+    LimitePlanoAtingidoException,
     LojaNaoEncontradaException,
+    TenantSuspensoException,
 )
 from src.infrastructure.database.repositorios_concrete import (
     RepositorioLojaSQLAlchemy,
@@ -121,6 +123,11 @@ def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)) -
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="E-mail ou senha incorretos."
             )
+        except TenantSuspensoException as err:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=str(err)
+            )
         except HTTPException:
             raise
         except Exception as err:
@@ -186,7 +193,17 @@ def criar_usuario_equipe(
 
     loja_repo = RepositorioLojaSQLAlchemy(db)
     usuario_repo = RepositorioUsuarioSQLAlchemy(db)
+    tenant_repo = RepositorioTenantSQLAlchemy(db)
     servico_cripto = BcryptServicoCriptografia()
+
+    tenant = tenant_repo.obter_por_id(current_user.tenant_id)
+    if tenant:
+        total_usuarios = len(usuario_repo.listar_por_tenant(current_user.tenant_id))
+        if total_usuarios >= tenant.limite_usuarios:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(LimitePlanoAtingidoException("usuários", tenant.limite_usuarios)),
+            )
 
     if data.role == "GERENTE":
         if not data.loja_atribuida_id:
