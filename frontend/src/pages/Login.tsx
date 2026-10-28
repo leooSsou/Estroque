@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { api } from '../services/api';
 import {
   ShieldCheck,
   Zap,
@@ -42,6 +43,15 @@ export const Login: React.FC = () => {
     try {
       await login(email, password);
       toast.success('Autenticação realizada com sucesso!');
+      try {
+        const me = await api.getMe();
+        if (me.role === 'ADMIN_SAAS') {
+          navigate('/admin');
+          return;
+        }
+      } catch {
+        // fallback
+      }
       navigate('/');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Credenciais inválidas. Tente novamente.';

@@ -47,6 +47,7 @@ const PageTitleUpdater: React.FC = () => {
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -61,6 +62,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (user.role === 'ADMIN_SAAS' && location.pathname === '/') {
+    return <Navigate to="/admin" replace />;
   }
 
   return <>{children}</>;

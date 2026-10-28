@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
@@ -20,17 +21,27 @@ import {
   XCircle,
   AlertTriangle,
   X,
+  LayoutDashboard,
+  Zap,
+  Crown,
+  Sparkles,
 } from 'lucide-react';
 
-const PLANOS_INFO: Record<string, { label: string; badgeVariant: 'neutral' | 'emerald' | 'purple' }> = {
-  STARTER: { label: 'Starter', badgeVariant: 'neutral' },
-  PRO: { label: 'Pro', badgeVariant: 'purple' },
-  ENTERPRISE: { label: 'Enterprise', badgeVariant: 'emerald' },
+const PLANOS_INFO: Record<
+  string,
+  { label: string; badgeVariant: 'neutral' | 'emerald' | 'purple'; mrr: number; lojasMax: number; usuariosMax: number }
+> = {
+  STARTER: { label: 'Starter', badgeVariant: 'neutral', mrr: 99.0, lojasMax: 1, usuariosMax: 2 },
+  PRO: { label: 'Pro', badgeVariant: 'purple', mrr: 249.0, lojasMax: 5, usuariosMax: 10 },
+  ENTERPRISE: { label: 'Enterprise', badgeVariant: 'emerald', mrr: 799.0, lojasMax: 50, usuariosMax: 100 },
 };
 
 export const SuperAdmin: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const currentTab = (searchParams.get('tab') as 'geral' | 'tenants' | 'planos') || 'geral';
 
   const [metrics, setMetrics] = useState<PlataformaDashboardMetrics | null>(null);
   const [tenants, setTenants] = useState<TenantAdmin[]>([]);
@@ -49,28 +60,41 @@ export const SuperAdmin: React.FC = () => {
   // Estado de alteração de status inline
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
 
-  const loadData = useCallback(async (isSilent = false) => {
-    if (!isSilent) setLoading(true);
-    else setRefreshing(true);
-    try {
-      const [dash, tenantsList] = await Promise.all([
-        api.getPlataformaDashboard(),
-        api.getAdminTenants(),
-      ]);
-      setMetrics(dash);
-      setTenants(tenantsList);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Falha ao carregar dados do painel super-admin';
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [toast]);
+  const loadData = useCallback(
+    async (isSilent = false) => {
+      if (!isSilent) setLoading(true);
+      else setRefreshing(true);
+      try {
+        const [dash, tenantsList] = await Promise.all([
+          api.getPlataformaDashboard(),
+          api.getAdminTenants(),
+        ]);
+        setMetrics(dash);
+        setTenants(tenantsList);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Falha ao carregar dados do painel super-admin';
+        toast.error(msg);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [toast]
+  );
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const handleTabChange = (tab: 'geral' | 'tenants' | 'planos') => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (tab === 'geral') {
+      nextParams.delete('tab');
+    } else {
+      nextParams.set('tab', tab);
+    }
+    setSearchParams(nextParams);
+  };
 
   const handleToggleStatus = async (tenant: TenantAdmin) => {
     const novoStatus = !tenant.ativo;
@@ -87,7 +111,6 @@ export const SuperAdmin: React.FC = () => {
       toast.success(
         `Inquilino "${tenant.nome_fantasia}" foi ${novoStatus ? 'reativado' : 'suspenso'} com sucesso!`
       );
-      // Atualiza métricas
       loadData(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Falha ao alterar status do tenant';
@@ -106,15 +129,10 @@ export const SuperAdmin: React.FC = () => {
 
   const handleSelectPlanoPredefinido = (plano: 'STARTER' | 'PRO' | 'ENTERPRISE') => {
     setModalPlano(plano);
-    if (plano === 'STARTER') {
-      setModalLimiteLojas(1);
-      setModalLimiteUsuarios(2);
-    } else if (plano === 'PRO') {
-      setModalLimiteLojas(5);
-      setModalLimiteUsuarios(10);
-    } else if (plano === 'ENTERPRISE') {
-      setModalLimiteLojas(50);
-      setModalLimiteUsuarios(100);
+    const info = PLANOS_INFO[plano];
+    if (info) {
+      setModalLimiteLojas(info.lojasMax);
+      setModalLimiteUsuarios(info.usuariosMax);
     }
   };
 
@@ -143,11 +161,9 @@ export const SuperAdmin: React.FC = () => {
 
   const filteredTenants = useMemo(() => {
     return tenants.filter((t) => {
-      // Filtro de status
       if (statusFilter === 'ATIVOS' && !t.ativo) return false;
       if (statusFilter === 'SUSPENSOS' && t.ativo) return false;
 
-      // Filtro de texto
       if (search.trim()) {
         const termo = search.toLowerCase();
         const matchNome = t.nome_fantasia?.toLowerCase().includes(termo);
@@ -158,6 +174,21 @@ export const SuperAdmin: React.FC = () => {
       return true;
     });
   }, [tenants, statusFilter, search]);
+
+  // Agrupamentos por Plano
+  const tenantsPorPlano = useMemo(() => {
+    const starter = tenants.filter((t) => t.plano === 'STARTER');
+    const pro = tenants.filter((t) => t.plano === 'PRO');
+    const enterprise = tenants.filter((t) => t.plano === 'ENTERPRISE');
+    return { STARTER: starter, PRO: pro, ENTERPRISE: enterprise };
+  }, [tenants]);
+
+  // Top 5 Tenants em Faturamento
+  const topTenantsFaturamento = useMemo(() => {
+    return [...tenants]
+      .sort((a, b) => b.total_vendas_valor - a.total_vendas_valor)
+      .slice(0, 5);
+  }, [tenants]);
 
   if (user?.role !== 'ADMIN_SAAS') {
     return (
@@ -180,12 +211,10 @@ export const SuperAdmin: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-bold text-white tracking-tight">Painel Super-Admin</h1>
-            <Badge variant="purple">
-              ADMIN_SAAS
-            </Badge>
+            <Badge variant="purple">ADMIN_SAAS</Badge>
           </div>
           <p className="text-sm text-slate-400 mt-0.5">
-            Métricas globais da infraestrutura SaaS, gestão de tenants e controle de planos e limites.
+            Console de comando central do SaaS: controle de receita recorrente, planos e inquilinos.
           </p>
         </div>
 
@@ -199,285 +228,548 @@ export const SuperAdmin: React.FC = () => {
         </button>
       </div>
 
-      {/* Bento Grid: Métricas da Plataforma */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <BentoCard className="p-5 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              MRR Estimado
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-white tracking-tight">
-              {metrics ? `R$ ${metrics.mrr_estimado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '...'}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-emerald-400 font-medium">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Receita mensal recorrente</span>
-            </div>
-          </div>
-        </BentoCard>
+      {/* Tabs de Navegação do Super-Admin */}
+      <div className="flex items-center gap-2 border-b border-white/[0.08] pb-1">
+        <button
+          onClick={() => handleTabChange('geral')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-t-xl transition-all border-b-2 ${
+            currentTab === 'geral'
+              ? 'border-purple-500 text-purple-300 bg-purple-500/10'
+              : 'border-transparent text-slate-400 hover:text-white hover:bg-white/[0.02]'
+          }`}
+        >
+          <LayoutDashboard className="w-3.5 h-3.5" />
+          <span>Visão Geral & KPIs</span>
+        </button>
 
-        <BentoCard className="p-5 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              GMV Transacionado
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-white tracking-tight">
-              {metrics ? `R$ ${metrics.gmv_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : '...'}
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400">
-              <span>{metrics?.total_vendas ?? 0} pedidos faturados na rede</span>
-            </div>
-          </div>
-        </BentoCard>
+        <button
+          onClick={() => handleTabChange('tenants')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-t-xl transition-all border-b-2 ${
+            currentTab === 'tenants'
+              ? 'border-purple-500 text-purple-300 bg-purple-500/10'
+              : 'border-transparent text-slate-400 hover:text-white hover:bg-white/[0.02]'
+          }`}
+        >
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Inquilinos (Tenants)</span>
+          <span className="text-[10px] bg-white/[0.08] px-1.5 py-0.5 rounded-full font-mono">
+            {tenants.length}
+          </span>
+        </button>
 
-        <BentoCard className="p-5 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              Inquilinos (Tenants)
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Building2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-white tracking-tight">
-              {metrics?.total_tenants ?? 0}
-            </div>
-            <div className="flex items-center gap-2 mt-1 text-xs">
-              <span className="text-emerald-400 font-semibold">{metrics?.tenants_ativos ?? 0} ativos</span>
-              <span className="text-slate-600">•</span>
-              <span className="text-rose-400 font-semibold">{metrics?.tenants_suspensos ?? 0} suspensos</span>
-            </div>
-          </div>
-        </BentoCard>
-
-        <BentoCard className="p-5 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              Infraestrutura
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
-              <Store className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="text-2xl font-bold text-white tracking-tight">
-              {metrics?.total_lojas ?? 0} <span className="text-sm font-normal text-slate-400">lojas</span>
-            </div>
-            <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400">
-              <Users className="w-3.5 h-3.5 text-purple-400" />
-              <span>{metrics?.total_usuarios ?? 0} colaboradores ativos</span>
-            </div>
-          </div>
-        </BentoCard>
+        <button
+          onClick={() => handleTabChange('planos')}
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-t-xl transition-all border-b-2 ${
+            currentTab === 'planos'
+              ? 'border-purple-500 text-purple-300 bg-purple-500/10'
+              : 'border-transparent text-slate-400 hover:text-white hover:bg-white/[0.02]'
+          }`}
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>Planos & Limites</span>
+        </button>
       </div>
 
-      {/* Seção de Gerenciamento de Tenants */}
-      <BentoCard className="p-5">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
-          <div>
-            <h2 className="text-lg font-bold text-white tracking-tight">Inquilinos Cadastrados</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Consulte faturamento, filiais, colaboradores e gerencie o plano ou suspensão.
-            </p>
+      {/* ============================================================== */}
+      {/* ABA 1: VISÃO GERAL & KPIS DA PLATAFORMA                        */}
+      {/* ============================================================== */}
+      {currentTab === 'geral' && (
+        <div className="space-y-6">
+          {/* Bento Grid: Métricas da Plataforma */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <BentoCard className="p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  MRR Estimado
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl font-bold text-white tracking-tight">
+                  {metrics
+                    ? `R$ ${metrics.mrr_estimado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    : '...'}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 text-xs text-emerald-400 font-medium">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>Receita mensal de assinaturas</span>
+                </div>
+              </div>
+            </BentoCard>
+
+            <BentoCard className="p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  GMV Transacionado
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl font-bold text-white tracking-tight">
+                  {metrics
+                    ? `R$ ${metrics.gmv_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    : '...'}
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400">
+                  <span>{metrics?.total_vendas ?? 0} vendas realizadas pelas lojas</span>
+                </div>
+              </div>
+            </BentoCard>
+
+            <BentoCard className="p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  Clientes (Tenants)
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Building2 className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl font-bold text-white tracking-tight">
+                  {metrics?.total_tenants ?? 0}
+                </div>
+                <div className="flex items-center gap-2 mt-1 text-xs">
+                  <span className="text-emerald-400 font-semibold">{metrics?.tenants_ativos ?? 0} ativos</span>
+                  <span className="text-slate-600">•</span>
+                  <span className="text-rose-400 font-semibold">{metrics?.tenants_suspensos ?? 0} suspensos</span>
+                </div>
+              </div>
+            </BentoCard>
+
+            <BentoCard className="p-5 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  Infraestrutura
+                </span>
+                <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+                  <Store className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="text-2xl font-bold text-white tracking-tight">
+                  {metrics?.total_lojas ?? 0} <span className="text-sm font-normal text-slate-400">filiais</span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400">
+                  <Users className="w-3.5 h-3.5 text-purple-400" />
+                  <span>{metrics?.total_usuarios ?? 0} colaboradores ativos</span>
+                </div>
+              </div>
+            </BentoCard>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Filtros de status */}
-            <div className="flex items-center bg-white/[0.04] p-1 rounded-xl border border-white/[0.08]">
-              <button
-                onClick={() => setStatusFilter('TODOS')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
-                  statusFilter === 'TODOS'
-                    ? 'bg-white/[0.12] text-white'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Todos ({tenants.length})
-              </button>
-              <button
-                onClick={() => setStatusFilter('ATIVOS')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
-                  statusFilter === 'ATIVOS'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Ativos ({tenants.filter((t) => t.ativo).length})
-              </button>
-              <button
-                onClick={() => setStatusFilter('SUSPENSOS')}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
-                  statusFilter === 'SUSPENSOS'
-                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Suspensos ({tenants.filter((t) => !t.ativo).length})
-              </button>
-            </div>
+          {/* Grid Secundário: Distribuição de Planos & Top Faturamento */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <BentoCard className="p-5">
+              <h3 className="text-sm font-bold text-white mb-1">Distribuição por Plano Comercial</h3>
+              <p className="text-xs text-slate-400 mb-4">Volume de clientes e MRR gerado por tier de assinatura.</p>
 
-            {/* Busca textual */}
-            <div className="relative min-w-[220px]">
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Buscar por nome, razão ou CNPJ..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-white/[0.04] border border-white/[0.1] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Tabela de Tenants */}
-        <div className="overflow-x-auto mt-4">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-white/[0.08] text-slate-400 uppercase font-semibold">
-                <th className="py-3 px-3">Empresa / CNPJ</th>
-                <th className="py-3 px-3">Plano</th>
-                <th className="py-3 px-3 text-center">Lojas</th>
-                <th className="py-3 px-3 text-center">Usuários</th>
-                <th className="py-3 px-3">Faturamento Rede</th>
-                <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-3 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.04]">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500">
-                    <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-400" />
-                    Carregando inquilinos...
-                  </td>
-                </tr>
-              ) : filteredTenants.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500">
-                    Nenhum inquilino encontrado com os filtros aplicados.
-                  </td>
-                </tr>
-              ) : (
-                filteredTenants.map((t) => {
-                  const planoInfo = PLANOS_INFO[t.plano] || { label: t.plano, badgeVariant: 'default' };
-                  const lojasOcupacao = `${t.total_lojas} / ${t.limite_lojas}`;
-                  const usuariosOcupacao = `${t.total_usuarios} / ${t.limite_usuarios}`;
-                  const isLojasCritico = t.total_lojas >= t.limite_lojas;
-                  const isUsuariosCritico = t.total_usuarios >= t.limite_usuarios;
+              <div className="space-y-3">
+                {(['STARTER', 'PRO', 'ENTERPRISE'] as const).map((p) => {
+                  const info = PLANOS_INFO[p];
+                  const count = tenantsPorPlano[p].length;
+                  const total = tenants.length || 1;
+                  const pct = Math.round((count / total) * 100);
+                  const receitaPlano = count * info.mrr;
 
                   return (
-                    <tr key={t.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="py-3.5 px-3">
-                        <div className="font-semibold text-white text-sm">{t.nome_fantasia}</div>
-                        <div className="text-slate-400 text-[11px] truncate max-w-[200px]">{t.razao_social}</div>
-                        <div className="text-slate-500 text-[11px] font-mono mt-0.5">{t.cnpj}</div>
-                      </td>
-
-                      <td className="py-3.5 px-3">
-                        <Badge variant={planoInfo.badgeVariant}>
-                          {planoInfo.label}
-                        </Badge>
-                      </td>
-
-                      <td className="py-3.5 px-3 text-center">
-                        <span
-                          className={`font-semibold ${
-                            isLojasCritico ? 'text-amber-400' : 'text-slate-200'
-                          }`}
-                        >
-                          {lojasOcupacao}
+                    <div key={p} className="p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={info.badgeVariant}>{info.label}</Badge>
+                          <span className="text-xs text-slate-400">
+                            {count} {count === 1 ? 'cliente' : 'clientes'} ({pct}%)
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold text-white">
+                          R$ {receitaPlano.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
                         </span>
-                        {isLojasCritico && (
-                          <span title="Limite atingido" className="inline-block ml-1 text-amber-400">
-                            •
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="py-3.5 px-3 text-center">
-                        <span
-                          className={`font-semibold ${
-                            isUsuariosCritico ? 'text-amber-400' : 'text-slate-200'
+                      </div>
+                      <div className="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${
+                            p === 'ENTERPRISE'
+                              ? 'bg-emerald-500'
+                              : p === 'PRO'
+                              ? 'bg-purple-500'
+                              : 'bg-slate-400'
                           }`}
-                        >
-                          {usuariosOcupacao}
-                        </span>
-                        {isUsuariosCritico && (
-                          <span title="Limite atingido" className="inline-block ml-1 text-amber-400">
-                            •
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="py-3.5 px-3">
-                        <div className="font-semibold text-white">
-                          R$ {t.total_vendas_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          {t.total_vendas_qtd} {t.total_vendas_qtd === 1 ? 'venda' : 'vendas'}
-                        </div>
-                      </td>
-
-                      <td className="py-3.5 px-3">
-                        {t.ativo ? (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Ativo
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                            <XCircle className="w-3 h-3" />
-                            Suspenso
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="py-3.5 px-3 text-right">
-                        <div className="inline-flex items-center gap-2">
-                          {/* Botão Alterar Plano */}
-                          <button
-                            onClick={() => handleOpenModalPlano(t)}
-                            className="p-1.5 text-slate-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors border border-transparent hover:border-purple-500/20"
-                            title="Alterar Plano e Limites"
-                          >
-                            <Sliders className="w-4 h-4" />
-                          </button>
-
-                          {/* Botão Suspender / Ativar */}
-                          <button
-                            onClick={() => handleToggleStatus(t)}
-                            disabled={togglingStatusId === t.id}
-                            className={`p-1.5 rounded-lg transition-colors border ${
-                              t.ativo
-                                ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border-transparent hover:border-rose-500/20'
-                                : 'text-emerald-400 hover:bg-emerald-500/10 border-emerald-500/20'
-                            }`}
-                            title={t.ativo ? 'Suspender Inquilino' : 'Reativar Inquilino'}
-                          >
-                            <Power className={`w-4 h-4 ${togglingStatusId === t.id ? 'animate-pulse' : ''}`} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
                   );
-                })
-              )}
-            </tbody>
-          </table>
+                })}
+              </div>
+            </BentoCard>
+
+            <BentoCard className="p-5">
+              <h3 className="text-sm font-bold text-white mb-1">Top Inquilinos por Volume de Vendas</h3>
+              <p className="text-xs text-slate-400 mb-4">Empresas com maior faturamento transacionado no sistema.</p>
+
+              <div className="space-y-2.5">
+                {topTenantsFaturamento.map((t, idx) => (
+                  <div
+                    key={t.id}
+                    className="flex items-center justify-between p-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-xs font-mono font-bold text-slate-500 w-4 text-center">
+                        #{idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-xs text-white truncate">{t.nome_fantasia}</div>
+                        <div className="text-[11px] text-slate-500">
+                          {t.total_vendas_qtd} vendas • Plano {t.plano}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-xs font-bold text-emerald-400">
+                        R$ {t.total_vendas_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div className="text-[10px] text-slate-500">{t.total_lojas} filiais</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </BentoCard>
+          </div>
         </div>
-      </BentoCard>
+      )}
+
+      {/* ============================================================== */}
+      {/* ABA 2: INQUILINOS (TENANTS)                                    */}
+      {/* ============================================================== */}
+      {currentTab === 'tenants' && (
+        <BentoCard className="p-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-tight">Gestão de Inquilinos</h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Consulte métricas, filiais, colaboradores e controle status de acesso (suspender inadimplentes).
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Filtros de status */}
+              <div className="flex items-center bg-white/[0.04] p-1 rounded-xl border border-white/[0.08]">
+                <button
+                  onClick={() => setStatusFilter('TODOS')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                    statusFilter === 'TODOS'
+                      ? 'bg-white/[0.12] text-white'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Todos ({tenants.length})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('ATIVOS')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                    statusFilter === 'ATIVOS'
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Ativos ({tenants.filter((t) => t.ativo).length})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('SUSPENSOS')}
+                  className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                    statusFilter === 'SUSPENSOS'
+                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Suspensos ({tenants.filter((t) => !t.ativo).length})
+                </button>
+              </div>
+
+              {/* Busca textual */}
+              <div className="relative min-w-[220px]">
+                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nome, razão ou CNPJ..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-white/[0.04] border border-white/[0.1] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tabela de Tenants */}
+          <div className="overflow-x-auto mt-4">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-white/[0.08] text-slate-400 uppercase font-semibold">
+                  <th className="py-3 px-3">Empresa / CNPJ</th>
+                  <th className="py-3 px-3">Plano</th>
+                  <th className="py-3 px-3 text-center">Lojas</th>
+                  <th className="py-3 px-3 text-center">Usuários</th>
+                  <th className="py-3 px-3">Faturamento Rede</th>
+                  <th className="py-3 px-3">Status</th>
+                  <th className="py-3 px-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                      <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-400" />
+                      Carregando inquilinos...
+                    </td>
+                  </tr>
+                ) : filteredTenants.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                      Nenhum inquilino encontrado com os filtros aplicados.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTenants.map((t) => {
+                    const planoInfo = PLANOS_INFO[t.plano] || { label: t.plano, badgeVariant: 'neutral' };
+                    const lojasOcupacao = `${t.total_lojas} / ${t.limite_lojas}`;
+                    const usuariosOcupacao = `${t.total_usuarios} / ${t.limite_usuarios}`;
+                    const isLojasCritico = t.total_lojas >= t.limite_lojas;
+                    const isUsuariosCritico = t.total_usuarios >= t.limite_usuarios;
+
+                    return (
+                      <tr key={t.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="py-3.5 px-3">
+                          <div className="font-semibold text-white text-sm">{t.nome_fantasia}</div>
+                          <div className="text-slate-400 text-[11px] truncate max-w-[200px]">{t.razao_social}</div>
+                          <div className="text-slate-500 text-[11px] font-mono mt-0.5">{t.cnpj}</div>
+                        </td>
+
+                        <td className="py-3.5 px-3">
+                          <Badge variant={planoInfo.badgeVariant}>{planoInfo.label}</Badge>
+                        </td>
+
+                        <td className="py-3.5 px-3 text-center">
+                          <span
+                            className={`font-semibold ${
+                              isLojasCritico ? 'text-amber-400' : 'text-slate-200'
+                            }`}
+                          >
+                            {lojasOcupacao}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-3 text-center">
+                          <span
+                            className={`font-semibold ${
+                              isUsuariosCritico ? 'text-amber-400' : 'text-slate-200'
+                            }`}
+                          >
+                            {usuariosOcupacao}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-3">
+                          <div className="font-semibold text-white">
+                            R$ {t.total_vendas_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="text-[11px] text-slate-500">
+                            {t.total_vendas_qtd} {t.total_vendas_qtd === 1 ? 'venda' : 'vendas'}
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-3">
+                          {t.ativo ? (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Ativo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                              <XCircle className="w-3 h-3" />
+                              Suspenso
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="py-3.5 px-3 text-right">
+                          <div className="inline-flex items-center gap-2">
+                            {/* Botão Alterar Plano */}
+                            <button
+                              onClick={() => handleOpenModalPlano(t)}
+                              className="p-1.5 text-slate-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors border border-transparent hover:border-purple-500/20"
+                              title="Alterar Plano e Limites"
+                            >
+                              <Sliders className="w-4 h-4" />
+                            </button>
+
+                            {/* Botão Suspender / Ativar */}
+                            <button
+                              onClick={() => handleToggleStatus(t)}
+                              disabled={togglingStatusId === t.id}
+                              className={`p-1.5 rounded-lg transition-colors border ${
+                                t.ativo
+                                  ? 'text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border-transparent hover:border-rose-500/20'
+                                  : 'text-emerald-400 hover:bg-emerald-500/10 border-emerald-500/20'
+                              }`}
+                              title={t.ativo ? 'Suspender Inquilino' : 'Reativar Inquilino'}
+                            >
+                              <Power className={`w-4 h-4 ${togglingStatusId === t.id ? 'animate-pulse' : ''}`} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </BentoCard>
+      )}
+
+      {/* ============================================================== */}
+      {/* ABA 3: PLANOS COMERCIAIS & LIMITES                            */}
+      {/* ============================================================== */}
+      {currentTab === 'planos' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Card Starter */}
+            <BentoCard className="p-5 flex flex-col justify-between border-white/[0.12]">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <Badge variant="neutral">Starter</Badge>
+                  <span className="text-xs text-slate-400">Pequenos comércios</span>
+                </div>
+                <div className="text-3xl font-extrabold text-white">
+                  R$ 99 <span className="text-sm font-normal text-slate-400">/mês</span>
+                </div>
+                <ul className="mt-4 space-y-2 text-xs text-slate-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Até 1 filial (loja matriz)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Até 2 colaboradores</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>PDV e Frente de Caixa</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-3 border-t border-white/[0.08] text-xs text-slate-400">
+                Inquilinos neste plano:{' '}
+                <span className="font-bold text-white">{tenantsPorPlano.STARTER.length}</span>
+              </div>
+            </BentoCard>
+
+            {/* Card Pro */}
+            <BentoCard className="p-5 flex flex-col justify-between border-purple-500/30 bg-purple-950/10">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <Badge variant="purple">Pro (Mais Popular)</Badge>
+                  <Zap className="w-4 h-4 text-purple-400" />
+                </div>
+                <div className="text-3xl font-extrabold text-white">
+                  R$ 249 <span className="text-sm font-normal text-slate-400">/mês</span>
+                </div>
+                <ul className="mt-4 space-y-2 text-xs text-slate-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Até 5 filiais integradas</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Até 10 colaboradores</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Transferências de Estoque entre lojas</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Entrada e Importação de NF-e</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-3 border-t border-purple-500/20 text-xs text-slate-400">
+                Inquilinos neste plano:{' '}
+                <span className="font-bold text-white">{tenantsPorPlano.PRO.length}</span>
+              </div>
+            </BentoCard>
+
+            {/* Card Enterprise */}
+            <BentoCard className="p-5 flex flex-col justify-between border-emerald-500/30 bg-emerald-950/10">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <Badge variant="emerald">Enterprise</Badge>
+                  <Crown className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-3xl font-extrabold text-white">
+                  R$ 799 <span className="text-sm font-normal text-slate-400">/mês</span>
+                </div>
+                <ul className="mt-4 space-y-2 text-xs text-slate-300">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Até 50 filiais</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Até 100 colaboradores</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Curva ABC e Inteligência de Estoque</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Auditorias físicas com Ledger em tempo real</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="mt-6 pt-3 border-t border-emerald-500/20 text-xs text-slate-400">
+                Inquilinos neste plano:{' '}
+                <span className="font-bold text-white">{tenantsPorPlano.ENTERPRISE.length}</span>
+              </div>
+            </BentoCard>
+          </div>
+
+          {/* Atalho para alterar o plano dos clientes */}
+          <BentoCard className="p-5">
+            <h3 className="text-sm font-bold text-white mb-1">Ajuste de Planos dos Clientes</h3>
+            <p className="text-xs text-slate-400 mb-4">
+              Clique no botão de ajustes de qualquer empresa para fazer upgrade ou ajustar limites avulsos.
+            </p>
+            <div className="divide-y divide-white/[0.04]">
+              {tenants.map((t) => (
+                <div key={t.id} className="py-3 flex items-center justify-between gap-4">
+                  <div>
+                    <span className="font-semibold text-xs text-white">{t.nome_fantasia}</span>
+                    <span className="text-slate-500 text-[11px] ml-2 font-mono">{t.cnpj}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant={PLANOS_INFO[t.plano]?.badgeVariant || 'neutral'}>
+                      {t.plano}
+                    </Badge>
+                    <button
+                      onClick={() => handleOpenModalPlano(t)}
+                      className="px-3 py-1.5 text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-xl transition-colors flex items-center gap-1.5"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span>Alterar Plano</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </BentoCard>
+        </div>
+      )}
 
       {/* Modal: Alterar Plano e Limites */}
       {modalTenant && (

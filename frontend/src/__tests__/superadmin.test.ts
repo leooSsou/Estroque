@@ -38,6 +38,11 @@ async function run() {
   }
 
   await testCase('5.1: Deve validar estrutura de métricas da plataforma', async () => {
+    try {
+      await api.login('admin@estroque.app', 'admin123');
+    } catch {
+      // modo offline sem backend ativo
+    }
     const dash: PlataformaDashboardMetrics = await api.getPlataformaDashboard();
     assert.ok(typeof dash.total_tenants === 'number');
     assert.ok(typeof dash.tenants_ativos === 'number');
@@ -50,6 +55,11 @@ async function run() {
   });
 
   await testCase('5.2: Deve retornar lista de tenants vazia ou populada no mock offline', async () => {
+    try {
+      await api.login('admin@estroque.app', 'admin123');
+    } catch {
+      // modo offline sem backend ativo
+    }
     const tenants = await api.getAdminTenants();
     assert.ok(Array.isArray(tenants));
   });
