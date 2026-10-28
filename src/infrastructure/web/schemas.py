@@ -61,7 +61,7 @@ class UsuarioCreateRequest(BaseModel):
     nome: str = Field(..., min_length=1, max_length=100, description="Nome completo do colaborador.")
     email: EmailStr = Field(..., description="E-mail de acesso do colaborador.")
     senha: str = Field(..., min_length=6, max_length=100, description="Senha inicial de acesso (mínimo 6 caracteres).")
-    role: str = Field(default="GERENTE", pattern="^(DONO|GERENTE)$", description="Perfil de acesso: DONO ou GERENTE.")
+    role: str = Field(default="GERENTE", pattern="^(DONO|GERENTE|ADMIN_SAAS)$", description="Perfil de acesso: DONO, GERENTE ou ADMIN_SAAS.")
     loja_atribuida_id: UUID | None = Field(None, description="ID da loja física vinculada (obrigatório para GERENTE).")
 
 
