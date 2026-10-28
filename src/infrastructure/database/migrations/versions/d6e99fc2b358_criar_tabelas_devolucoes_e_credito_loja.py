@@ -19,6 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
+    op.alter_column('vendas', 'status', type_=sa.String(length=30), existing_type=sa.String(length=20), nullable=False)
     op.add_column('clientes', sa.Column('credito_loja', sa.Float(), nullable=False, server_default='0.0'))
 
     op.create_table(
@@ -67,3 +68,4 @@ def downgrade() -> None:
     op.drop_table('itens_devolucao')
     op.drop_table('devolucoes')
     op.drop_column('clientes', 'credito_loja')
+    op.alter_column('vendas', 'status', type_=sa.String(length=20), existing_type=sa.String(length=30), nullable=False)

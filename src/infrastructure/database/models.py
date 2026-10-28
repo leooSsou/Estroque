@@ -222,7 +222,7 @@ class VendaModel(HasTenant, Base):
     loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
     cliente_id: Mapped[UUID | None] = mapped_column(ForeignKey("clientes.id", ondelete="RESTRICT"), nullable=True)
     usuario_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="PENDENTE")
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="PENDENTE")
     forma_pagamento: Mapped[str] = mapped_column(String(20), nullable=False)
     valor_total: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     desconto: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
