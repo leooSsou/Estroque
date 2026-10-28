@@ -377,4 +377,42 @@ export interface AlterarPlanoPayload {
   limite_usuarios?: number;
 }
 
+export interface TenantLojaResumo {
+  id: string;
+  nome: string;
+  cnpj: string;
+  endereco?: string | null;
+}
+
+export interface TenantUsuarioResumo {
+  id: string;
+  nome: string;
+  email: string;
+  role: string;
+  loja_atribuida_id?: string | null;
+  loja_nome?: string | null;
+}
+
+export interface TenantDetalhesCompletos extends TenantAdmin {
+  total_produtos: number;
+  lojas: TenantLojaResumo[];
+  usuarios: TenantUsuarioResumo[];
+}
+
+export interface ImpersonateResult {
+  access_token: string;
+  token_type: string;
+  tenant_id: string;
+  tenant_nome: string;
+  usuario_id: string;
+  usuario_nome: string;
+  usuario_email: string;
+  usuario_role: string;
+  loja_id?: string | null;
+  loja_nome?: string | null;
+  impersonated_by_id: string;
+  impersonated_by_email: string;
+}
+
+
 

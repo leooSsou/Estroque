@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
-import { Search, X, Package, ArrowRight } from 'lucide-react';
+import { Search, X, Package, ArrowRight, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { storage } from '../../services/storage';
 import { Produto } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 
 export const AppShell: React.FC = () => {
+  const { isImpersonating, impersonationData, stopImpersonating } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,6 +65,32 @@ export const AppShell: React.FC = () => {
           sidebarCollapsed ? 'pl-20' : 'pl-64'
         }`}
       >
+        {isImpersonating && (
+          <div className="bg-amber-400 text-slate-950 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-lg sticky top-0 z-50 animate-fade-in border-b border-amber-500">
+            <div className="flex items-center gap-3">
+              <div className="p-1 rounded-full bg-slate-950 text-amber-400">
+                <ShieldAlert className="w-4 h-4" />
+              </div>
+              <div className="text-xs sm:text-sm">
+                <span className="font-bold tracking-wide uppercase text-[10px] px-1.5 py-0.5 rounded bg-slate-950 text-amber-300 mr-2">
+                  Modo Suporte Ativo
+                </span>
+                Visualizando a conta de <strong>{impersonationData?.tenant_nome || 'Inquilino'}</strong> como <strong>{impersonationData?.usuario_nome}</strong> ({impersonationData?.usuario_email})
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                await stopImpersonating();
+                navigate('/admin');
+              }}
+              className="bg-slate-950 hover:bg-slate-900 text-amber-300 font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow transition-all btn-press ml-auto"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Encerrar Suporte e Voltar ao Super Admin
+            </button>
+          </div>
+        )}
+
         <TopBar
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           onOpenSearch={() => setSearchModalOpen(true)}

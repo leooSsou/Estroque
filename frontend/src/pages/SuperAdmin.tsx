@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
-import { TenantAdmin, PlataformaDashboardMetrics } from '../types';
+import { TenantAdmin, PlataformaDashboardMetrics, TenantDetalhesCompletos } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import {
@@ -25,6 +25,12 @@ import {
   Zap,
   Crown,
   Sparkles,
+  Eye,
+  LogIn,
+  Package,
+  MapPin,
+  Mail,
+  UserCheck,
 } from 'lucide-react';
 
 const PLANOS_INFO: Record<
@@ -37,8 +43,9 @@ const PLANOS_INFO: Record<
 };
 
 export const SuperAdmin: React.FC = () => {
-  const { user } = useAuth();
+  const { user, impersonateTenant } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentTab = (searchParams.get('tab') as 'geral' | 'tenants' | 'planos') || 'geral';
@@ -59,6 +66,14 @@ export const SuperAdmin: React.FC = () => {
 
   // Estado de alteração de status inline
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
+
+  // Estado do Modo Suporte / Impersonate
+  const [impersonatingTenantId, setImpersonatingTenantId] = useState<string | null>(null);
+
+  // Estado do Drawer de Detalhes 360°
+  const [drawerTenantId, setDrawerTenantId] = useState<string | null>(null);
+  const [detalhesTenant, setDetalhesTenant] = useState<TenantDetalhesCompletos | null>(null);
+  const [carregandoDetalhes, setCarregandoDetalhes] = useState(false);
 
   const loadData = useCallback(
     async (isSilent = false) => {
@@ -156,6 +171,38 @@ export const SuperAdmin: React.FC = () => {
       toast.error(msg);
     } finally {
       setSavingPlano(false);
+    }
+  };
+
+  const handleOpenDetalhes = async (tenantId: string) => {
+    setDrawerTenantId(tenantId);
+    setCarregandoDetalhes(true);
+    try {
+      const data = await api.getAdminTenantDetalhesCompletos(tenantId);
+      setDetalhesTenant(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao carregar visão 360° do inquilino';
+      toast.error(msg);
+      setDrawerTenantId(null);
+    } finally {
+      setCarregandoDetalhes(false);
+    }
+  };
+
+  const handleImpersonate = async (tenant: { id: string; nome_fantasia: string }) => {
+    const confirmMsg = `Deseja entrar na conta de "${tenant.nome_fantasia}" em MODO SUPORTE?\n\nVocê navegará na loja como operador autorizado. Um banner no topo permitirá retornar ao Super Admin a qualquer momento.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setImpersonatingTenantId(tenant.id);
+    try {
+      await impersonateTenant(tenant.id);
+      toast.success(`Acessando conta de "${tenant.nome_fantasia}" em modo suporte!`);
+      navigate('/dashboard');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao iniciar modo suporte';
+      toast.error(msg);
+    } finally {
+      setImpersonatingTenantId(null);
     }
   };
 
@@ -542,8 +589,11 @@ export const SuperAdmin: React.FC = () => {
 
                     return (
                       <tr key={t.id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="py-3.5 px-3">
-                          <div className="font-semibold text-white text-sm">{t.nome_fantasia}</div>
+                        <td className="py-3.5 px-3 cursor-pointer group" onClick={() => handleOpenDetalhes(t.id)}>
+                          <div className="font-semibold text-white text-sm group-hover:text-purple-300 transition-colors flex items-center gap-1.5">
+                            {t.nome_fantasia}
+                            <Eye className="w-3 h-3 text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
                           <div className="text-slate-400 text-[11px] truncate max-w-[200px]">{t.razao_social}</div>
                           <div className="text-slate-500 text-[11px] font-mono mt-0.5">{t.cnpj}</div>
                         </td>
@@ -596,7 +646,26 @@ export const SuperAdmin: React.FC = () => {
                         </td>
 
                         <td className="py-3.5 px-3 text-right">
-                          <div className="inline-flex items-center gap-2">
+                          <div className="inline-flex items-center gap-1.5">
+                            {/* Botão Visão 360° */}
+                            <button
+                              onClick={() => handleOpenDetalhes(t.id)}
+                              className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors border border-transparent hover:border-blue-500/20"
+                              title="Visão 360° (Detalhes, Lojas e Equipe)"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+
+                            {/* Botão Acessar Conta (Modo Suporte) */}
+                            <button
+                              onClick={() => handleImpersonate(t)}
+                              disabled={impersonatingTenantId === t.id}
+                              className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors border border-transparent hover:border-amber-500/20"
+                              title="Acessar Conta (Modo Suporte)"
+                            >
+                              <LogIn className={`w-4 h-4 ${impersonatingTenantId === t.id ? 'animate-pulse text-amber-400' : ''}`} />
+                            </button>
+
                             {/* Botão Alterar Plano */}
                             <button
                               onClick={() => handleOpenModalPlano(t)}
@@ -896,6 +965,235 @@ export const SuperAdmin: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Slide-over Drawer: Visão 360° do Inquilino */}
+      {drawerTenantId && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div
+            className="fixed inset-0"
+            onClick={() => {
+              setDrawerTenantId(null);
+              setDetalhesTenant(null);
+            }}
+          />
+          <div className="relative w-full max-w-2xl bg-[#0e0e12] border-l border-white/[0.12] shadow-2xl h-full flex flex-col z-10">
+            {/* Header */}
+            <div className="p-6 border-b border-white/[0.08] flex items-start justify-between bg-white/[0.01]">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-white tracking-tight">
+                      {detalhesTenant?.nome_fantasia || 'Detalhes do Inquilino'}
+                    </h2>
+                    {detalhesTenant && (
+                      <Badge
+                        variant={
+                          PLANOS_INFO[detalhesTenant.plano]?.badgeVariant || 'neutral'
+                        }
+                      >
+                        {PLANOS_INFO[detalhesTenant.plano]?.label || detalhesTenant.plano}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {detalhesTenant?.razao_social} • CNPJ: <span className="font-mono text-slate-300">{detalhesTenant?.cnpj}</span>
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setDrawerTenantId(null);
+                  setDetalhesTenant(null);
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {carregandoDetalhes ? (
+                <div className="py-20 text-center text-slate-500">
+                  <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-purple-400" />
+                  <p className="text-sm">Carregando visão 360° do cliente...</p>
+                </div>
+              ) : detalhesTenant ? (
+                <>
+                  {/* Barra de Ações Rápidas */}
+                  <div className="flex flex-wrap items-center gap-2.5 p-3 rounded-2xl bg-white/[0.02] border border-white/[0.08]">
+                    <button
+                      onClick={() => handleImpersonate(detalhesTenant)}
+                      disabled={impersonatingTenantId === detalhesTenant.id}
+                      className="flex-1 min-w-[170px] flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-lg shadow-amber-500/10"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>Acessar Modo Suporte</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenModalPlano(detalhesTenant)}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span>Plano & Cotas</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleToggleStatus(detalhesTenant)}
+                      disabled={togglingStatusId === detalhesTenant.id}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border ${
+                        detalhesTenant.ativo
+                          ? 'text-rose-400 bg-rose-500/10 border-rose-500/20 hover:bg-rose-500/20'
+                          : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
+                      }`}
+                    >
+                      <Power className="w-3.5 h-3.5" />
+                      <span>{detalhesTenant.ativo ? 'Suspender' : 'Reativar'}</span>
+                    </button>
+                  </div>
+
+                  {/* Bento Grid de KPIs do Inquilino */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08]">
+                      <div className="text-[11px] text-slate-400">Faturamento</div>
+                      <div className="text-base font-bold text-emerald-400 mt-1">
+                        R$ {detalhesTenant.total_vendas_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        {detalhesTenant.total_vendas_qtd} vendas
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08]">
+                      <div className="text-[11px] text-slate-400">Produtos</div>
+                      <div className="text-base font-bold text-white mt-1">
+                        {detalhesTenant.total_produtos}
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">no catálogo</div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08]">
+                      <div className="text-[11px] text-slate-400">Lojas (Filiais)</div>
+                      <div className="text-base font-bold text-white mt-1">
+                        {detalhesTenant.lojas.length} <span className="text-xs font-normal text-slate-500">/ {detalhesTenant.limite_lojas}</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">limite do plano</div>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08]">
+                      <div className="text-[11px] text-slate-400">Equipe</div>
+                      <div className="text-base font-bold text-white mt-1">
+                        {detalhesTenant.usuarios.length} <span className="text-xs font-normal text-slate-500">/ {detalhesTenant.limite_usuarios}</span>
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">usuários ativos</div>
+                    </div>
+                  </div>
+
+                  {/* Seção 1: Filiais Cadastradas */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Store className="w-4 h-4 text-purple-400" />
+                        <h3 className="text-sm font-bold text-white">
+                          Lojas & Filiais ({detalhesTenant.lojas.length})
+                        </h3>
+                      </div>
+                      <span className="text-[11px] text-slate-400">
+                        Cota: {detalhesTenant.lojas.length} de {detalhesTenant.limite_lojas}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {detalhesTenant.lojas.map((loja, idx) => (
+                        <div
+                          key={loja.id}
+                          className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-purple-500/10 text-purple-400 text-[10px] font-bold flex items-center justify-center">
+                                {idx + 1}
+                              </span>
+                              <div className="font-semibold text-white text-xs">{loja.nome}</div>
+                            </div>
+                            <span className="text-[10px] font-mono text-slate-400">{loja.cnpj}</span>
+                          </div>
+                          {loja.endereco && (
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-1.5 pl-7">
+                              <MapPin className="w-3 h-3 text-slate-500" />
+                              <span>{loja.endereco}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Seção 2: Equipe & Usuários */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-purple-400" />
+                        <h3 className="text-sm font-bold text-white">
+                          Equipe & Usuários ({detalhesTenant.usuarios.length})
+                        </h3>
+                      </div>
+                      <span className="text-[11px] text-slate-400">
+                        Cota: {detalhesTenant.usuarios.length} de {detalhesTenant.limite_usuarios}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {detalhesTenant.usuarios.map((u) => (
+                        <div
+                          key={u.id}
+                          className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-3"
+                        >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-white text-xs">{u.nome}</span>
+                              <Badge variant={u.role === 'DONO' ? 'purple' : 'neutral'}>
+                                {u.role}
+                              </Badge>
+                            </div>
+                            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                              <Mail className="w-3 h-3 text-slate-500" />
+                              <span>{u.email}</span>
+                            </div>
+                          </div>
+
+                          {u.loja_nome && (
+                            <div className="text-[10px] text-slate-400 text-right">
+                              Filial: <strong className="text-slate-300">{u.loja_nome}</strong>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-white/[0.08] flex items-center justify-end bg-white/[0.01]">
+              <button
+                onClick={() => {
+                  setDrawerTenantId(null);
+                  setDetalhesTenant(null);
+                }}
+                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-white/[0.04] transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}
