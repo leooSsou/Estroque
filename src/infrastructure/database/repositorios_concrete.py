@@ -12,6 +12,7 @@ from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
 from src.domain.entities.fornecedor import Fornecedor
 from src.domain.entities.item_venda import ItemVenda
 from src.domain.entities.loja import Loja
+from src.domain.entities.pagamento_venda import PagamentoVenda
 from src.domain.entities.produto import Produto
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.transferencia_estoque import TransferenciaEstoque
@@ -47,6 +48,7 @@ from src.infrastructure.database.models import (
     FornecedorModel,
     ItemVendaModel,
     LojaModel,
+    PagamentoVendaModel,
     ProdutoModel,
     TenantModel,
     TransferenciaEstoqueModel,
@@ -910,6 +912,25 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
             )
             for item_model in model.itens
         ]
+        pagamentos_entity = [
+            PagamentoVenda(
+                id=pag_model.id,
+                venda_id=pag_model.venda_id,
+                forma_pagamento=pag_model.forma_pagamento,
+                valor=pag_model.valor,
+                tenant_id=pag_model.tenant_id
+            )
+            for pag_model in getattr(model, "pagamentos", [])
+        ]
+        if not pagamentos_entity and model.forma_pagamento != "MULTIPLO" and model.valor_total > 0:
+            pagamentos_entity = [
+                PagamentoVenda(
+                    venda_id=model.id,
+                    forma_pagamento=model.forma_pagamento,
+                    valor=model.valor_total,
+                    tenant_id=model.tenant_id
+                )
+            ]
         return Venda(
             id=model.id,
             loja_id=model.loja_id,
@@ -921,6 +942,7 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
             desconto=model.desconto,
             tenant_id=model.tenant_id,
             itens=itens_entity,
+            pagamentos=pagamentos_entity,
             data_venda=model.data_venda
         )
 
@@ -951,6 +973,15 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
                     tenant_id=item.tenant_id
                 )
                 model.itens.append(item_model)
+            for pag in venda.pagamentos:
+                pag_model = PagamentoVendaModel(
+                    id=pag.id,
+                    venda_id=venda.id,
+                    forma_pagamento=pag.forma_pagamento,
+                    valor=pag.valor,
+                    tenant_id=pag.tenant_id
+                )
+                model.pagamentos.append(pag_model)
             self.db.add(model)
         else:
             model.status = venda.status
@@ -958,6 +989,17 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
             model.valor_total = venda.valor_total
             model.desconto = venda.desconto
             model.cliente_id = venda.cliente_id
+            if venda.pagamentos:
+                model.pagamentos.clear()
+                for pag in venda.pagamentos:
+                    pag_model = PagamentoVendaModel(
+                        id=pag.id,
+                        venda_id=venda.id,
+                        forma_pagamento=pag.forma_pagamento,
+                        valor=pag.valor,
+                        tenant_id=pag.tenant_id
+                    )
+                    model.pagamentos.append(pag_model)
 
         self.db.flush()
         return self._to_entity(model)

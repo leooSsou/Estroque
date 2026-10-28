@@ -30,6 +30,7 @@ from src.use_cases.estoque.registrar_venda import (
     RegistrarVendaAdministrativa,
     RegistrarVendaAdministrativaInput,
     RegistrarVendaItemInput,
+    RegistrarVendaPagamentoInput,
 )
 
 router = APIRouter(
@@ -73,6 +74,12 @@ def registrar_venda(
         for i in request.itens
     ]
 
+    pagamentos_input = (
+        [RegistrarVendaPagamentoInput(forma_pagamento=p.forma_pagamento, valor=p.valor) for p in request.pagamentos]
+        if request.pagamentos
+        else None
+    )
+
     input_data = RegistrarVendaAdministrativaInput(
         loja_id=request.loja_id,
         usuario_id=current_user.id,
@@ -80,7 +87,8 @@ def registrar_venda(
         forma_pagamento=request.forma_pagamento,
         desconto=request.desconto,
         itens=itens_input,
-        tenant_id=current_user.tenant_id
+        tenant_id=current_user.tenant_id,
+        pagamentos=pagamentos_input,
     )
 
     try:

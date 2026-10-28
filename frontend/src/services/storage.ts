@@ -8,6 +8,8 @@ import {
   Fornecedor,
   TransferenciaEstoque,
   Venda,
+  FormaPagamento,
+  PagamentoVenda,
   FinanceiroLancamento,
   DashboardAnalytics,
   CurvaABCItem,
@@ -431,7 +433,7 @@ class StorageService {
   registrarVenda(dados: {
     loja_id: string;
     cliente_id?: string | null;
-    forma_pagamento: 'DINHEIRO' | 'PIX' | 'CARTAO_CREDITO' | 'CARTAO_DEBITO' | 'CREDIARIO';
+    forma_pagamento?: FormaPagamento;
     desconto?: number;
     itens: {
       produto_id: string;
@@ -440,11 +442,14 @@ class StorageService {
       quantidade: number;
       preco_unitario: number;
     }[];
+    pagamentos?: { forma_pagamento: FormaPagamento; valor: number }[];
   }): Venda {
     const vendas = this.getVendas();
     const subtotal = dados.itens.reduce((acc, i) => acc + i.quantidade * i.preco_unitario, 0);
     const desconto = dados.desconto || 0;
     const valorTotal = Math.max(0, subtotal - desconto);
+
+    const formaPrincipal = dados.forma_pagamento || (dados.pagamentos && dados.pagamentos.length > 0 ? (dados.pagamentos.length === 1 ? dados.pagamentos[0].forma_pagamento : 'MULTIPLO') : 'DINHEIRO');
 
     // 1. Baixa no estoque
     for (const item of dados.itens) {
@@ -459,7 +464,11 @@ class StorageService {
 
     // 2. Se for crediário, valida limite e atualiza saldo devedor do cliente
     let clienteObj: Cliente | null = null;
-    if (dados.forma_pagamento === 'CREDIARIO') {
+    const valorCrediario = dados.pagamentos
+      ? dados.pagamentos.filter((p) => p.forma_pagamento === 'CREDIARIO').reduce((acc, p) => acc + p.valor, 0)
+      : (formaPrincipal === 'CREDIARIO' ? valorTotal : 0);
+
+    if (valorCrediario > 0) {
       if (!dados.cliente_id) {
         throw new Error('Venda no crediário exige identificação do cliente.');
       }
@@ -469,13 +478,13 @@ class StorageService {
 
       clienteObj = clientes[cliIndex];
       const limiteDisponivel = clienteObj.limite_credito - clienteObj.saldo_devedor_crediario;
-      if (valorTotal > limiteDisponivel) {
+      if (valorCrediario > limiteDisponivel) {
         throw new Error(
-          `Limite de crediário insuficiente. Disponível: R$ ${limiteDisponivel.toFixed(2)}, Necessário: R$ ${valorTotal.toFixed(2)}`
+          `Limite de crediário insuficiente. Disponível: R$ ${limiteDisponivel.toFixed(2)}, Necessário: R$ ${valorCrediario.toFixed(2)}`
         );
       }
 
-      clientes[cliIndex].saldo_devedor_crediario += valorTotal;
+      clientes[cliIndex].saldo_devedor_crediario += valorCrediario;
       this.set('clientes', clientes);
     }
 
@@ -486,8 +495,8 @@ class StorageService {
       cliente_id: dados.cliente_id,
       cliente_nome: clienteObj?.nome,
       usuario_id: user?.id || '',
-      status: 'CONCLUIDA',
-      forma_pagamento: dados.forma_pagamento,
+      status: valorCrediario > 0 ? 'PENDENTE' : 'CONCLUIDA',
+      forma_pagamento: formaPrincipal,
       valor_total: valorTotal,
       desconto,
       data_venda: new Date().toISOString(),
@@ -501,6 +510,7 @@ class StorageService {
         preco_unitario: i.preco_unitario,
         tenant_id: user?.tenant_id || '',
       })),
+      pagamentos: dados.pagamentos || [{ forma_pagamento: formaPrincipal, valor: valorTotal }],
     };
 
     vendas.unshift(novaVenda);

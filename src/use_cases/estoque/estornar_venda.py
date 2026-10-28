@@ -90,11 +90,17 @@ class EstornarVenda:
             )
             self.movimentacao_repo.salvar(mov)
 
-        # 2. Se for crediário, recompõe o saldo devedor do cliente
-        if venda.forma_pagamento == "CREDIARIO" and venda.cliente_id:
+        # 2. Se houver crediário, recompõe o saldo devedor do cliente
+        valor_crediario = 0.0
+        if venda.pagamentos:
+            valor_crediario = sum(p.valor for p in venda.pagamentos if p.forma_pagamento == "CREDIARIO")
+        elif venda.forma_pagamento == "CREDIARIO":
+            valor_crediario = venda.valor_total
+
+        if valor_crediario > 0 and venda.cliente_id:
             cliente = self.cliente_repo.obter_por_id(venda.cliente_id, input_data.tenant_id)
             if cliente:
-                novo_saldo_devedor = max(0.0, cliente.saldo_devedor_crediario - venda.valor_total)
+                novo_saldo_devedor = max(0.0, cliente.saldo_devedor_crediario - valor_crediario)
                 cliente_atualizado = Cliente(
                     id=cliente.id,
                     nome=cliente.nome,
@@ -120,6 +126,7 @@ class EstornarVenda:
             tenant_id=venda.tenant_id,
             data_venda=venda.data_venda,
             itens=venda.itens,
+            pagamentos=venda.pagamentos,
         )
         venda_salva = self.venda_repo.salvar(venda_estornada)
 

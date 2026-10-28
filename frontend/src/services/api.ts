@@ -8,6 +8,8 @@ import {
   Fornecedor,
   TransferenciaEstoque,
   Venda,
+  FormaPagamento,
+  PagamentoVenda,
   VendaEmEspera,
   CaixaTurno,
   OperacaoCaixa,
@@ -591,18 +593,20 @@ class ApiClient {
   async registrarVenda(dados: {
     loja_id: string;
     cliente_id?: string | null;
-    forma_pagamento: Venda['forma_pagamento'];
+    forma_pagamento?: Venda['forma_pagamento'];
     desconto: number;
     itens: { produto_id: string; quantidade: number; preco_unitario: number; produto_nome?: string; sku?: string }[];
+    pagamentos?: { forma_pagamento: FormaPagamento; valor: number }[];
   }): Promise<Venda> {
     const res = await this.request<Venda>('/vendas', {
       method: 'POST',
       body: JSON.stringify({
         loja_id: dados.loja_id,
         cliente_id: dados.cliente_id || null,
-        forma_pagamento: dados.forma_pagamento,
+        forma_pagamento: dados.forma_pagamento || (dados.pagamentos && dados.pagamentos.length > 0 ? dados.pagamentos[0].forma_pagamento : 'DINHEIRO'),
         desconto: dados.desconto,
         itens: dados.itens.map((i) => ({ produto_id: i.produto_id, quantidade: i.quantidade })),
+        pagamentos: dados.pagamentos,
       }),
     });
     if (res.isBackend && res.error) {

@@ -116,6 +116,40 @@ async function runTestSuite() {
     assert.equal(troco, 15.0);
   });
 
+  await testCase('1.4: Deve registrar venda com Split Payment (múltiplas formas) e crediário parcial', () => {
+    const cliente = storage.getClientes()[0];
+    const prod = storage.getProdutos()[0];
+    const saldoDevedorAnterior = cliente.saldo_devedor_crediario;
+    const lojaId = storage.getLojas()[0].id;
+
+    // Venda de R$ 200: R$ 120 no PIX + R$ 80 no Crediário
+    const venda = storage.registrarVenda({
+      loja_id: lojaId,
+      cliente_id: cliente.id,
+      desconto: 0,
+      itens: [
+        {
+          produto_id: prod.id,
+          quantidade: 2,
+          preco_unitario: 100.0,
+          produto_nome: prod.nome,
+        },
+      ],
+      pagamentos: [
+        { forma_pagamento: 'PIX', valor: 120.0 },
+        { forma_pagamento: 'CREDIARIO', valor: 80.0 },
+      ],
+    });
+
+    assert.equal(venda.forma_pagamento, 'MULTIPLO');
+    assert.equal(venda.valor_total, 200.0);
+    assert.equal(venda.pagamentos?.length, 2);
+
+    // Saldo devedor deve ter aumentado apenas pela parcela do crediário (R$ 80.0)
+    const clienteAtualizado = storage.getClientes().find((c) => c.id === cliente.id);
+    assert.equal(clienteAtualizado?.saldo_devedor_crediario, saldoDevedorAnterior + 80.0);
+  });
+
   // =========================================================================
   // ABA 2: VENDAS EM ESPERA (Hold Queue)
   // =========================================================================
