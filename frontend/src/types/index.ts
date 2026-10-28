@@ -344,3 +344,37 @@ export interface RegisterTenantPayload {
   dono_senha: string;
 }
 
+export interface TenantAdmin {
+  id: string;
+  nome_fantasia: string;
+  razao_social: string;
+  cnpj: string;
+  data_cadastro: string;
+  ativo: boolean;
+  plano: 'STARTER' | 'PRO' | 'ENTERPRISE';
+  limite_lojas: number;
+  limite_usuarios: number;
+  total_lojas: number;
+  total_usuarios: number;
+  total_vendas_valor: number;
+  total_vendas_qtd: number;
+}
+
+export interface PlataformaDashboardMetrics {
+  total_tenants: number;
+  tenants_ativos: number;
+  tenants_suspensos: number;
+  total_lojas: number;
+  total_usuarios: number;
+  mrr_estimado: number;
+  gmv_total: number;
+  total_vendas: number;
+}
+
+export interface AlterarPlanoPayload {
+  plano: 'STARTER' | 'PRO' | 'ENTERPRISE';
+  limite_lojas?: number;
+  limite_usuarios?: number;
+}
+
+

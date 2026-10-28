@@ -13,7 +13,9 @@ import {
   BarChart3,
   PanelLeftClose,
   PanelLeftOpen,
+  ShieldCheck,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -21,6 +23,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse }) => {
+  const { user } = useAuth();
 
   const navItems = [
     { to: '/', label: 'Visão Geral', icon: LayoutDashboard },
@@ -33,6 +36,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
     { to: '/financeiro', label: 'Financeiro', icon: Wallet },
     { to: '/contatos', label: 'Contatos', icon: Users },
     { to: '/analytics', label: 'Curva ABC', icon: BarChart3 },
+    ...(user?.role === 'ADMIN_SAAS'
+      ? [{ to: '/admin', label: 'Super-Admin', icon: ShieldCheck }]
+      : []),
   ];
 
   return (

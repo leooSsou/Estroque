@@ -27,3 +27,9 @@ class TenantRepository(ABC):
         """
         Busca um Tenant cadastrado pelo ID.
         """
+
+    @abstractmethod
+    def listar_todos(self, busca: str | None = None, apenas_ativos: bool | None = None) -> list[Tenant]:
+        """
+        Lista tenants com filtro opcional de busca (nome/razão social/cnpj) e status ativo.
+        """

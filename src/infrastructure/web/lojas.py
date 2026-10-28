@@ -6,9 +6,13 @@ from sqlalchemy.orm import Session
 from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
     CnpjLojaEmUsoException,
+    LimitePlanoAtingidoException,
     LojaNaoEncontradaException,
 )
-from src.infrastructure.database.repositorios_concrete import RepositorioLojaSQLAlchemy
+from src.infrastructure.database.repositorios_concrete import (
+    RepositorioLojaSQLAlchemy,
+    RepositorioTenantSQLAlchemy,
+)
 from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import exigir_permissao
 from src.infrastructure.web.dependencies import get_current_user
@@ -40,7 +44,8 @@ def criar_loja(
     """
     exigir_permissao(current_user, ["DONO", "ADMIN_SAAS"])
     repo = RepositorioLojaSQLAlchemy(db)
-    use_case = CriarLoja(repo)
+    tenant_repo = RepositorioTenantSQLAlchemy(db)
+    use_case = CriarLoja(repo, tenant_repo)
     
     input_data = CriarLojaInput(
         nome=request.nome,
@@ -52,7 +57,7 @@ def criar_loja(
     try:
         output = use_case.executar(input_data)
         return LojaResponse.model_validate(output.loja)
-    except CnpjLojaEmUsoException as e:
+    except (CnpjLojaEmUsoException, LimitePlanoAtingidoException) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)

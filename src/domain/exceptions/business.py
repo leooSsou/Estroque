@@ -38,6 +38,25 @@ class TenantNaoEncontradoException(DomainException):
         super().__init__(f"Tenant com identificador '{identifier}' não foi encontrado.")
 
 
+class TenantSuspensoException(DomainException):
+    """
+    Exceção lançada quando um inquilino/Tenant está inativo ou suspenso.
+    """
+    def __init__(self, identifier: str = "") -> None:
+        msg = f"Inquilino/Tenant '{identifier}' está suspenso ou inativo. Entre em contato com a administração." if identifier else "Inquilino/Tenant suspenso ou inativo. Entre em contato com a administração."
+        super().__init__(msg)
+
+
+class LimitePlanoAtingidoException(DomainException):
+    """
+    Exceção lançada quando o limite de lojas ou usuários do plano é atingido.
+    """
+    def __init__(self, recurso: str, limite: int) -> None:
+        self.recurso = recurso
+        self.limite = limite
+        super().__init__(f"Limite de {recurso} do plano atingido (máximo {limite}). Faça upgrade para continuar.")
+
+
 class UsuarioNaoEncontradoException(DomainException):
     """
     Exceção lançada quando o Usuário não é encontrado.

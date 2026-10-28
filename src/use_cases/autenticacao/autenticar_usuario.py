@@ -5,6 +5,7 @@ from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
     CredenciaisInvalidasException,
     TenantNaoEncontradoException,
+    TenantSuspensoException,
 )
 from src.domain.repositories.tenant_repository import TenantRepository
 from src.domain.repositories.usuario_repository import UsuarioRepository
@@ -62,6 +63,9 @@ class AutenticarUsuario:
         tenant = self.tenant_repo.obter_por_id(usuario.tenant_id)
         if not tenant:
             raise TenantNaoEncontradoException(str(usuario.tenant_id))
+
+        if not tenant.ativo and usuario.role != "ADMIN_SAAS":
+            raise TenantSuspensoException(tenant.nome_fantasia)
 
         # 3. Valida a senha utilizando a acoplagem do serviço de criptografia
         if not self.servico_cripto.verificar_senha(input_data.senha_plana, usuario.senha_hash):

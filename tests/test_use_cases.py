@@ -56,6 +56,15 @@ class InMemoryTenantRepository(TenantRepository):
     def obter_por_id(self, id: UUID) -> Tenant | None:
         return self.tenants.get(id)
 
+    def listar_todos(self, busca: str | None = None, apenas_ativos: bool | None = None) -> list[Tenant]:
+        resultado = list(self.tenants.values())
+        if apenas_ativos is not None:
+            resultado = [t for t in resultado if t.ativo == apenas_ativos]
+        if busca and busca.strip():
+            b = busca.strip().lower()
+            resultado = [t for t in resultado if b in t.nome_fantasia.lower() or b in t.razao_social.lower() or b in t.cnpj]
+        return resultado
+
 
 class InMemoryUsuarioRepository(UsuarioRepository):
     def __init__(self) -> None:
