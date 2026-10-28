@@ -6,6 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from src.domain.entities.tenant import Tenant
+from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
     DomainException,
     TenantNaoEncontradoException,
@@ -13,10 +14,12 @@ from src.domain.exceptions.business import (
 from src.domain.repositories.tenant_repository import TenantRepository
 from src.infrastructure.database.models import (
     LojaModel,
+    ProdutoModel,
     TenantModel,
     UsuarioModel,
     VendaModel,
 )
+from src.infrastructure.security.jwt_handler import criar_token_acesso
 
 PLANOS_PRECOS = {
     "STARTER": 99.0,
@@ -246,3 +249,212 @@ class GerarMetricasPlataforma:
             )
         finally:
             self.db.info.pop("ignore_tenant_filter", None)
+
+
+@dataclass(frozen=True)
+class LojaResumoItem:
+    id: UUID
+    nome: str
+    cnpj: str
+    endereco: str | None
+
+
+@dataclass(frozen=True)
+class UsuarioResumoItem:
+    id: UUID
+    nome: str
+    email: str
+    role: str
+    loja_atribuida_id: UUID | None
+    loja_nome: str | None
+
+
+@dataclass(frozen=True)
+class TenantDetalhesCompletosOutput:
+    id: UUID
+    nome_fantasia: str
+    razao_social: str
+    cnpj: str
+    data_cadastro: datetime
+    ativo: bool
+    plano: str
+    limite_lojas: int
+    limite_usuarios: int
+    total_produtos: int
+    total_vendas_qtd: int
+    total_vendas_valor: float
+    lojas: list[LojaResumoItem]
+    usuarios: list[UsuarioResumoItem]
+
+
+@dataclass(frozen=True)
+class ImpersonateOutput:
+    access_token: str
+    token_type: str
+    tenant_id: UUID
+    tenant_nome: str
+    usuario_id: UUID
+    usuario_nome: str
+    usuario_email: str
+    usuario_role: str
+    loja_id: UUID | None
+    loja_nome: str | None
+    impersonated_by_id: UUID
+    impersonated_by_email: str
+
+
+class ObterDetalhesTenantSuperAdmin:
+    """
+    Caso de Uso: Retorna uma visão 360° detalhada do Tenant para o Super-Admin.
+    """
+    def __init__(self, db: Session, tenant_repo: TenantRepository) -> None:
+        self.db = db
+        self.tenant_repo = tenant_repo
+
+    def executar(self, tenant_id: UUID) -> TenantDetalhesCompletosOutput:
+        self.db.info["ignore_tenant_filter"] = True
+        try:
+            tenant = self.tenant_repo.obter_por_id(tenant_id)
+            if not tenant:
+                raise TenantNaoEncontradoException(str(tenant_id))
+
+            lojas_models = (
+                self.db.query(LojaModel)
+                .filter(LojaModel.tenant_id == tenant_id)
+                .order_by(LojaModel.nome.asc())
+                .all()
+            )
+            lojas_map = {loja.id: loja.nome for loja in lojas_models}
+            lojas_resumo = [
+                LojaResumoItem(
+                    id=loja.id,
+                    nome=loja.nome,
+                    cnpj=loja.cnpj,
+                    endereco=loja.endereco,
+                )
+                for loja in lojas_models
+            ]
+
+            usuarios_models = (
+                self.db.query(UsuarioModel)
+                .filter(UsuarioModel.tenant_id == tenant_id)
+                .order_by(UsuarioModel.nome.asc())
+                .all()
+            )
+            usuarios_resumo = [
+                UsuarioResumoItem(
+                    id=u.id,
+                    nome=u.nome,
+                    email=u.email,
+                    role=u.role,
+                    loja_atribuida_id=u.loja_atribuida_id,
+                    loja_nome=lojas_map.get(u.loja_atribuida_id) if u.loja_atribuida_id else None,
+                )
+                for u in usuarios_models
+            ]
+
+            total_produtos = (
+                self.db.query(func.count(ProdutoModel.id))
+                .filter(ProdutoModel.tenant_id == tenant_id)
+                .scalar()
+                or 0
+            )
+
+            vendas_stats = (
+                self.db.query(
+                    func.count(VendaModel.id),
+                    func.coalesce(func.sum(VendaModel.valor_total - VendaModel.desconto), 0.0),
+                )
+                .filter(VendaModel.tenant_id == tenant_id, VendaModel.status != "CANCELADA")
+                .first()
+            )
+            total_vendas_qtd = vendas_stats[0] if vendas_stats else 0
+            total_vendas_valor = float(vendas_stats[1]) if vendas_stats else 0.0
+
+            return TenantDetalhesCompletosOutput(
+                id=tenant.id,
+                nome_fantasia=tenant.nome_fantasia,
+                razao_social=tenant.razao_social,
+                cnpj=tenant.cnpj,
+                data_cadastro=tenant.data_cadastro,
+                ativo=tenant.ativo,
+                plano=tenant.plano,
+                limite_lojas=tenant.limite_lojas,
+                limite_usuarios=tenant.limite_usuarios,
+                total_produtos=total_produtos,
+                total_vendas_qtd=total_vendas_qtd,
+                total_vendas_valor=total_vendas_valor,
+                lojas=lojas_resumo,
+                usuarios=usuarios_resumo,
+            )
+        finally:
+            self.db.info.pop("ignore_tenant_filter", None)
+
+
+class ImpersonarTenant:
+    """
+    Caso de Uso: Permitir ao Super-Admin autenticar-se e assumir a conta de um Tenant
+    para fins de suporte, diagnóstico e auditoria.
+    """
+    def __init__(self, db: Session, tenant_repo: TenantRepository) -> None:
+        self.db = db
+        self.tenant_repo = tenant_repo
+
+    def executar(self, admin_user: Usuario, tenant_id: UUID) -> ImpersonateOutput:
+        if admin_user.role != "ADMIN_SAAS":
+            raise DomainException("Apenas administradores da plataforma (ADMIN_SAAS) podem assumir a sessão de inquilinos.")
+
+        self.db.info["ignore_tenant_filter"] = True
+        try:
+            tenant = self.tenant_repo.obter_por_id(tenant_id)
+            if not tenant:
+                raise TenantNaoEncontradoException(str(tenant_id))
+
+            usuarios = (
+                self.db.query(UsuarioModel)
+                .filter(UsuarioModel.tenant_id == tenant_id)
+                .all()
+            )
+            if not usuarios:
+                raise DomainException("O inquilino não possui usuários cadastrados para acesso de suporte.")
+
+            alvo = next((u for u in usuarios if u.role == "DONO"), usuarios[0])
+
+            loja = (
+                self.db.query(LojaModel)
+                .filter(LojaModel.tenant_id == tenant_id)
+                .first()
+            )
+
+            claims_extras = {
+                "impersonated_by": str(admin_user.id),
+                "impersonator_email": admin_user.email,
+                "is_impersonating": True,
+                "tenant_nome": tenant.nome_fantasia,
+                "target_user_name": alvo.nome,
+            }
+
+            token = criar_token_acesso(
+                sub=str(alvo.id),
+                tenant_id=str(tenant.id),
+                role=alvo.role,
+                claims_extras=claims_extras,
+            )
+
+            return ImpersonateOutput(
+                access_token=token,
+                token_type="bearer",
+                tenant_id=tenant.id,
+                tenant_nome=tenant.nome_fantasia,
+                usuario_id=alvo.id,
+                usuario_nome=alvo.nome,
+                usuario_email=alvo.email,
+                usuario_role=alvo.role,
+                loja_id=loja.id if loja else None,
+                loja_nome=loja.nome if loja else None,
+                impersonated_by_id=admin_user.id,
+                impersonated_by_email=admin_user.email,
+            )
+        finally:
+            self.db.info.pop("ignore_tenant_filter", None)
+

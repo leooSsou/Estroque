@@ -25,7 +25,8 @@ def criar_token_acesso(
     sub: str,
     tenant_id: str,
     role: str,
-    tempo_expiracao: timedelta | None = None
+    tempo_expiracao: timedelta | None = None,
+    claims_extras: dict[str, Any] | None = None,
 ) -> str:
     """
     Gera um token de acesso JWT tipado contendo sub, tenant_id e role.
@@ -35,6 +36,7 @@ def criar_token_acesso(
         tenant_id (str): Identificador do inquilino (tenant) associado.
         role (str): Papel/Função de permissão do usuário.
         tempo_expiracao (timedelta, optional): Tempo customizado para expiração.
+        claims_extras (dict[str, Any], optional): Claims adicionais personalizadas.
         
     Returns:
         str: Token JWT codificado.
@@ -54,6 +56,9 @@ def criar_token_acesso(
         "exp": expiracao
     }
     
+    if claims_extras:
+        payload.update(claims_extras)
+        
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 def decodificar_token_acesso(token: str) -> dict[str, Any]:

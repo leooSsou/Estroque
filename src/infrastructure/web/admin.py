@@ -15,14 +15,18 @@ from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     AlterarPlanoTenantRequest,
     AlterarStatusTenantRequest,
+    ImpersonateResponse,
     PlataformaDashboardResponse,
     TenantAdminResponse,
+    TenantDetalhesCompletosResponse,
 )
 from src.use_cases.admin.gerenciar_plataforma import (
     AlterarPlanoTenant,
     AlterarStatusTenant,
     GerarMetricasPlataforma,
+    ImpersonarTenant,
     ListarTenantsSuperAdmin,
+    ObterDetalhesTenantSuperAdmin,
 )
 
 router = APIRouter(prefix="/admin", tags=["Super Admin"])
@@ -145,3 +149,44 @@ def alterar_plano_tenant(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except (DomainException, ValueError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/tenants/{tenant_id}/detalhes", response_model=TenantDetalhesCompletosResponse)
+def obter_detalhes_completos_tenant(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> TenantDetalhesCompletosResponse:
+    """
+    Retorna uma visão 360° detalhada do Tenant para o Super-Admin (Lojas, Usuários e Resumo).
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+    tenant_repo = RepositorioTenantSQLAlchemy(db)
+    use_case = ObterDetalhesTenantSuperAdmin(db, tenant_repo)
+    try:
+        detalhes = use_case.executar(tenant_id)
+        return TenantDetalhesCompletosResponse.model_validate(detalhes)
+    except TenantNaoEncontradoException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post("/tenants/{tenant_id}/impersonate", response_model=ImpersonateResponse)
+def impersonar_tenant(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> ImpersonateResponse:
+    """
+    Permite ao Super-Admin assumir a sessão da conta de um Tenant em modo suporte.
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+    tenant_repo = RepositorioTenantSQLAlchemy(db)
+    use_case = ImpersonarTenant(db, tenant_repo)
+    try:
+        resultado = use_case.executar(admin_user=current_user, tenant_id=tenant_id)
+        return ImpersonateResponse.model_validate(resultado)
+    except TenantNaoEncontradoException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except DomainException as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+

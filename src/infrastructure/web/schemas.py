@@ -619,3 +619,60 @@ class PlataformaDashboardResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TenantLojaResumoResponse(BaseModel):
+    id: UUID
+    nome: str
+    cnpj: str
+    endereco: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TenantUsuarioResumoResponse(BaseModel):
+    id: UUID
+    nome: str
+    email: str
+    role: str
+    loja_atribuida_id: UUID | None = None
+    loja_nome: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TenantDetalhesCompletosResponse(BaseModel):
+    id: UUID
+    nome_fantasia: str
+    razao_social: str
+    cnpj: str
+    data_cadastro: datetime
+    ativo: bool
+    plano: str
+    limite_lojas: int
+    limite_usuarios: int
+    total_produtos: int = 0
+    total_vendas_qtd: int = 0
+    total_vendas_valor: float = 0.0
+    lojas: list[TenantLojaResumoResponse] = Field(default_factory=list)
+    usuarios: list[TenantUsuarioResumoResponse] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ImpersonateResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    tenant_id: UUID
+    tenant_nome: str
+    usuario_id: UUID
+    usuario_nome: str
+    usuario_email: str
+    usuario_role: str
+    loja_id: UUID | None = None
+    loja_nome: str | None = None
+    impersonated_by_id: UUID
+    impersonated_by_email: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+

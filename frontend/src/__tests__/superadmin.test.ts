@@ -109,6 +109,56 @@ async function run() {
     assert.equal(starterTenant.total_usuarios >= starterTenant.limite_usuarios, true);
   });
 
+  await testCase('5.5: Deve validar estrutura de detalhes 360 do tenant', () => {
+    const mockDetalhes = {
+      id: 'tenant-123',
+      nome_fantasia: 'Moda Fashion',
+      razao_social: 'Moda Fashion Ltda',
+      cnpj: '12.345.678/0001-99',
+      data_cadastro: '2026-01-01T00:00:00Z',
+      ativo: true,
+      plano: 'PRO',
+      limite_lojas: 5,
+      limite_usuarios: 10,
+      total_lojas: 1,
+      total_usuarios: 2,
+      total_vendas_valor: 15400.5,
+      total_vendas_qtd: 42,
+      total_produtos: 25,
+      lojas: [
+        { id: 'loja-1', nome: 'Matriz SP', cnpj: '12.345.678/0001-99', endereco: 'Rua das Flores, 10' },
+      ],
+      usuarios: [
+        { id: 'usr-1', nome: 'Carlos Dono', email: 'carlos@empresa.com', role: 'DONO', loja_atribuida_id: null, loja_nome: null },
+      ],
+    };
+
+    assert.equal(mockDetalhes.total_produtos, 25);
+    assert.equal(mockDetalhes.lojas.length, 1);
+    assert.equal(mockDetalhes.usuarios[0].role, 'DONO');
+  });
+
+  await testCase('5.6: Deve validar contrato do ImpersonateResult e dados de sessão de suporte', () => {
+    const mockImp = {
+      access_token: 'fake.jwt.token',
+      token_type: 'bearer',
+      tenant_id: 'tenant-target-123',
+      tenant_nome: 'Loja Cliente',
+      usuario_id: 'usr-dono-456',
+      usuario_nome: 'Dono Cliente',
+      usuario_email: 'dono@cliente.com',
+      usuario_role: 'DONO',
+      loja_id: 'loja-matriz-789',
+      loja_nome: 'Loja Matriz',
+      impersonated_by_id: 'admin-super-001',
+      impersonated_by_email: 'admin@estroque.app',
+    };
+
+    assert.equal(mockImp.usuario_role, 'DONO');
+    assert.equal(mockImp.impersonated_by_email, 'admin@estroque.app');
+    assert.ok(mockImp.access_token.length > 0);
+  });
+
   console.log(`\nResultados: ${passed} passaram, ${failed} falharam.`);
   if (failed > 0) {
     process.exit(1);
