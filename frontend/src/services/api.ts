@@ -2,6 +2,9 @@ import {
   User,
   Loja,
   Produto,
+  CriarProdutoGradePayload,
+  AdicionarVariacaoPayload,
+  ProdutoComGradeResponse,
   EstoqueSaldo,
   MovimentacaoEstoque,
   Cliente,
@@ -293,6 +296,73 @@ class ApiClient {
       };
     }
     return storage.addProduto(dados);
+  }
+
+  async createProdutoGrade(dados: CriarProdutoGradePayload): Promise<ProdutoComGradeResponse> {
+    const markupBackend = dados.markup > 5 ? dados.markup / 100 : dados.markup;
+
+    const res = await this.request<ProdutoComGradeResponse>('/produtos/grade', {
+      method: 'POST',
+      body: JSON.stringify({
+        nome: dados.nome,
+        sku_base: dados.sku_base,
+        preco_custo: dados.preco_custo,
+        preco_venda: dados.preco_venda,
+        markup: markupBackend,
+        atributos: dados.atributos,
+        codigo_barras_base: dados.codigo_barras_base || null,
+        loja_id: dados.loja_id || null,
+        estoque_inicial_por_variacao: dados.estoque_inicial_por_variacao || 0,
+      }),
+    });
+
+    if (res.isBackend && res.error) {
+      throw new Error(res.error);
+    }
+
+    if (res.data) {
+      return res.data;
+    }
+
+    return storage.createProdutoGrade(dados);
+  }
+
+  async getVariacoesProduto(produtoId: string): Promise<Produto[]> {
+    const res = await this.request<Produto[]>(`/produtos/${produtoId}/variacoes`);
+    if (res.isBackend && res.error) {
+      throw new Error(res.error);
+    }
+    if (res.data) {
+      return res.data;
+    }
+    return storage.getVariacoesProduto(produtoId);
+  }
+
+  async addVariacaoProduto(produtoId: string, dados: AdicionarVariacaoPayload): Promise<Produto> {
+    const rawMarkup = dados.markup;
+    const markupBackend = rawMarkup && rawMarkup > 5 ? rawMarkup / 100 : rawMarkup;
+
+    const res = await this.request<Produto>(`/produtos/${produtoId}/variacoes`, {
+      method: 'POST',
+      body: JSON.stringify({
+        variacoes: dados.variacoes,
+        sku: dados.sku || null,
+        codigo_barras: dados.codigo_barras || null,
+        preco_custo: dados.preco_custo,
+        preco_venda: dados.preco_venda,
+        markup: markupBackend,
+      }),
+    });
+
+    if (res.isBackend && res.error) {
+      throw new Error(res.error);
+    }
+
+    if (res.data) {
+      return res.data;
+    }
+
+    return storage.addVariacaoProduto(produtoId, dados);
   }
 
   async updateProduto(id: string, updates: Partial<Produto>): Promise<Produto | null> {

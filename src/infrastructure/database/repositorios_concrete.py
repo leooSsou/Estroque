@@ -277,6 +277,22 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    def _to_domain(self, model: ProdutoModel) -> Produto:
+        return Produto(
+            id=model.id,
+            nome=model.nome,
+            sku=model.sku,
+            preco_custo=model.preco_custo,
+            preco_venda=model.preco_venda,
+            markup=model.markup,
+            tenant_id=model.tenant_id,
+            codigo_barras=model.codigo_barras,
+            fornecedor_id=model.fornecedor_id,
+            produto_pai_id=model.produto_pai_id,
+            variacoes=model.variacoes,
+            ativo=model.ativo
+        )
+
     def salvar(self, produto: Produto) -> Produto:
         self.db.info["tenant_id"] = produto.tenant_id
         model = self.db.query(ProdutoModel).filter(ProdutoModel.id == produto.id).first()
@@ -291,6 +307,8 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
                 markup=produto.markup,
                 codigo_barras=produto.codigo_barras,
                 fornecedor_id=produto.fornecedor_id,
+                produto_pai_id=produto.produto_pai_id,
+                variacoes=produto.variacoes,
                 tenant_id=produto.tenant_id,
                 ativo=produto.ativo
             )
@@ -303,76 +321,33 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             model.markup = produto.markup
             model.codigo_barras = produto.codigo_barras
             model.fornecedor_id = produto.fornecedor_id
+            model.produto_pai_id = produto.produto_pai_id
+            model.variacoes = produto.variacoes
             model.ativo = produto.ativo
             
         self.db.flush()
-        
-        return Produto(
-            id=model.id,
-            nome=model.nome,
-            sku=model.sku,
-            preco_custo=model.preco_custo,
-            preco_venda=model.preco_venda,
-            markup=model.markup,
-            tenant_id=model.tenant_id,
-            codigo_barras=model.codigo_barras,
-            fornecedor_id=model.fornecedor_id,
-            ativo=model.ativo
-        )
+        return self._to_domain(model)
 
     def obter_por_id(self, id: UUID, tenant_id: UUID) -> Produto | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ProdutoModel).filter(ProdutoModel.id == id).first()
         if not model:
             return None
-        return Produto(
-            id=model.id,
-            nome=model.nome,
-            sku=model.sku,
-            preco_custo=model.preco_custo,
-            preco_venda=model.preco_venda,
-            markup=model.markup,
-            tenant_id=model.tenant_id,
-            codigo_barras=model.codigo_barras,
-            fornecedor_id=model.fornecedor_id,
-            ativo=model.ativo
-        )
+        return self._to_domain(model)
 
     def obter_por_sku(self, sku: str, tenant_id: UUID) -> Produto | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ProdutoModel).filter(ProdutoModel.sku == sku).first()
         if not model:
             return None
-        return Produto(
-            id=model.id,
-            nome=model.nome,
-            sku=model.sku,
-            preco_custo=model.preco_custo,
-            preco_venda=model.preco_venda,
-            markup=model.markup,
-            tenant_id=model.tenant_id,
-            codigo_barras=model.codigo_barras,
-            fornecedor_id=model.fornecedor_id,
-            ativo=model.ativo
-        )
+        return self._to_domain(model)
 
     def obter_por_codigo_barras(self, codigo_barras: str, tenant_id: UUID) -> Produto | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ProdutoModel).filter(ProdutoModel.codigo_barras == codigo_barras.strip()).first()
         if not model:
             return None
-        return Produto(
-            id=model.id,
-            nome=model.nome,
-            sku=model.sku,
-            preco_custo=model.preco_custo,
-            preco_venda=model.preco_venda,
-            markup=model.markup,
-            tenant_id=model.tenant_id,
-            codigo_barras=model.codigo_barras,
-            fornecedor_id=model.fornecedor_id,
-            ativo=model.ativo
-        )
+        return self._to_domain(model)
 
     def listar_todos(self, tenant_id: UUID, termo: str | None = None) -> list[Produto]:
         self.db.info["tenant_id"] = tenant_id
@@ -387,21 +362,40 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
                 )
             )
         models = query.all()
-        return [
-            Produto(
-                id=m.id,
-                nome=m.nome,
-                sku=m.sku,
-                preco_custo=m.preco_custo,
-                preco_venda=m.preco_venda,
-                markup=m.markup,
-                tenant_id=m.tenant_id,
-                codigo_barras=m.codigo_barras,
-                fornecedor_id=m.fornecedor_id,
-                ativo=m.ativo
+        return [self._to_domain(m) for m in models]
+
+    def listar_pais(self, tenant_id: UUID, termo: str | None = None) -> list[Produto]:
+        self.db.info["tenant_id"] = tenant_id
+        query = self.db.query(ProdutoModel).filter(ProdutoModel.produto_pai_id.is_(None))
+        if termo and termo.strip():
+            filtro = f"%{termo.strip()}%"
+            query = query.filter(
+                or_(
+                    ProdutoModel.nome.ilike(filtro),
+                    ProdutoModel.sku.ilike(filtro),
+                    ProdutoModel.codigo_barras.ilike(filtro),
+                )
             )
-            for m in models
-        ]
+        models = query.all()
+        return [self._to_domain(m) for m in models]
+
+    def listar_variacoes(self, produto_pai_id: UUID, tenant_id: UUID) -> list[Produto]:
+        self.db.info["tenant_id"] = tenant_id
+        models = (
+            self.db.query(ProdutoModel)
+            .filter(
+                ProdutoModel.produto_pai_id == produto_pai_id,
+                ProdutoModel.ativo == True  # noqa: E712
+            )
+            .all()
+        )
+        return [self._to_domain(m) for m in models]
+
+    def salvar_em_lote(self, produtos: list[Produto]) -> list[Produto]:
+        salvos = []
+        for p in produtos:
+            salvos.append(self.salvar(p))
+        return salvos
 
 
 

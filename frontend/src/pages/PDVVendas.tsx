@@ -109,6 +109,10 @@ export const PDVVendas: React.FC = () => {
   const [motivoDevolucao, setMotivoDevolucao] = useState('');
   const [isSubmittingDevolucao, setIsSubmittingDevolucao] = useState(false);
 
+  // Variations Picker Modal State (PDV)
+  const [variacoesPickerOpen, setVariacoesPickerOpen] = useState(false);
+  const [selectedPaiForPicker, setSelectedPaiForPicker] = useState<Produto | null>(null);
+
   // Cash Operations Modals (Tab 4)
   const [sangriaModalOpen, setSangriaModalOpen] = useState(false);
   const [sangriaValor, setSangriaValor] = useState<number | ''>('');
@@ -325,6 +329,18 @@ export const PDVVendas: React.FC = () => {
 
   // Add item to cart
   const handleAddToCart = (prod: Produto) => {
+    // Se for um produto pai que possui variações, abre modal para o operador escolher a variação
+    const variacoes = produtos.filter((p) => p.produto_pai_id === prod.id && p.ativo);
+    if (variacoes.length > 0) {
+      setSelectedPaiForPicker(prod);
+      setVariacoesPickerOpen(true);
+      return;
+    }
+
+    addItemDirectlyToCart(prod);
+  };
+
+  const addItemDirectlyToCart = (prod: Produto) => {
     const stock = activeLoja?.id ? prod.estoque_por_loja?.[activeLoja.id] ?? 0 : prod.estoque_total ?? 0;
     if (stock <= 0) {
       toast.error(`Produto "${prod.nome}" sem estoque disponível na loja!`);
@@ -1844,6 +1860,64 @@ export const PDVVendas: React.FC = () => {
               <RotateCcw className="w-4 h-4" />
               <span>Confirmar Estorno</span>
             </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal Seletor de Variações no PDV */}
+      <Modal
+        isOpen={variacoesPickerOpen}
+        onClose={() => setVariacoesPickerOpen(false)}
+        title={`Selecione a Variação: ${selectedPaiForPicker?.nome}`}
+      >
+        <div className="space-y-3">
+          <p className="text-xs text-slate-400">
+            Escolha a especificação desejada (Tamanho, Cor, Voltagem) para adicionar ao carrinho:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
+            {produtos
+              .filter((p) => p.produto_pai_id === selectedPaiForPicker?.id && p.ativo)
+              .map((v) => {
+                const stock = activeLoja?.id
+                  ? v.estoque_por_loja?.[activeLoja.id] ?? 0
+                  : v.estoque_total ?? 0;
+                const desc = v.variacoes
+                  ? Object.entries(v.variacoes)
+                      .map(([k, val]) => `${k}: ${val}`)
+                      .join(' | ')
+                  : v.nome;
+
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    disabled={stock <= 0}
+                    onClick={() => {
+                      addItemDirectlyToCart(v);
+                      setVariacoesPickerOpen(false);
+                      toast.success(`Adicionado: ${v.nome}`);
+                    }}
+                    className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                      stock > 0
+                        ? 'bg-[#000000] border-white/[0.16] hover:border-purple-500 hover:bg-purple-950/20 active:scale-95'
+                        : 'bg-white/[0.02] border-white/[0.08] opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-white">{desc}</span>
+                      <span className="font-mono text-[10px] text-slate-400">{v.sku}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/[0.08]">
+                      <span className="text-xs font-bold text-emerald-400">
+                        {v.preco_venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </span>
+                      <span className={`text-[11px] font-bold ${stock > 0 ? 'text-slate-300' : 'text-rose-400'}`}>
+                        {stock > 0 ? `${stock} un em estoque` : 'Esgotado'}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
           </div>
         </div>
       </Modal>

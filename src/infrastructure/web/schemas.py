@@ -137,9 +137,55 @@ class ProdutoResponse(BaseModel):
     tenant_id: UUID
     codigo_barras: str | None = None
     fornecedor_id: UUID | None = None
+    produto_pai_id: UUID | None = None
+    variacoes: dict[str, str] | None = None
     ativo: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class AtributoGradeSchema(BaseModel):
+    """
+    Schema para atributo de grade (ex: Cor -> [Preto, Branco]).
+    """
+    nome: str = Field(..., min_length=1, max_length=50, description="Nome do atributo, ex: Cor, Tamanho, Voltagem.")
+    valores: list[str] = Field(..., min_length=1, description="Valores possíveis para o atributo.")
+
+
+class ProdutoGradeCreateRequest(BaseModel):
+    """
+    Schema para criação de produto com grade (produto cartesiano de variações).
+    """
+    nome: str = Field(..., min_length=1, max_length=150, description="Nome do produto pai.")
+    sku_base: str = Field(..., min_length=1, max_length=50, description="SKU base para o produto e prefixo das variações.")
+    preco_custo: float = Field(..., ge=0.0, description="Preço de custo base.")
+    preco_venda: float = Field(..., ge=0.0, description="Preço de venda base.")
+    markup: float = Field(..., description="Markup do produto.")
+    atributos: list[AtributoGradeSchema] = Field(..., min_length=1, description="Lista de atributos de variação.")
+    codigo_barras_base: str | None = Field(None, max_length=50, description="Código de barras base.")
+    fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
+    loja_id: UUID | None = Field(None, description="ID da loja para estoque inicial.")
+    estoque_inicial_por_variacao: int = Field(default=0, ge=0, description="Estoque inicial adicionado a cada variação.")
+
+
+class AdicionarVariacaoRequest(BaseModel):
+    """
+    Schema para adicionar uma variação individual a um produto pai existente.
+    """
+    variacoes: dict[str, str] = Field(..., description="Dicionário de variações (ex: {'Tamanho': 'GG', 'Cor': 'Azul'}).")
+    sku: str | None = Field(None, max_length=50, description="SKU customizado para a variação (opcional).")
+    codigo_barras: str | None = Field(None, max_length=50, description="Código de barras da variação.")
+    preco_custo: float | None = Field(None, ge=0.0, description="Preço de custo específico da variação.")
+    preco_venda: float | None = Field(None, ge=0.0, description="Preço de venda específico da variação.")
+    markup: float | None = Field(None, description="Markup específico da variação.")
+
+
+class ProdutoComGradeResponse(BaseModel):
+    """
+    Schema de resposta para produto pai com lista de variações filhas.
+    """
+    produto_pai: ProdutoResponse
+    variacoes: list[ProdutoResponse]
 
 
 

@@ -28,11 +28,46 @@ export interface Produto {
   codigo_barras?: string | null;
   categoria?: string;
   fornecedor_id?: string | null;
+  produto_pai_id?: string | null;
+  variacoes?: Record<string, string> | null;
+  variacoes_count?: number;
   tenant_id: string;
   ativo: boolean;
   estoque_por_loja?: Record<string, number>;
   estoque_total?: number;
   estoque_minimo?: number;
+}
+
+export interface AtributoGrade {
+  nome: string;
+  valores: string[];
+}
+
+export interface CriarProdutoGradePayload {
+  nome: string;
+  sku_base: string;
+  preco_custo: number;
+  preco_venda: number;
+  markup: number;
+  atributos: AtributoGrade[];
+  codigo_barras_base?: string | null;
+  loja_id?: string;
+  estoque_inicial_por_variacao?: number;
+  categoria?: string;
+}
+
+export interface AdicionarVariacaoPayload {
+  variacoes: Record<string, string>;
+  sku?: string;
+  codigo_barras?: string;
+  preco_custo?: number;
+  preco_venda?: number;
+  markup?: number;
+}
+
+export interface ProdutoComGradeResponse {
+  produto_pai: Produto;
+  variacoes: Produto[];
 }
 
 export interface EstoqueSaldo {
