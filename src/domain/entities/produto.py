@@ -15,6 +15,8 @@ class Produto:
     tenant_id: UUID
     codigo_barras: str | None = None
     fornecedor_id: UUID | None = None
+    produto_pai_id: UUID | None = None
+    variacoes: dict[str, str] | None = None
     id: UUID = field(default_factory=uuid4)
     ativo: bool = True
 
@@ -47,8 +49,22 @@ class Produto:
         if self.fornecedor_id is not None and not isinstance(self.fornecedor_id, UUID):
             raise ValueError("O fornecedor_id deve ser um UUID válido.")
 
+        if self.produto_pai_id is not None and not isinstance(self.produto_pai_id, UUID):
+            raise ValueError("O produto_pai_id deve ser um UUID válido.")
+
+        if self.variacoes is not None:
+            if not isinstance(self.variacoes, dict):
+                raise ValueError("As variações devem ser um dicionário de atributos (chave/valor).")
+            for k, v in self.variacoes.items():
+                if not isinstance(k, str) or not k.strip() or not isinstance(v, str) or not v.strip():
+                    raise ValueError("Os atributos e valores da variação devem ser strings não vazias.")
+
         if not isinstance(self.ativo, bool):
             raise ValueError("O campo ativo deve ser um booleano.")
+
+    @property
+    def is_variacao(self) -> bool:
+        return self.produto_pai_id is not None
 
 
     @staticmethod

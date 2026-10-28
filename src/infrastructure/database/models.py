@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     DateTime,
     Float,
@@ -79,7 +80,12 @@ class ProdutoModel(HasTenant, Base):
     markup: Mapped[float] = mapped_column(Float, nullable=False)
     codigo_barras: Mapped[str | None] = mapped_column(String(50), nullable=True)
     fornecedor_id: Mapped[UUID | None] = mapped_column(ForeignKey("fornecedores.id"), nullable=True)
+    produto_pai_id: Mapped[UUID | None] = mapped_column(ForeignKey("produtos.id", ondelete="CASCADE"), nullable=True)
+    variacoes: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     ativo: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    pai: Mapped["ProdutoModel | None"] = relationship("ProdutoModel", remote_side=[id], back_populates="filhos")
+    filhos: Mapped[list["ProdutoModel"]] = relationship("ProdutoModel", back_populates="pai", cascade="all, delete-orphan")
 
     __table_args__ = (
         UniqueConstraint("sku", "tenant_id", name="uq_produtos_sku_tenant"),

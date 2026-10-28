@@ -2,6 +2,9 @@ import {
   User,
   Loja,
   Produto,
+  CriarProdutoGradePayload,
+  AdicionarVariacaoPayload,
+  ProdutoComGradeResponse,
   EstoqueSaldo,
   MovimentacaoEstoque,
   Cliente,
@@ -245,6 +248,117 @@ class StorageService {
     produtos[index] = { ...produtos[index], ...updates };
     this.set('produtos', produtos);
     return produtos[index];
+  }
+
+  createProdutoGrade(dados: CriarProdutoGradePayload): ProdutoComGradeResponse {
+    const produtos = this.getProdutos();
+    const user = this.getUser();
+    const paiId = crypto.randomUUID ? crypto.randomUUID() : `prod-pai-${Date.now()}`;
+    const tenantId = user?.tenant_id || '';
+
+    const produtoPai: Produto = {
+      id: paiId,
+      nome: dados.nome,
+      sku: dados.sku_base.toUpperCase(),
+      preco_custo: dados.preco_custo,
+      preco_venda: dados.preco_venda,
+      markup: dados.markup,
+      codigo_barras: dados.codigo_barras_base || null,
+      categoria: dados.categoria || 'Geral',
+      tenant_id: tenantId,
+      ativo: true,
+      produto_pai_id: null,
+      variacoes: null,
+      estoque_por_loja: {},
+      estoque_total: 0,
+    };
+    produtos.push(produtoPai);
+
+    // Produto cartesiano dos atributos
+    const combos: Array<Record<string, string>> = [];
+    const gerarCombos = (index: number, atual: Record<string, string>) => {
+      if (index === dados.atributos.length) {
+        combos.push({ ...atual });
+        return;
+      }
+      const attr = dados.atributos[index];
+      for (const val of attr.valores) {
+        atual[attr.nome] = val;
+        gerarCombos(index + 1, atual);
+      }
+    };
+    gerarCombos(0, {});
+
+    const variacoes: Produto[] = [];
+    combos.forEach((combo, idx) => {
+      const desc = Object.values(combo).join(' / ');
+      const slug = Object.values(combo).map(v => v.toUpperCase().replace(/\s+/g, '')).join('-');
+      const childSku = `${dados.sku_base.toUpperCase()}-${slug}`;
+      const childBarcode = dados.codigo_barras_base ? `${dados.codigo_barras_base}-${idx + 1}` : null;
+      const childId = crypto.randomUUID ? crypto.randomUUID() : `prod-var-${Date.now()}-${idx}`;
+
+      const estoquePorLoja: Record<string, number> = {};
+      if (dados.loja_id && dados.estoque_inicial_por_variacao) {
+        estoquePorLoja[dados.loja_id] = dados.estoque_inicial_por_variacao;
+      }
+
+      const filho: Produto = {
+        id: childId,
+        nome: `${dados.nome} - ${desc}`,
+        sku: childSku,
+        preco_custo: dados.preco_custo,
+        preco_venda: dados.preco_venda,
+        markup: dados.markup,
+        codigo_barras: childBarcode,
+        categoria: dados.categoria || 'Geral',
+        tenant_id: tenantId,
+        ativo: true,
+        produto_pai_id: paiId,
+        variacoes: combo,
+        estoque_por_loja: estoquePorLoja,
+        estoque_total: dados.estoque_inicial_por_variacao || 0,
+      };
+      produtos.push(filho);
+      variacoes.push(filho);
+    });
+
+    this.set('produtos', produtos);
+    return { produto_pai: produtoPai, variacoes };
+  }
+
+  getVariacoesProduto(produtoId: string): Produto[] {
+    return this.getProdutos().filter((p) => p.produto_pai_id === produtoId && p.ativo);
+  }
+
+  addVariacaoProduto(produtoId: string, dados: AdicionarVariacaoPayload): Produto {
+    const produtos = this.getProdutos();
+    const pai = produtos.find((p) => p.id === produtoId);
+    if (!pai) throw new Error('Produto pai não encontrado');
+
+    const desc = Object.values(dados.variacoes).join(' / ');
+    const slug = Object.values(dados.variacoes).map(v => v.toUpperCase().replace(/\s+/g, '')).join('-');
+    const sku = dados.sku || `${pai.sku}-${slug}`;
+    const id = crypto.randomUUID ? crypto.randomUUID() : `prod-var-${Date.now()}`;
+
+    const filho: Produto = {
+      id,
+      nome: `${pai.nome} - ${desc}`,
+      sku,
+      preco_custo: dados.preco_custo ?? pai.preco_custo,
+      preco_venda: dados.preco_venda ?? pai.preco_venda,
+      markup: dados.markup ?? pai.markup,
+      codigo_barras: dados.codigo_barras || null,
+      categoria: pai.categoria,
+      tenant_id: pai.tenant_id,
+      ativo: true,
+      produto_pai_id: pai.id,
+      variacoes: dados.variacoes,
+      estoque_por_loja: {},
+      estoque_total: 0,
+    };
+    produtos.push(filho);
+    this.set('produtos', produtos);
+    return filho;
   }
 
   // Estoque & Ledger
