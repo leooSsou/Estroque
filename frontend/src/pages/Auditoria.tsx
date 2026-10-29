@@ -159,7 +159,7 @@ export const Auditoria: React.FC = () => {
         <button
           onClick={handleApproveReconciliation}
           disabled={loading}
-          className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>Aprovar Ajuste de Estoque</span>

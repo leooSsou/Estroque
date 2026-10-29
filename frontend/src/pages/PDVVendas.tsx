@@ -13,6 +13,7 @@ import {
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { Select } from '../components/common/Select';
 import { RelatorioVendasPDFModal } from '../components/pdv/RelatorioVendasPDFModal';
 import {
   ShoppingCart,
@@ -798,9 +799,9 @@ export const PDVVendas: React.FC = () => {
       {/* TAB 1: FRENTE DE CAIXA (ACTIVE POS)                                       */}
       {/* ========================================================================= */}
       {activeTab === 'CAIXA' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left 65%: Product Selection & Scanner */}
-          <div className="lg:col-span-7 space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6 items-start">
+          {/* Left 60%: Product Selection & Scanner */}
+          <div className="md:col-span-7 space-y-4">
             {/* Barcode Scanner & Search Bar */}
             <div className="p-4 rounded-3xl bg-[#000000] border border-white/[0.16] shadow-bento-dark space-y-3">
               <div className="relative group">
@@ -900,8 +901,8 @@ export const PDVVendas: React.FC = () => {
             </div>
           </div>
 
-          {/* Right 35%: Active Cart & Checkout */}
-          <div className="lg:col-span-5 space-y-4">
+          {/* Right 40%: Active Cart & Checkout */}
+          <div className="md:col-span-5 space-y-4">
             <div className="bg-[#000000] border border-white/[0.16] rounded-3xl p-5 shadow-bento-dark space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-white/[0.16]">
                 <div className="flex items-center gap-2">
@@ -931,18 +932,19 @@ export const PDVVendas: React.FC = () => {
                   <UserCheck className="w-4 h-4 text-emerald-400" />
                   <span>Cliente / Titular do Crediário</span>
                 </label>
-                <select
+                <Select
                   value={selectedClienteId}
-                  onChange={(e) => setSelectedClienteId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:outline-none font-medium"
-                >
-                  <option value="">Consumidor Final (Sem Crediário)</option>
-                  {clientes.map((cli) => (
-                    <option key={cli.id} value={cli.id}>
-                      {cli.nome} ({cli.documento})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setSelectedClienteId(val)}
+                  options={[
+                    { value: '', label: 'Consumidor Final (Sem Crediário)' },
+                    ...clientes.map((cli) => ({
+                      value: cli.id,
+                      label: cli.nome,
+                      sublabel: `Doc: ${cli.documento} • Limite: R$ ${cli.limite_credito.toFixed(2)}`,
+                    })),
+                  ]}
+                  placeholder="Selecione o cliente..."
+                />
 
                 {selectedCliente && (
                   <div className="pt-2 border-t border-white/[0.14] flex items-center justify-between text-xs">
@@ -1450,12 +1452,12 @@ export const PDVVendas: React.FC = () => {
             </div>
 
             {/* Quick Status Filter */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-white/[0.16]">
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#000000] border border-white/[0.16] overflow-x-auto table-scrollbar">
               {(['TODAS', 'CONCLUIDA', 'CANCELADA'] as const).map((st) => (
                 <button
                   key={st}
                   onClick={() => setStatusFilterHistorico(st)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95 ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-95 whitespace-nowrap ${
                     statusFilterHistorico === st
                       ? 'bg-emerald-600 text-white font-bold shadow-sm'
                       : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -1467,7 +1469,7 @@ export const PDVVendas: React.FC = () => {
             </div>
 
             {/* Ações de Relatório em PDF */}
-            <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 sm:flex items-center gap-2">
               <button
                 onClick={() => {
                   setRelatorioPDFMode('DIARIO');
@@ -1676,7 +1678,7 @@ export const PDVVendas: React.FC = () => {
           </div>
 
           {/* StatCards of Drawer Balance */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3">
             <div className="p-4 rounded-2xl bg-[#000000] border border-white/[0.16] space-y-1">
               <span className="text-[11px] font-semibold text-slate-400">Fundo Inicial</span>
               <div className="text-lg font-bold text-white">

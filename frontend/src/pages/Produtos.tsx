@@ -346,24 +346,24 @@ export const Produtos: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Bento Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 sm:p-6 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-xl">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-white">Catálogo & Precificação</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Catálogo & Precificação</h1>
             <Badge variant="emerald">Onda 2 Concluída</Badge>
           </div>
-          <p className="text-sm text-slate-400 mt-1 font-medium">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
             Gestão unificada de SKUs, grades de variações (Tamanho/Cor/Voltagem) e precificação inteligente.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             onClick={() => {
               setTipoCadastro('SIMPLES');
               setNewProductModalOpen(true);
             }}
-            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 active:scale-95 whitespace-nowrap"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             <span>Novo Produto</span>
@@ -372,9 +372,9 @@ export const Produtos: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-lg">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl bg-[#000000] border border-white/[0.16] shadow-lg">
         {/* Search Input */}
-        <div className="relative flex-1 max-w-xl group">
+        <div className="relative flex-1 w-full lg:max-w-xl group">
           <Search className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
           <input
             type="text"
@@ -703,16 +703,16 @@ export const Produtos: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+          <div className="sticky bottom-0 bg-[#000000] -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 px-5 sm:px-6 py-3.5 border-t border-white/[0.16] flex items-center justify-end gap-3 z-10">
             <button
               onClick={() => setMarkupModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 border border-white/[0.16]"
+              className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs sm:text-sm font-semibold text-slate-300 border border-white/[0.16]"
             >
               Cancelar
             </button>
             <button
               onClick={handleSaveMarkup}
-              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 flex items-center gap-2"
+              className="h-10 sm:h-11 px-5 sm:px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-emerald-600/25 flex items-center gap-2 active:scale-95 transition-all"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Novo Preço</span>
@@ -963,17 +963,17 @@ export const Produtos: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+          <div className="sticky bottom-0 bg-[#000000] -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 px-5 sm:px-6 py-3.5 border-t border-white/[0.16] flex items-center justify-end gap-3 z-10">
             <button
               type="button"
               onClick={() => setNewProductModalOpen(false)}
-              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 border border-white/[0.16]"
+              className="h-10 sm:h-11 px-4 sm:px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-xs sm:text-sm font-semibold text-slate-300 border border-white/[0.16]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className={`h-11 px-6 rounded-xl text-white text-sm font-bold shadow-md active:scale-95 transition-all ${
+              className={`h-10 sm:h-11 px-5 sm:px-6 rounded-xl text-white text-xs sm:text-sm font-bold shadow-md active:scale-95 transition-all ${
                 tipoCadastro === 'GRADE'
                   ? 'bg-purple-600 hover:bg-purple-500 shadow-purple-600/25'
                   : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/25'
@@ -1099,17 +1099,17 @@ export const Produtos: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+          <div className="sticky bottom-0 bg-[#000000] -mx-5 sm:-mx-6 -mb-5 sm:-mb-6 px-5 sm:px-6 py-3.5 border-t border-white/[0.16] flex items-center justify-end gap-3 z-10">
             <button
               type="button"
               onClick={() => setAddVariacaoModalOpen(false)}
-              className="h-10 px-4 rounded-xl bg-[#000000] text-xs font-semibold text-slate-300 border border-white/[0.16]"
+              className="h-10 px-4 rounded-xl bg-[#000000] text-xs font-semibold text-slate-300 border border-white/[0.16] hover:bg-white/[0.08]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md shadow-purple-600/25"
+              className="h-10 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md shadow-purple-600/25 active:scale-95 transition-all"
             >
               Salvar Variação
             </button>

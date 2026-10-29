@@ -88,9 +88,13 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col lg:flex-row">
-      {/* Left Column: Brand Hero Showcase */}
-      <div className="lg:w-1/2 bg-[#000000] p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden border-b lg:border-b-0 lg:border-r border-white/[0.16]">
+    <div className="min-h-screen bg-black text-white flex flex-col lg:flex-row relative overflow-hidden">
+      {/* Background Ambient Glow Effects */}
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Left Column: Brand Hero Showcase (Exclusivo para Desktop / Telas Grandes) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#000000] p-8 lg:p-16 flex-col justify-between relative overflow-hidden border-r border-white/[0.16]">
         {/* Glow Effects */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -102,30 +106,30 @@ export const Login: React.FC = () => {
             alt="Estroque"
             width="48"
             height="48"
-            className="w-12 h-12 object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+            className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.4)]"
           />
-          <span className="font-bold text-2xl tracking-wide text-white">
+          <span className="font-bold text-xl sm:text-2xl tracking-wide text-white">
             Estroque
           </span>
         </div>
 
         {/* Center Hero Card */}
-        <div className="my-12 lg:my-0 z-10 space-y-6 max-w-lg">
+        <div className="my-8 lg:my-0 z-10 space-y-4 sm:space-y-6 max-w-lg">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#000000] border border-emerald-500/30 text-xs font-semibold text-emerald-400">
             <Zap className="w-3.5 h-3.5" />
             <span>Sistema Operacional de Varejo & Estoque</span>
           </div>
 
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
             Gestão precisa de ponta a ponta.
           </h1>
 
-          <p className="text-sm lg:text-base text-slate-300 leading-relaxed">
+          <p className="text-xs sm:text-sm lg:text-base text-slate-300 leading-relaxed">
             Catálogo completo com código de barras, formação de preço por Markup inteligente,
             controle de filiais, ledger de auditoria fiscal e ponto de venda com crediário.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 sm:pt-4">
             <div className="p-3.5 rounded-2xl bg-[#000000] border border-white/[0.16] backdrop-blur-sm">
               <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 mb-1">
                 <ShieldCheck className="w-4 h-4" />
@@ -154,9 +158,9 @@ export const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Column: Authentication / Registration Card */}
-      <div className="lg:w-1/2 flex items-center justify-center p-6 lg:p-16">
-        <div className="w-full max-w-md bg-[#000000] border border-white/[0.16] rounded-3xl p-8 shadow-2xl">
+      {/* Right Column: Authentication / Registration Card (Acesso Imediato no Mobile) */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-16 min-h-screen z-10">
+        <div className="w-full max-w-md bg-[#000000] border border-white/[0.16] rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl my-auto">
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-4 lg:hidden">
               <img

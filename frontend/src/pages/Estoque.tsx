@@ -6,6 +6,7 @@ import { Produto, Loja } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { Select } from '../components/common/Select';
 import {
   Boxes,
   ArrowDownRight,
@@ -125,7 +126,7 @@ export const Estoque: React.FC = () => {
 
         <button
           onClick={() => handleOpenMovement()}
-          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nova Movimentação</span>
@@ -349,17 +350,15 @@ export const Estoque: React.FC = () => {
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Produto
             </label>
-            <select
+            <Select
               value={movProdutoId}
-              onChange={(e) => setMovProdutoId(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-            >
-              {produtos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.sku} - {p.nome}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setMovProdutoId(val)}
+              options={produtos.map((p) => ({
+                value: p.id,
+                label: `${p.sku} - ${p.nome}`,
+              }))}
+              placeholder="Selecione um produto..."
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -367,17 +366,15 @@ export const Estoque: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Loja / Depósito
               </label>
-              <select
+              <Select
                 value={movLojaId}
-                onChange={(e) => setMovLojaId(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-              >
-                {lojas.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.nome}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setMovLojaId(val)}
+                options={lojas.map((l) => ({
+                  value: l.id,
+                  label: l.nome,
+                }))}
+                placeholder="Selecione uma loja..."
+              />
             </div>
 
             <div>
@@ -432,17 +429,17 @@ export const Estoque: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Motivo / Razão
               </label>
-              <select
+              <Select
                 value={movMotivo}
-                onChange={(e) => setMovMotivo(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-              >
-                <option value="Ajuste de inventário rotativo">Ajuste de inventário rotativo</option>
-                <option value="Avaria ou dano em transporte">Avaria ou dano em transporte</option>
-                <option value="Perda operacional">Perda operacional</option>
-                <option value="Bonificação de fornecedor">Bonificação de fornecedor</option>
-                <option value="Devolução de cliente">Devolução de cliente</option>
-              </select>
+                onChange={(val) => setMovMotivo(val)}
+                options={[
+                  { value: 'Ajuste de inventário rotativo', label: 'Ajuste de inventário rotativo' },
+                  { value: 'Avaria ou dano em transporte', label: 'Avaria ou dano em transporte' },
+                  { value: 'Perda operacional', label: 'Perda operacional' },
+                  { value: 'Bonificação de fornecedor', label: 'Bonificação de fornecedor' },
+                  { value: 'Devolução de cliente', label: 'Devolução de cliente' },
+                ]}
+              />
             </div>
           </div>
 

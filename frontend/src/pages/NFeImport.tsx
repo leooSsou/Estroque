@@ -296,25 +296,29 @@ export const NFeImport: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#000000] border border-white/[0.16]">
-            <Percent className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-xs text-slate-300 font-medium">Markup Novos Itens:</span>
-            <input
-              type="number"
-              min="0"
-              max="500"
-              value={markupPadrao}
-              onChange={(e) => setMarkupPadrao(Math.max(0, Number(e.target.value)))}
-              className="w-14 bg-transparent text-xs font-bold text-emerald-400 text-center focus:outline-none border-b border-white/20 focus:border-emerald-400"
-            />
-            <span className="text-xs text-slate-400">%</span>
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+          <div className="flex items-center justify-between sm:justify-start gap-2 px-3.5 py-1.5 rounded-full bg-[#000000] border border-white/[0.16]">
+            <div className="flex items-center gap-1.5">
+              <Percent className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs text-slate-300 font-medium">Markup Novos Itens:</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min="0"
+                max="500"
+                value={markupPadrao}
+                onChange={(e) => setMarkupPadrao(Math.max(0, Number(e.target.value)))}
+                className="w-14 bg-transparent text-xs font-bold text-emerald-400 text-center focus:outline-none border-b border-white/20 focus:border-emerald-400"
+              />
+              <span className="text-xs text-slate-400">%</span>
+            </div>
           </div>
 
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all flex items-center gap-2 shadow-md shadow-emerald-600/20"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20"
           >
             <FileCode2 className="w-4 h-4" />
             <span>Selecionar Arquivo .XML</span>
@@ -323,7 +327,7 @@ export const NFeImport: React.FC = () => {
           <button
             type="button"
             onClick={handleLoadSampleXml}
-            className="px-4 py-2 rounded-full bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center gap-2"
+            className="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-full bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-emerald-400" />
             <span>Carregar XML Exemplo</span>

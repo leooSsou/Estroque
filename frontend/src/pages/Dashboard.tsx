@@ -89,58 +89,58 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* 1. Header & Consolidado Card */}
-      <div className="bg-[#000000] border border-white/[0.16] rounded-3xl p-6 lg:p-7 shadow-bento-dark relative overflow-hidden group hover:border-white/[0.24] transition-all duration-300">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 relative z-10">
+      <div className="bg-[#000000] border border-white/[0.16] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-7 shadow-bento-dark relative overflow-hidden group hover:border-white/[0.24] transition-all duration-300">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-5 relative z-10">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              <Store className="w-4 h-4 text-emerald-400" />
-              <span>Visão Consolidada • {activeLoja?.nome || 'Rede Inteira'}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <Store className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span className="truncate">Visão Consolidada • {activeLoja?.nome || 'Rede Inteira'}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
             </div>
-            <div className="text-3xl lg:text-4xl font-bold text-white tracking-tight whitespace-nowrap">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">
               R$ {faturamentoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-2.5 w-full lg:w-auto">
             <button
               onClick={() => navigate('/pdv')}
-              className="px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-glow-emerald btn-press hover-lift flex items-center gap-2"
+              className="w-full sm:w-auto px-3.5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-glow-emerald btn-press hover-lift flex items-center justify-center gap-2"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>Nova Venda (PDV)</span>
+              <PlusCircle className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">Nova Venda</span>
             </button>
 
             <button
               onClick={() => navigate('/nfe')}
-              className="px-4 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.06] border border-white/[0.16] text-slate-200 font-semibold text-xs btn-press hover-lift flex items-center gap-2"
+              className="w-full sm:w-auto px-3.5 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.06] border border-white/[0.16] text-slate-200 font-semibold text-xs btn-press hover-lift flex items-center justify-center gap-2"
             >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-              <span>Importar XML NF-e</span>
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span className="truncate">Importar XML</span>
             </button>
 
             <button
               onClick={() => navigate('/transferencias')}
-              className="px-4 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.06] border border-white/[0.16] text-slate-200 font-semibold text-xs btn-press hover-lift flex items-center gap-2"
+              className="w-full sm:w-auto px-3.5 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.06] border border-white/[0.16] text-slate-200 font-semibold text-xs btn-press hover-lift flex items-center justify-center gap-2"
             >
-              <ArrowLeftRight className="w-4 h-4 text-slate-400" />
-              <span>Transferir Estoque</span>
+              <ArrowLeftRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span className="truncate">Transferir</span>
             </button>
 
             <button
               onClick={() => navigate('/ledger')}
-              className="px-4 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.06] border border-white/[0.16] text-slate-200 font-semibold text-xs btn-press hover-lift flex items-center gap-2"
+              className="w-full sm:w-auto px-3.5 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.06] border border-white/[0.16] text-slate-200 font-semibold text-xs btn-press hover-lift flex items-center justify-center gap-2"
             >
-              <ClipboardCheck className="w-4 h-4 text-slate-400" />
-              <span>Auditoria Física</span>
+              <ClipboardCheck className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span className="truncate">Auditoria</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 2. KPI Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. KPI Cards Row - 2 cols on mobile, 4 cols on tablet and desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Faturamento Bruto"
           value={`R$ ${faturamentoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}

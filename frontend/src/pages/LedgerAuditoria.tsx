@@ -107,21 +107,21 @@ export const LedgerAuditoria: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center gap-2 active:scale-95"
+            className="w-full sm:w-auto px-3.5 py-2.5 rounded-full bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95"
           >
             <Download className="w-4 h-4 text-slate-400" />
-            <span>Exportar CSV</span>
+            <span className="truncate">Exportar CSV</span>
           </button>
 
           <button
             onClick={() => navigate('/auditoria')}
-            className="px-4 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 transition-all flex items-center gap-2 active:scale-95"
+            className="w-full sm:w-auto px-3.5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
           >
             <ClipboardList className="w-4 h-4" />
-            <span>Auditoria Física Cega</span>
+            <span className="truncate">Auditoria Física</span>
           </button>
         </div>
       </div>

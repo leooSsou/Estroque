@@ -323,7 +323,7 @@ export const SuperAdmin: React.FC = () => {
       {currentTab === 'geral' && (
         <div className="space-y-6">
           {/* Bento Grid: Métricas da Plataforma */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <BentoCard className="p-5 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
@@ -552,8 +552,8 @@ export const SuperAdmin: React.FC = () => {
           </div>
 
           {/* Tabela de Tenants */}
-          <div className="overflow-x-auto mt-4">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto table-scrollbar mt-4">
+            <table className="w-full text-left text-xs min-w-[750px]">
               <thead>
                 <tr className="border-b border-white/[0.08] text-slate-400 uppercase font-semibold">
                   <th className="py-3 px-3">Empresa / CNPJ</th>
