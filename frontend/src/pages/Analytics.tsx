@@ -122,8 +122,8 @@ export const Analytics: React.FC = () => {
           ) : (
             curvaItems.map((item, idx) => (
               <div key={item.produto_id} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2.5 truncate max-w-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 text-sm">
+                  <div className="flex items-center gap-2.5 truncate max-w-full sm:max-w-lg min-w-0">
                     <span className="w-6 h-6 rounded-full bg-[#000000] text-emerald-400 border border-white/[0.16] flex items-center justify-center font-bold text-xs flex-shrink-0">
                       {idx + 1}
                     </span>
@@ -132,7 +132,7 @@ export const Analytics: React.FC = () => {
                       Classe {item.classe}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 flex-shrink-0 pt-0.5 sm:pt-0">
                     <span className="text-emerald-400 font-bold text-sm md:text-base">
                       R$ {item.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>

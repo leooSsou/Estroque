@@ -18,6 +18,7 @@ import {
   Sliders,
   Store,
   ChevronDown,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Badge } from '../common/Badge';
@@ -25,9 +26,16 @@ import { Badge } from '../common/Badge';
 interface SidebarProps {
   collapsed: boolean;
   onToggleCollapse: () => void;
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  collapsed,
+  onToggleCollapse,
+  mobileOpen = false,
+  onCloseMobile = () => {},
+}) => {
   const { user } = useAuth();
   const location = useLocation();
 
@@ -75,29 +83,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
   };
 
   return (
-    <aside
-      className={`fixed top-0 left-0 bottom-0 z-40 bg-[#000000] border-r border-white/[0.10] transition-all duration-300 flex flex-col ${
-        collapsed ? 'w-20' : 'w-64'
-      }`}
-    >
-      {/* Brand Header */}
-      <div
-        className={`h-20 flex items-center bg-[#000000] flex-shrink-0 ${
-          collapsed
-            ? 'flex-col justify-center gap-1.5 px-2'
-            : 'justify-between px-4 sm:px-5'
-        }`}
+    <>
+      {/* Mobile & Tablet Backdrop Overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 xl:hidden transition-opacity"
+          onClick={onCloseMobile}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed top-0 left-0 bottom-0 z-50 bg-[#000000] border-r border-white/[0.10] transition-all duration-300 flex flex-col ${
+          mobileOpen ? 'translate-x-0 w-72 shadow-2xl' : '-translate-x-full xl:translate-x-0'
+        } ${collapsed ? 'xl:w-20' : 'xl:w-64'}`}
       >
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3 overflow-hidden'}`}>
-          <img
-            src="/favicon.png"
-            alt="Estroque"
-            width="36"
-            height="36"
-            className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain flex-shrink-0`}
-          />
-          {!collapsed && (
-            <div className="flex flex-col min-w-0">
+        {/* Brand Header */}
+        <div
+          className={`h-20 flex items-center bg-[#000000] flex-shrink-0 border-b border-white/[0.08] xl:border-b-0 ${
+            collapsed
+              ? 'flex-col justify-center gap-1.5 px-2'
+              : 'justify-between px-4 sm:px-5'
+          }`}
+        >
+          <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3 overflow-hidden'}`}>
+            <img
+              src="/favicon.png"
+              alt="Estroque"
+              width="36"
+              height="36"
+              className={`${collapsed ? 'w-8 h-8' : 'w-9 h-9'} object-contain flex-shrink-0`}
+            />
+            <div className={`flex flex-col min-w-0 ${collapsed ? 'xl:hidden' : ''}`}>
               <span className="font-bold text-lg tracking-wide text-white leading-tight truncate">
                 Estroque
               </span>
@@ -107,21 +124,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                 </span>
               )}
             </div>
-          )}
-        </div>
+          </div>
 
-        <button
-          onClick={onToggleCollapse}
-          className={`${collapsed ? 'p-1' : 'p-1.5'} rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors flex-shrink-0`}
-          title={collapsed ? 'Expandir Menu' : 'Recolher Menu'}
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="w-3.5 h-3.5 text-slate-400" />
-          ) : (
-            <PanelLeftClose className="w-4 h-4 text-slate-400" />
-          )}
-        </button>
-      </div>
+          {/* Mobile and Tablet close button */}
+          <button
+            onClick={onCloseMobile}
+            className="xl:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors border border-white/[0.16] active:scale-95"
+            title="Fechar Menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* Large desktop collapse toggle */}
+          <button
+            onClick={onToggleCollapse}
+            className={`hidden xl:flex ${collapsed ? 'p-1' : 'p-1.5'} rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors flex-shrink-0`}
+            title={collapsed ? 'Expandir Menu' : 'Recolher Menu'}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="w-3.5 h-3.5 text-slate-400" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4 text-slate-400" />
+            )}
+          </button>
+        </div>
 
       {/* Navigation List */}
       <div
@@ -149,6 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                 <NavLink
                   key={item.to}
                   to={item.to}
+                  onClick={onCloseMobile}
                   className={`group flex items-center rounded-xl transition-all duration-200 relative btn-press ${
                     collapsed
                       ? 'w-11 h-11 justify-center'
@@ -229,6 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                         key={item.to}
                         to={item.to}
                         end={item.to === '/'}
+                        onClick={onCloseMobile}
                         className={({ isActive }) =>
                           `group flex items-center rounded-xl transition-all duration-200 relative btn-press ${
                             collapsed
@@ -279,6 +307,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
                   key={item.to}
                   to={item.to}
                   end={item.to === '/'}
+                  onClick={onCloseMobile}
                   className={({ isActive }) =>
                     `group flex items-center rounded-xl transition-all duration-200 relative btn-press ${
                       collapsed
@@ -312,5 +341,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse })
         )}
       </div>
     </aside>
+    </>
   );
 };

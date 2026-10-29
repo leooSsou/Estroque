@@ -6,6 +6,7 @@ import { TransferenciaEstoque, Produto } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { Select } from '../components/common/Select';
 import {
   ArrowLeftRight,
   Plus,
@@ -178,7 +179,7 @@ export const Transferencias: React.FC = () => {
 
         <button
           onClick={() => setNewModalOpen(true)}
-          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nova Solicitação</span>
@@ -365,34 +366,30 @@ export const Transferencias: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Loja de Origem
               </label>
-              <select
+              <Select
                 value={origemId}
-                onChange={(e) => setOrigemId(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-              >
-                {lojas.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.nome}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setOrigemId(val)}
+                options={lojas.map((l) => ({
+                  value: l.id,
+                  label: l.nome,
+                }))}
+                placeholder="Selecione loja de origem..."
+              />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Loja de Destino
               </label>
-              <select
+              <Select
                 value={destinoId}
-                onChange={(e) => setDestinoId(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-              >
-                {lojas.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.nome}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setDestinoId(val)}
+                options={lojas.map((l) => ({
+                  value: l.id,
+                  label: l.nome,
+                }))}
+                placeholder="Selecione loja de destino..."
+              />
             </div>
           </div>
 
@@ -400,17 +397,16 @@ export const Transferencias: React.FC = () => {
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Produto
             </label>
-            <select
+            <Select
               value={produtoId}
-              onChange={(e) => setProdutoId(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-            >
-              {Object.values(produtos).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.sku} - {p.nome} (Estoque: {p.estoque_total} un)
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setProdutoId(val)}
+              options={Object.values(produtos).map((p) => ({
+                value: p.id,
+                label: `${p.sku} - ${p.nome}`,
+                sublabel: `Estoque Total: ${p.estoque_total} un`,
+              }))}
+              placeholder="Selecione um produto..."
+            />
           </div>
 
           <div>

@@ -176,7 +176,7 @@ export const Contatos: React.FC = () => {
           onClick={() =>
             activeTab === 'CLIENTES' ? setNewClientModal(true) : setNewSupplierModal(true)
           }
-          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>{activeTab === 'CLIENTES' ? 'Novo Cliente' : 'Novo Fornecedor'}</span>

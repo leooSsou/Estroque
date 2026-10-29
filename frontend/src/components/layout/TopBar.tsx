@@ -18,13 +18,19 @@ import { api } from '../../services/api';
 import { Loja, User } from '../../types';
 import { Modal } from '../common/Modal';
 import { Badge } from '../common/Badge';
+import { Select } from '../common/Select';
 
 interface TopBarProps {
   onToggleSidebar: () => void;
+  onToggleMobileSidebar?: () => void;
   onOpenSearch?: () => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch }) => {
+export const TopBar: React.FC<TopBarProps> = ({
+  onToggleSidebar,
+  onToggleMobileSidebar,
+  onOpenSearch,
+}) => {
   const { user, lojas, activeLoja, setActiveLoja, refreshLojas, logout } = useAuth();
   const { toast } = useToast();
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
@@ -114,31 +120,31 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
   };
 
   return (
-    <header className="relative h-20 bg-[#000000] sticky top-0 z-30 px-6 lg:px-8 flex items-center justify-between flex-shrink-0">
+    <header className="relative h-16 sm:h-20 bg-[#000000] sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between flex-shrink-0 border-b border-white/[0.08]">
       {/* Left: Mobile Toggle & Store Switcher */}
-      <div className="flex items-center gap-3 sm:gap-4 z-10">
-        {/* Only visible on mobile/tablet screens */}
+      <div className="flex items-center gap-2 sm:gap-4 z-10 min-w-0">
+        {/* Visible on mobile and tablet screens (< xl) */}
         <button
-          onClick={onToggleSidebar}
-          className="md:hidden h-10 w-10 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors flex items-center justify-center border border-white/[0.16]"
+          onClick={onToggleMobileSidebar || onToggleSidebar}
+          className="xl:hidden h-10 w-10 rounded-xl text-slate-300 hover:text-white hover:bg-white/[0.06] transition-colors flex items-center justify-center border border-white/[0.16] active:scale-95 flex-shrink-0"
           title="Alternar Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         {/* Store Switcher Dropdown */}
-        <div className="relative">
+        <div className="relative min-w-0">
           <button
             onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
-            className={`h-11 flex items-center gap-2.5 px-3.5 sm:px-4 rounded-xl border transition-all text-xs sm:text-sm font-semibold btn-press ${
+            className={`h-10 sm:h-11 flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-4 rounded-xl border transition-all text-xs sm:text-sm font-semibold btn-press ${
               storeDropdownOpen
                 ? 'bg-[#000000] border-white/[0.30] text-white shadow-sm'
                 : 'bg-[#000000] border-white/[0.16] hover:bg-white/[0.06] hover:border-white/[0.25] text-slate-200'
             }`}
           >
             <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-            <Store className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            <span className="max-w-[140px] sm:max-w-[200px] truncate">
+            <Store className="w-4 h-4 text-emerald-400 flex-shrink-0 hidden xs:inline" />
+            <span className="max-w-[100px] xs:max-w-[130px] sm:max-w-[200px] truncate">
               {activeLoja?.nome || 'Selecionar Loja'}
             </span>
             <ChevronDown
@@ -154,7 +160,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
                 className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity"
                 onClick={() => setStoreDropdownOpen(false)}
               />
-              <div className="absolute left-0 mt-2.5 w-72 rounded-2xl bg-[#000000] backdrop-blur-xl border border-white/[0.16] shadow-2xl p-2 z-50 dropdown-enter-left">
+              <div className="absolute left-0 mt-2.5 w-72 max-w-[calc(100vw-24px)] rounded-2xl bg-[#000000] backdrop-blur-xl border border-white/[0.16] shadow-2xl p-2 z-50 dropdown-enter-left">
                 <div className="px-3 py-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-white/[0.16] mb-1 flex items-center justify-between">
                   <span>Filiais da Rede</span>
                   <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#000000] text-emerald-400 border border-emerald-500/20">
@@ -226,8 +232,17 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
         </button>
       </div>
 
-      {/* Right: User Profile */}
-      <div className="flex items-center gap-2.5 sm:gap-3.5 z-10">
+      {/* Right: Mobile Search & User Profile */}
+      <div className="flex items-center gap-2 sm:gap-3.5 z-10 flex-shrink-0">
+        {/* Mobile Search Button */}
+        <button
+          onClick={onOpenSearch}
+          className="md:hidden w-10 h-10 rounded-xl border border-white/[0.16] flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/[0.06] transition-colors active:scale-95 flex-shrink-0"
+          title="Buscar no sistema"
+          aria-label="Buscar"
+        >
+          <Search className="w-4 h-4" />
+        </button>
 
         {/* User Profile Button */}
         <div className="relative">
@@ -251,7 +266,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
                 className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity"
                 onClick={() => setUserMenuOpen(false)}
               />
-              <div className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-[#000000] backdrop-blur-xl border border-white/[0.16] shadow-2xl p-2.5 z-50 dropdown-enter">
+              <div className="absolute right-0 mt-2.5 w-64 max-w-[calc(100vw-24px)] rounded-2xl bg-[#000000] backdrop-blur-xl border border-white/[0.16] shadow-2xl p-2.5 z-50 dropdown-enter">
                 {/* User Info Card inside dropdown */}
                 <div className="p-3 rounded-xl bg-[#000000] border border-white/[0.16] mb-2 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[#000000] border border-white/[0.15] flex items-center justify-center text-emerald-400 shadow-sm flex-shrink-0">
@@ -454,14 +469,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
                 <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">
                   Perfil de Acesso
                 </label>
-                <select
+                <Select
                   value={userRole}
-                  onChange={(e) => setUserRole(e.target.value as 'GERENTE' | 'DONO')}
-                  className="w-full h-10 px-3 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white focus:border-emerald-500 focus:outline-none"
-                >
-                  <option value="GERENTE">GERENTE (Restrito à Filial)</option>
-                  <option value="DONO">DONO (Acesso Total à Rede)</option>
-                </select>
+                  onChange={(val) => setUserRole(val as 'GERENTE' | 'DONO')}
+                  options={[
+                    { value: 'GERENTE', label: 'GERENTE (Restrito à Filial)' },
+                    { value: 'DONO', label: 'DONO (Acesso Total à Rede)' },
+                  ]}
+                />
               </div>
             </div>
 
@@ -470,18 +485,15 @@ export const TopBar: React.FC<TopBarProps> = ({ onToggleSidebar, onOpenSearch })
                 <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">
                   Filial Atribuída ao Gerente
                 </label>
-                <select
-                  required
+                <Select
                   value={userLojaId}
-                  onChange={(e) => setUserLojaId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white focus:border-emerald-500 focus:outline-none"
-                >
-                  {lojas.map((l) => (
-                    <option key={l.id} value={l.id}>
-                      {l.nome} ({l.cnpj})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setUserLojaId(val)}
+                  options={lojas.map((l) => ({
+                    value: l.id,
+                    label: `${l.nome} (${l.cnpj})`,
+                  }))}
+                  placeholder="Selecione a filial..."
+                />
               </div>
             )}
 

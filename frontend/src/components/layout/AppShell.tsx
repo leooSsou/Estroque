@@ -11,11 +11,17 @@ import { useAuth } from '../../context/AuthContext';
 export const AppShell: React.FC = () => {
   const { isImpersonating, impersonationData, stopImpersonating } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Produto[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Fecha o menu mobile ao trocar de rota
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   // Keyboard shortcut for Cmd+K / Ctrl+K
   useEffect(() => {
@@ -54,6 +60,8 @@ export const AppShell: React.FC = () => {
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
       />
 
       {/* Top glowing laser indicator on route change */}
@@ -61,21 +69,21 @@ export const AppShell: React.FC = () => {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          sidebarCollapsed ? 'pl-20' : 'pl-64'
+        className={`flex-1 flex flex-col min-w-0 w-full transition-all duration-300 ${
+          sidebarCollapsed ? 'xl:pl-20' : 'xl:pl-64'
         }`}
       >
         {isImpersonating && (
-          <div className="bg-amber-400 text-slate-950 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-lg sticky top-0 z-50 animate-fade-in border-b border-amber-500">
-            <div className="flex items-center gap-3">
-              <div className="p-1 rounded-full bg-slate-950 text-amber-400">
+          <div className="bg-amber-400 text-slate-950 px-3.5 py-2.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg sticky top-0 z-40 border-b border-amber-500 animate-fade-in">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="p-1 rounded-full bg-slate-950 text-amber-400 flex-shrink-0">
                 <ShieldAlert className="w-4 h-4" />
               </div>
-              <div className="text-xs sm:text-sm">
-                <span className="font-bold tracking-wide uppercase text-[10px] px-1.5 py-0.5 rounded bg-slate-950 text-amber-300 mr-2">
-                  Modo Suporte Ativo
+              <div className="text-xs sm:text-sm leading-tight">
+                <span className="font-bold tracking-wide uppercase text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded bg-slate-950 text-amber-300 mr-2">
+                  Modo Suporte
                 </span>
-                Visualizando a conta de <strong>{impersonationData?.tenant_nome || 'Inquilino'}</strong> como <strong>{impersonationData?.usuario_nome}</strong> ({impersonationData?.usuario_email})
+                Conta de <strong>{impersonationData?.tenant_nome || 'Inquilino'}</strong> ({impersonationData?.usuario_email})
               </div>
             </div>
             <button
@@ -83,20 +91,21 @@ export const AppShell: React.FC = () => {
                 await stopImpersonating();
                 navigate('/admin');
               }}
-              className="bg-slate-950 hover:bg-slate-900 text-amber-300 font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow transition-all btn-press ml-auto"
+              className="bg-slate-950 hover:bg-slate-900 text-amber-300 font-semibold px-3 py-1.5 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow transition-all btn-press w-full sm:w-auto"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Encerrar Suporte e Voltar ao Super Admin
+              Encerrar Suporte
             </button>
           </div>
         )}
 
         <TopBar
+          onToggleMobileSidebar={() => setMobileSidebarOpen((prev) => !prev)}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           onOpenSearch={() => setSearchModalOpen(true)}
         />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 w-full">
+        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full min-w-0 max-w-full">
           <div key={location.pathname} className="page-enter w-full">
             <Outlet />
           </div>

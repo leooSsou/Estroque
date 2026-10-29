@@ -7,6 +7,7 @@ import { BentoCard } from '../components/common/BentoCard';
 import { StatCard } from '../components/common/StatCard';
 import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
+import { Select } from '../components/common/Select';
 import {
   Wallet,
   ArrowDownRight,
@@ -140,7 +141,7 @@ export const Financeiro: React.FC = () => {
 
         <button
           onClick={() => setNewExpenseModal(true)}
-          className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus className="w-4 h-4" />
           <span>Nova Despesa</span>
@@ -366,18 +367,18 @@ export const Financeiro: React.FC = () => {
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Categoria
             </label>
-            <select
+            <Select
               value={despesaCategoria}
-              onChange={(e) => setDespesaCategoria(e.target.value)}
-              className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-            >
-              <option value="Aluguel & Condomínio">Aluguel & Condomínio</option>
-              <option value="Energia Elétrica & Internet">Energia Elétrica & Internet</option>
-              <option value="Folha de Pagamento">Folha de Pagamento</option>
-              <option value="Manutenção Predial">Manutenção Predial</option>
-              <option value="Logística & Frete">Logística & Frete</option>
-              <option value="Marketing & Anúncios">Marketing & Anúncios</option>
-            </select>
+              onChange={(val) => setDespesaCategoria(val)}
+              options={[
+                { value: 'Aluguel & Condomínio', label: 'Aluguel & Condomínio' },
+                { value: 'Energia Elétrica & Internet', label: 'Energia Elétrica & Internet' },
+                { value: 'Folha de Pagamento', label: 'Folha de Pagamento' },
+                { value: 'Manutenção Predial', label: 'Manutenção Predial' },
+                { value: 'Logística & Frete', label: 'Logística & Frete' },
+                { value: 'Marketing & Anúncios', label: 'Marketing & Anúncios' },
+              ]}
+            />
           </div>
 
           <div>
@@ -414,14 +415,14 @@ export const Financeiro: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Status Pagamento
               </label>
-              <select
+              <Select
                 value={despesaStatus}
-                onChange={(e) => setDespesaStatus(e.target.value as 'PENDENTE' | 'PAGO')}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-              >
-                <option value="PAGO">Liquidado (Pago)</option>
-                <option value="PENDENTE">A Pagar (Pendente)</option>
-              </select>
+                onChange={(val) => setDespesaStatus(val as 'PENDENTE' | 'PAGO')}
+                options={[
+                  { value: 'PAGO', label: 'Liquidado (Pago)' },
+                  { value: 'PENDENTE', label: 'A Pagar (Pendente)' },
+                ]}
+              />
             </div>
           </div>
 
