@@ -83,6 +83,15 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       if (!res.ok) {
+        if (res.status === 401 && typeof window !== 'undefined') {
+          // Token expirado ou inválido: limpa o storage e redireciona para o login
+          this.logout();
+          storage.clearUser();
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
+        }
+
         const errorData = await res.json().catch(() => ({}));
         const detail =
           typeof errorData.detail === 'string'
