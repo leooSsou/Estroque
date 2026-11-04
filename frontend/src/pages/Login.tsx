@@ -10,30 +10,15 @@ import {
   ArrowRight,
   Lock,
   Mail,
-  Building2,
-  User,
-  FileText,
-  MapPin,
 } from 'lucide-react';
 
 export const Login: React.FC = () => {
-  const [mode, setMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
-
   // Login states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // Register states
-  const [nomeFantasia, setNomeFantasia] = useState('');
-  const [razaoSocial, setRazaoSocial] = useState('');
-  const [cnpj, setCnpj] = useState('');
-  const [enderecoLoja, setEnderecoLoja] = useState('');
-  const [donoNome, setDonoNome] = useState('');
-  const [donoEmail, setDonoEmail] = useState('');
-  const [donoSenha, setDonoSenha] = useState('');
-
   const [loading, setLoading] = useState(false);
-  const { login, registerTenant } = useAuth();
+
+  const { login } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -55,32 +40,6 @@ export const Login: React.FC = () => {
       navigate('/');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Credenciais inválidas. Tente novamente.';
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmitRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await registerTenant({
-        nome_fantasia: nomeFantasia,
-        razao_social: razaoSocial || nomeFantasia,
-        cnpj,
-        endereco_loja: enderecoLoja || 'Endereço Matriz Principal',
-        dono_nome: donoNome,
-        dono_email: donoEmail,
-        dono_senha: donoSenha,
-      });
-      toast.success(`Empresa "${nomeFantasia}" e Loja Matriz criadas com sucesso!`);
-      navigate('/');
-    } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : 'Erro ao cadastrar empresa. Verifique se o CNPJ é válido.';
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -158,7 +117,7 @@ export const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Column: Authentication / Registration Card (Acesso Imediato no Mobile) */}
+      {/* Right Column: Authentication Card */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-16 min-h-screen z-10">
         <div className="w-full max-w-md bg-[#000000] border border-white/[0.16] rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl my-auto">
           <div className="mb-6">
@@ -173,224 +132,65 @@ export const Login: React.FC = () => {
               </span>
             </div>
 
-            {/* Mode Switcher Tabs */}
-            <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-[#000000] border border-white/[0.16] mb-6">
-              <button
-                type="button"
-                onClick={() => setMode('LOGIN')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all ${
-                  mode === 'LOGIN'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Entrar na Conta
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('REGISTER')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all ${
-                  mode === 'REGISTER'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                Cadastrar Minha Loja
-              </button>
-            </div>
-
             <h2 className="text-2xl font-bold text-white">
-              {mode === 'LOGIN' ? 'Acesso ao Sistema' : 'Criar Conta Empresarial'}
+              Acesso ao Sistema
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              {mode === 'LOGIN'
-                ? 'Entre com suas credenciais de inquilino para acessar sua rede.'
-                : 'Cadastre sua empresa e crie automaticamente sua Loja Matriz no banco.'}
+              Entre com suas credenciais para acessar o painel de gerenciamento.
             </p>
           </div>
 
-          {mode === 'LOGIN' ? (
-            <form onSubmit={handleSubmitLogin} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  E-mail Corporativo
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="usuario@loja.com.br"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-medium text-slate-300">Senha</label>
-                </div>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 px-6 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 active:scale-95"
-                >
-                  <span>{loading ? 'Validando...' : 'Acessar Plataforma'}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleSubmitRegister} className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Nome Fantasia da Loja
-                  </label>
-                  <div className="relative">
-                    <Building2 className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      required
-                      value={nomeFantasia}
-                      onChange={(e) => setNomeFantasia(e.target.value)}
-                      placeholder="Ex: MegaTech Store"
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    CNPJ (Válido)
-                  </label>
-                  <div className="relative">
-                    <FileText className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="text"
-                      required
-                      value={cnpj}
-                      onChange={(e) => setCnpj(e.target.value)}
-                      placeholder="11.222.333/0001-81"
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Razão Social
-                </label>
+          <form onSubmit={handleSubmitLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                E-mail Corporativo
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 <input
-                  type="text"
+                  type="email"
                   required
-                  value={razaoSocial}
-                  onChange={(e) => setRazaoSocial(e.target.value)}
-                  placeholder="Ex: MegaTech Comercio de Eletronicos Ltda"
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="usuario@loja.com.br"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Endereço da Loja Matriz
-                </label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    required
-                    value={enderecoLoja}
-                    onChange={(e) => setEnderecoLoja(e.target.value)}
-                    placeholder="Rua Principal, 100 - Centro"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-medium text-slate-300">Senha</label>
               </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Seu Nome (Proprietário / Dono)
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    required
-                    value={donoNome}
-                    onChange={(e) => setDonoNome(e.target.value)}
-                    placeholder="Nome completo"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
+                />
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    E-mail de Acesso
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="email"
-                      required
-                      value={donoEmail}
-                      onChange={(e) => setDonoEmail(e.target.value)}
-                      placeholder="dono@sualoja.com"
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-6 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 active:scale-95"
+              >
+                <span>{loading ? 'Validando...' : 'Acessar Plataforma'}</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </form>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Senha (mín. 6 dígitos)
-                  </label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                    <input
-                      type="password"
-                      required
-                      minLength={6}
-                      value={donoSenha}
-                      onChange={(e) => setDonoSenha(e.target.value)}
-                      placeholder="••••••"
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 px-6 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 group disabled:opacity-50 active:scale-95"
-                >
-                  <span>{loading ? 'Criando Empresa e Loja...' : 'Criar Loja e Entrar'}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </form>
-          )}
+          <div className="mt-6 pt-4 border-t border-white/[0.08] text-center text-xs text-slate-500">
+            Precisa de acesso ou deseja cadastrar sua empresa?
+            <span className="block text-slate-400 mt-1">O cadastro é gerenciado exclusivamente pela equipe de administração.</span>
+          </div>
         </div>
       </div>
     </div>

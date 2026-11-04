@@ -387,4 +387,68 @@ def test_superadmin_listar_e_atualizar_planos_comerciais(
     assert res_invalido.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
+def test_superadmin_cadastrar_novo_tenant_e_lojas_filiais(
+    client: TestClient, superadmin_setup
+):
+    admin_headers = superadmin_setup["admin_headers"]
+    cnpj_tenant = gerar_cnpj()
+    email_dono = f"dono_{uuid4().hex[:8]}@empresa.com"
+
+    # 1. Super-Admin cadastra nova empresa com Loja Matriz e Usuário Dono
+    payload_tenant = {
+        "nome_fantasia": "Auto Peças Central",
+        "razao_social": "Auto Peças Central Ltda",
+        "cnpj": cnpj_tenant,
+        "plano": "STARTER",
+        "nome_loja": "Matriz Central",
+        "endereco_loja": "Av. Principal, 100",
+        "dono_nome": "Marcos Dono",
+        "dono_email": email_dono,
+        "dono_senha": "senhaSegura123!",
+    }
+    res = client.post("/admin/tenants", json=payload_tenant, headers=admin_headers)
+    assert res.status_code == status.HTTP_201_CREATED
+    data = res.json()
+    assert data["nome_fantasia"] == "Auto Peças Central"
+    assert data["plano"] == "STARTER"
+    assert data["total_lojas"] == 1
+    assert data["total_usuarios"] == 1
+    tenant_id = data["id"]
+
+    # 2. O dono cadastrado consegue se autenticar com suas credenciais
+    res_login = client.post(
+        "/auth/login",
+        json={"email": email_dono, "senha": "senhaSegura123!"},
+    )
+    assert res_login.status_code == status.HTTP_200_OK
+
+    # 3. Super-Admin tenta cadastrar segunda filial no plano STARTER (limite é 1 filial)
+    cnpj_filial = gerar_cnpj()
+    res_loja_limite = client.post(
+        f"/admin/tenants/{tenant_id}/lojas",
+        json={"nome": "Filial Sul", "cnpj": cnpj_filial, "endereco": "Rua Sul, 50"},
+        headers=admin_headers,
+    )
+    assert res_loja_limite.status_code == status.HTTP_400_BAD_REQUEST
+
+    # 4. Super-Admin faz upgrade do plano para PRO (limite de 5 lojas)
+    res_upgrade = client.patch(
+        f"/admin/tenants/{tenant_id}/plano",
+        json={"plano": "PRO"},
+        headers=admin_headers,
+    )
+    assert res_upgrade.status_code == status.HTTP_200_OK
+
+    # 5. Agora o Super-Admin consegue cadastrar a filial com sucesso
+    res_loja_ok = client.post(
+        f"/admin/tenants/{tenant_id}/lojas",
+        json={"nome": "Filial Sul", "cnpj": cnpj_filial, "endereco": "Rua Sul, 50"},
+        headers=admin_headers,
+    )
+    assert res_loja_ok.status_code == status.HTTP_201_CREATED
+    loja_data = res_loja_ok.json()
+    assert loja_data["nome"] == "Filial Sul"
+
+
+
 

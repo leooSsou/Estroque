@@ -682,5 +682,26 @@ class AtualizarPlanoConfigRequest(BaseModel):
     destaque: bool | None = Field(default=None)
 
 
+class CriarTenantSuperAdminRequest(BaseModel):
+    nome_fantasia: str = Field(..., min_length=1, max_length=150, description="Nome comercial da rede/loja.")
+    razao_social: str | None = Field(default=None, max_length=150, description="Razão social jurídica oficial.")
+    cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ da empresa (com ou sem pontuação).")
+    plano: str = Field(default="PRO", pattern="^(STARTER|PRO|ENTERPRISE|starter|pro|enterprise)$")
+    limite_lojas: int | None = Field(default=None, ge=1)
+    limite_usuarios: int | None = Field(default=None, ge=1)
+    nome_loja: str | None = Field(default=None, max_length=150, description="Nome da loja matriz inicial.")
+    endereco_loja: str | None = Field(default=None, max_length=255, description="Endereço da loja matriz.")
+    dono_nome: str = Field(..., min_length=1, max_length=100, description="Nome do titular/administrador.")
+    dono_email: EmailStr = Field(..., description="E-mail corporativo de acesso do titular.")
+    dono_senha: str = Field(..., min_length=6, max_length=100, description="Senha inicial de acesso do titular.")
+
+
+class CriarLojaSuperAdminRequest(BaseModel):
+    nome: str = Field(..., min_length=1, max_length=150, description="Nome da filial/loja.")
+    cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ da filial.")
+    endereco: str | None = Field(default=None, max_length=255, description="Endereço físico da filial.")
+
+
+
 
 

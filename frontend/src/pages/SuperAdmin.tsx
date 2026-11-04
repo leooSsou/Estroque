@@ -143,6 +143,28 @@ export const SuperAdmin: React.FC = () => {
   // Estado de alteração de status inline
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
 
+  // Estado do Modal de Cadastrar Inquilino & Loja
+  const [modalNovoTenantOpen, setModalNovoTenantOpen] = useState(false);
+  const [novoTenantNomeFantasia, setNovoTenantNomeFantasia] = useState('');
+  const [novoTenantRazaoSocial, setNovoTenantRazaoSocial] = useState('');
+  const [novoTenantCnpj, setNovoTenantCnpj] = useState('');
+  const [novoTenantPlano, setNovoTenantPlano] = useState<'STARTER' | 'PRO' | 'ENTERPRISE'>('PRO');
+  const [novoTenantLimiteLojas, setNovoTenantLimiteLojas] = useState(5);
+  const [novoTenantLimiteUsuarios, setNovoTenantLimiteUsuarios] = useState(10);
+  const [novoLojaNome, setNovoLojaNome] = useState('');
+  const [novoLojaEndereco, setNovoLojaEndereco] = useState('');
+  const [novoDonoNome, setNovoDonoNome] = useState('');
+  const [novoDonoEmail, setNovoDonoEmail] = useState('');
+  const [novoDonoSenha, setNovoDonoSenha] = useState('');
+  const [savingNovoTenant, setSavingNovoTenant] = useState(false);
+
+  // Estado do Modal de Cadastrar Filial Adicional no Drawer
+  const [modalNovaFilialOpen, setModalNovaFilialOpen] = useState(false);
+  const [novaFilialNome, setNovaFilialNome] = useState('');
+  const [novaFilialCnpj, setNovaFilialCnpj] = useState('');
+  const [novaFilialEndereco, setNovaFilialEndereco] = useState('');
+  const [savingNovaFilial, setSavingNovaFilial] = useState(false);
+
   // Estado do Drawer de Detalhes 360°
   const [drawerTenantId, setDrawerTenantId] = useState<string | null>(null);
   const [detalhesTenant, setDetalhesTenant] = useState<TenantDetalhesCompletos | null>(null);
@@ -329,6 +351,113 @@ export const SuperAdmin: React.FC = () => {
     }
   };
 
+  const handleOpenNovoTenant = () => {
+    setNovoTenantNomeFantasia('');
+    setNovoTenantRazaoSocial('');
+    setNovoTenantCnpj('');
+    setNovoTenantPlano('PRO');
+    const proInfo = planosMap['PRO'] || PLANOS_INFO['PRO'];
+    setNovoTenantLimiteLojas(proInfo?.lojasMax ?? 5);
+    setNovoTenantLimiteUsuarios(proInfo?.usuariosMax ?? 10);
+    setNovoLojaNome('');
+    setNovoLojaEndereco('');
+    setNovoDonoNome('');
+    setNovoDonoEmail('');
+    setNovoDonoSenha('');
+    setModalNovoTenantOpen(true);
+  };
+
+  const handleSelectNovoPlano = (p: 'STARTER' | 'PRO' | 'ENTERPRISE') => {
+    setNovoTenantPlano(p);
+    const info = planosMap[p] || PLANOS_INFO[p];
+    if (info) {
+      setNovoTenantLimiteLojas(info.lojasMax);
+      setNovoTenantLimiteUsuarios(info.usuariosMax);
+    }
+  };
+
+  const handleSaveNovoTenant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!novoTenantNomeFantasia.trim() || !novoTenantRazaoSocial.trim() || !novoTenantCnpj.trim()) {
+      toast.error('Preencha os dados da empresa (nome, razão e CNPJ).');
+      return;
+    }
+    if (!novoLojaNome.trim()) {
+      toast.error('Informe o nome da Loja Matriz inicial.');
+      return;
+    }
+    if (!novoDonoNome.trim() || !novoDonoEmail.trim() || !novoDonoSenha.trim()) {
+      toast.error('Informe os dados de acesso do Titular/Dono.');
+      return;
+    }
+    if (novoDonoSenha.length < 6) {
+      toast.error('A senha inicial do Dono deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    setSavingNovoTenant(true);
+    try {
+      await api.cadastrarAdminTenant({
+        nome_fantasia: novoTenantNomeFantasia.trim(),
+        razao_social: novoTenantRazaoSocial.trim(),
+        cnpj: novoTenantCnpj.replace(/\D/g, ''),
+        plano: novoTenantPlano,
+        limite_lojas: Number(novoTenantLimiteLojas),
+        limite_usuarios: Number(novoTenantLimiteUsuarios),
+        nome_loja: novoLojaNome.trim(),
+        endereco_loja: novoLojaEndereco.trim() || undefined,
+        dono_nome: novoDonoNome.trim(),
+        dono_email: novoDonoEmail.trim(),
+        dono_senha: novoDonoSenha,
+      });
+
+      toast.success(`Inquilino "${novoTenantNomeFantasia}" e Loja Matriz cadastrados com sucesso!`);
+      setModalNovoTenantOpen(false);
+      loadData(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao cadastrar inquilino';
+      toast.error(msg);
+    } finally {
+      setSavingNovoTenant(false);
+    }
+  };
+
+  const handleOpenNovaFilial = () => {
+    setNovaFilialNome('');
+    setNovaFilialCnpj('');
+    setNovaFilialEndereco('');
+    setModalNovaFilialOpen(true);
+  };
+
+  const handleSaveNovaFilial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!detalhesTenant) return;
+    if (!novaFilialNome.trim() || !novaFilialCnpj.trim()) {
+      toast.error('Informe o nome e CNPJ da filial.');
+      return;
+    }
+
+    setSavingNovaFilial(true);
+    try {
+      await api.cadastrarAdminLoja(detalhesTenant.id, {
+        nome: novaFilialNome.trim(),
+        cnpj: novaFilialCnpj.replace(/\D/g, ''),
+        endereco: novaFilialEndereco.trim() || undefined,
+      });
+
+      toast.success(`Filial "${novaFilialNome}" cadastrada com sucesso!`);
+      setModalNovaFilialOpen(false);
+      const updatedDetalhes = await api.getAdminTenantDetalhesCompletos(detalhesTenant.id);
+      setDetalhesTenant(updatedDetalhes);
+      loadData(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao cadastrar filial';
+      toast.error(msg);
+    } finally {
+      setSavingNovaFilial(false);
+    }
+  };
+
   const handleOpenDetalhes = async (tenantId: string) => {
     setDrawerTenantId(tenantId);
     setCarregandoDetalhes(true);
@@ -403,14 +532,24 @@ export const SuperAdmin: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => loadData(true)}
-          disabled={refreshing || loading}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/[0.1] hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          <span>Atualizar Dados</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={handleOpenNovoTenant}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 shadow-lg shadow-purple-600/20 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Cadastrar Inquilino / Loja</span>
+          </button>
+
+          <button
+            onClick={() => loadData(true)}
+            disabled={refreshing || loading}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-white/[0.04] border border-white/[0.1] hover:bg-white/[0.08] hover:text-white transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>Atualizar Dados</span>
+          </button>
+        </div>
       </div>
 
       {/* Tabs de Navegação do Super-Admin */}
@@ -671,6 +810,14 @@ export const SuperAdmin: React.FC = () => {
                   className="w-full pl-9 pr-3 py-1.5 text-xs bg-white/[0.04] border border-white/[0.1] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                 />
               </div>
+
+              <button
+                onClick={handleOpenNovoTenant}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 transition-colors shadow-sm shadow-purple-600/20"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Novo Inquilino</span>
+              </button>
             </div>
           </div>
 
@@ -1254,6 +1401,346 @@ export const SuperAdmin: React.FC = () => {
         </div>
       )}
 
+      {/* Modal: Cadastrar Novo Inquilino (Empresa + Loja Matriz + Usuário Dono) */}
+      {modalNovoTenantOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-[#121214] border border-white/[0.12] rounded-2xl w-full max-w-xl p-6 shadow-2xl relative my-8">
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Cadastrar Inquilino & Loja Matriz</h3>
+                  <p className="text-xs text-slate-400">
+                    Crie a empresa cliente, sua primeira filial e o login de acesso do dono
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalNovoTenantOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/[0.06] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNovoTenant} className="mt-5 space-y-5">
+              {/* Seção 1: Dados da Empresa / Inquilino */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>1. Dados da Empresa (Inquilino)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Nome Fantasia *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Confecções Estrela"
+                      value={novoTenantNomeFantasia}
+                      onChange={(e) => setNovoTenantNomeFantasia(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Razão Social *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Estrela Modas Ltda"
+                      value={novoTenantRazaoSocial}
+                      onChange={(e) => setNovoTenantRazaoSocial(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      CNPJ da Empresa *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: 00.000.000/0001-91"
+                      value={novoTenantCnpj}
+                      onChange={(e) => setNovoTenantCnpj(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Plano Comercial Contratado
+                    </label>
+                    <select
+                      value={novoTenantPlano}
+                      onChange={(e) => handleSelectNovoPlano(e.target.value as 'STARTER' | 'PRO' | 'ENTERPRISE')}
+                      className="w-full px-3 py-2 bg-[#18181c] border border-white/[0.12] rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                    >
+                      <option value="STARTER">Starter (R$ {planosMap['STARTER']?.mrr ?? 99}/mês)</option>
+                      <option value="PRO">Pro (R$ {planosMap['PRO']?.mrr ?? 249}/mês)</option>
+                      <option value="ENTERPRISE">Enterprise (R$ {planosMap['ENTERPRISE']?.mrr ?? 799}/mês)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Cota de Filiais
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={novoTenantLimiteLojas}
+                      onChange={(e) => setNovoTenantLimiteLojas(Math.max(1, parseInt(e.target.value) || 1))}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Cota de Usuários
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={novoTenantLimiteUsuarios}
+                      onChange={(e) => setNovoTenantLimiteUsuarios(Math.max(1, parseInt(e.target.value) || 1))}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Seção 2: Loja Matriz Inicial */}
+              <div className="space-y-3 pt-3 border-t border-white/[0.08]">
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+                  <Store className="w-3.5 h-3.5" />
+                  <span>2. Primeira Loja (Matriz)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Nome da Loja Matriz *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Matriz Centro"
+                      value={novoLojaNome}
+                      onChange={(e) => setNovoLojaNome(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Endereço da Loja (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Av. Brasil, 1500 - Sala 1"
+                      value={novoLojaEndereco}
+                      onChange={(e) => setNovoLojaEndereco(e.target.value)}
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Seção 3: Dono / Titular do Acesso */}
+              <div className="space-y-3 pt-3 border-t border-white/[0.08]">
+                <div className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span>3. Login do Proprietário (Dono)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Nome do Titular *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Carlos Silva"
+                      value={novoDonoNome}
+                      onChange={(e) => setNovoDonoNome(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      E-mail de Acesso *
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="carlos@empresa.com"
+                      value={novoDonoEmail}
+                      onChange={(e) => setNovoDonoEmail(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Senha Inicial *
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="Mínimo 6 dígitos"
+                      value={novoDonoSenha}
+                      onChange={(e) => setNovoDonoSenha(e.target.value)}
+                      required
+                      minLength={6}
+                      className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
+                <button
+                  type="button"
+                  onClick={() => setModalNovoTenantOpen(false)}
+                  disabled={savingNovoTenant}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-white/[0.04] transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingNovoTenant}
+                  className="px-5 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl transition-colors flex items-center gap-1.5 shadow-lg shadow-purple-600/20"
+                >
+                  {savingNovoTenant ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Cadastrando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Cadastrar Inquilino</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Cadastrar Filial Adicional para Inquilino Existente */}
+      {modalNovaFilialOpen && detalhesTenant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#121214] border border-white/[0.12] rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+                  <Store className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Nova Filial / Loja</h3>
+                  <p className="text-xs text-slate-400 truncate max-w-[260px]">
+                    {detalhesTenant.nome_fantasia}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalNovaFilialOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/[0.06] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNovaFilial} className="mt-5 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Nome da Filial / Loja *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Filial Shopping Sul"
+                  value={novaFilialNome}
+                  onChange={(e) => setNovaFilialNome(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  CNPJ da Filial *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: 00.000.000/0002-72"
+                  value={novaFilialCnpj}
+                  onChange={(e) => setNovaFilialCnpj(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Endereço da Filial (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Shopping Sul, Loja 104"
+                  value={novaFilialEndereco}
+                  onChange={(e) => setNovaFilialEndereco(e.target.value)}
+                  className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
+                <button
+                  type="button"
+                  onClick={() => setModalNovaFilialOpen(false)}
+                  disabled={savingNovaFilial}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-white/[0.04] transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingNovaFilial}
+                  className="px-5 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl transition-colors flex items-center gap-1.5 shadow-lg shadow-purple-600/20"
+                >
+                  {savingNovaFilial ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Cadastrando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Adicionar Filial</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Slide-over Drawer: Visão 360° do Inquilino */}
       {drawerTenantId && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
@@ -1374,9 +1861,24 @@ export const SuperAdmin: React.FC = () => {
                           Lojas & Filiais ({detalhesTenant.lojas.length})
                         </h3>
                       </div>
-                      <span className="text-[11px] text-slate-400">
-                        Cota: {detalhesTenant.lojas.length} de {detalhesTenant.limite_lojas}
-                      </span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[11px] text-slate-400">
+                          Cota: {detalhesTenant.lojas.length} de {detalhesTenant.limite_lojas}
+                        </span>
+                        <button
+                          onClick={handleOpenNovaFilial}
+                          disabled={detalhesTenant.lojas.length >= detalhesTenant.limite_lojas}
+                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          title={
+                            detalhesTenant.lojas.length >= detalhesTenant.limite_lojas
+                              ? 'Limite de filiais do plano atingido. Aumente o plano ou cota.'
+                              : 'Cadastrar nova filial'
+                          }
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Nova Filial</span>
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-2">

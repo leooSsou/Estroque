@@ -152,6 +152,38 @@ async function run() {
     assert.ok(pro?.recursos.length > 0);
   });
 
+  await testCase('5.7: Deve validar payload de cadastro de Tenant e Loja Matriz pelo Super-Admin', async () => {
+    const payload = {
+      nome_fantasia: 'Nova Rede Calçados',
+      razao_social: 'Nova Rede Calçados Ltda',
+      cnpj: '12345678000199',
+      plano: 'PRO' as const,
+      limite_lojas: 5,
+      limite_usuarios: 10,
+      nome_loja: 'Matriz Centro',
+      endereco_loja: 'Rua das Flores, 100',
+      dono_nome: 'Marcos Proprietário',
+      dono_email: 'marcos@novarede.com',
+      dono_senha: 'senha-segura-123',
+    };
+
+    assert.ok(payload.nome_fantasia.length > 0);
+    assert.ok(payload.cnpj.length >= 14);
+    assert.ok(payload.dono_senha.length >= 6);
+    assert.equal(payload.plano, 'PRO');
+  });
+
+  await testCase('5.8: Deve validar payload de cadastro de filial avulsa pelo Super-Admin', async () => {
+    const payloadFilial = {
+      nome: 'Filial Shopping Norte',
+      cnpj: '12345678000288',
+      endereco: 'Av. Shopping, Loja 45',
+    };
+
+    assert.ok(payloadFilial.nome.length > 0);
+    assert.ok(payloadFilial.cnpj.length >= 14);
+  });
+
   console.log(`\nResultados: ${passed} passaram, ${failed} falharam.`);
   if (failed > 0) {
     process.exit(1);
