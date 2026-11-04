@@ -103,7 +103,15 @@ export const Contatos: React.FC = () => {
 
     setSubmittingCrediario(true);
     try {
-      const lojaId = activeLoja?.id || '11111111-1111-1111-1111-111111111111';
+      let lojaId = activeLoja?.id;
+      if (!lojaId) {
+        const lojas = await api.getLojas();
+        if (lojas.length > 0) lojaId = lojas[0].id;
+      }
+      if (!lojaId) {
+        toast.error('Nenhuma loja ativa encontrada para registrar o recebimento.');
+        return;
+      }
       const atualizado = await api.receberCrediario(crediarioCliente.id, lojaId, valorReceber);
       toast.success(
         `Recebimento de R$ ${valorReceber.toFixed(2)} registrado! Saldo devedor restante: R$ ${atualizado.saldo_devedor_crediario.toFixed(2)}`

@@ -53,6 +53,8 @@ export const Produtos: React.FC = () => {
   const [newCusto, setNewCusto] = useState(50.0);
   const [newMarkup, setNewMarkup] = useState(60.0);
   const [newEstoqueInicial, setNewEstoqueInicial] = useState(20);
+  const [qtdTotalLote, setQtdTotalLote] = useState(100);
+  const [modoDivisaoEstoque, setModoDivisaoEstoque] = useState<'POR_VARIACAO' | 'DIVIDIR_TOTAL'>('POR_VARIACAO');
 
   // Grade / Variations Builder State
   const [atributosGrade, setAtributosGrade] = useState<AtributoGrade[]>([
@@ -208,6 +210,14 @@ export const Produtos: React.FC = () => {
     return combos.slice(0, 100);
   }, [atributosGrade]);
 
+  // Sincroniza a divisão igualitária do estoque do lote sempre que as variações mudarem
+  useEffect(() => {
+    if (modoDivisaoEstoque === 'DIVIDIR_TOTAL') {
+      const totalVars = previewCombinacoes.length || 1;
+      setNewEstoqueInicial(Math.floor(qtdTotalLote / totalVars));
+    }
+  }, [previewCombinacoes.length, qtdTotalLote, modoDivisaoEstoque]);
+
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -342,6 +352,8 @@ export const Produtos: React.FC = () => {
       return matchQuery;
     });
   }, [produtos, search, statusFilter, activeLoja]);
+
+  const precoVendaCalculado = Math.round(newCusto * (1 + newMarkup / 100) * 100) / 100;
 
   return (
     <div className="space-y-6">
@@ -726,14 +738,16 @@ export const Produtos: React.FC = () => {
         isOpen={newProductModalOpen}
         onClose={() => setNewProductModalOpen(false)}
         title="Cadastrar Novo Produto"
+        subtitle={tipoCadastro === 'GRADE' ? 'Configuração de produto matriz com atributos e divisão de estoque' : 'Cadastro de item individual para catálogo'}
+        maxWidth="2xl"
       >
-        <form onSubmit={handleCreateProduct} className="space-y-4">
+        <form onSubmit={handleCreateProduct} className="space-y-5">
           {/* Toggle Type */}
           <div className="flex rounded-xl bg-[#000000] border border-white/[0.16] p-1 gap-1">
             <button
               type="button"
               onClick={() => setTipoCadastro('SIMPLES')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
                 tipoCadastro === 'SIMPLES'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
@@ -745,7 +759,7 @@ export const Produtos: React.FC = () => {
             <button
               type="button"
               onClick={() => setTipoCadastro('GRADE')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
                 tipoCadastro === 'GRADE'
                   ? 'bg-purple-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
@@ -758,14 +772,14 @@ export const Produtos: React.FC = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              {tipoCadastro === 'GRADE' ? 'Nome do Produto Pai (Ex: Camiseta Dry Fit)' : 'Nome do Produto'}
+              {tipoCadastro === 'GRADE' ? 'Nome do Produto Matriz (Ex: Camiseta Dry Fit)' : 'Nome do Produto'}
             </label>
             <input
               type="text"
               required
               value={newNome}
               onChange={(e) => setNewNome(e.target.value)}
-              placeholder={tipoCadastro === 'GRADE' ? 'Ex: Camiseta Básica Premium' : 'Ex: Teclado Sem Fio Bluetooth'}
+              placeholder={tipoCadastro === 'GRADE' ? 'Ex: Camiseta Básica Algodão' : 'Ex: Teclado Sem Fio Bluetooth'}
               className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
@@ -773,7 +787,7 @@ export const Produtos: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                {tipoCadastro === 'GRADE' ? 'SKU Base (Prefixo das variações)' : 'SKU (Código)'}
+                {tipoCadastro === 'GRADE' ? 'SKU Base (Prefixo das variações)' : 'SKU (Código Único)'}
               </label>
               <input
                 type="text"
@@ -781,7 +795,7 @@ export const Produtos: React.FC = () => {
                 value={newSku}
                 onChange={(e) => setNewSku(e.target.value)}
                 placeholder={tipoCadastro === 'GRADE' ? 'Ex: CAM-BAS' : 'Ex: TEC-BLU-07'}
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none uppercase"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none uppercase font-mono"
               />
             </div>
 
@@ -794,7 +808,7 @@ export const Produtos: React.FC = () => {
                 value={newBarcode}
                 onChange={(e) => setNewBarcode(e.target.value)}
                 placeholder="Ex: 7891234560074"
-                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none font-mono"
               />
             </div>
           </div>
@@ -807,6 +821,7 @@ export const Produtos: React.FC = () => {
               <input
                 type="number"
                 step="0.01"
+                min="0.01"
                 required
                 value={newCusto}
                 onChange={(e) => setNewCusto(parseFloat(e.target.value) || 0)}
@@ -816,11 +831,12 @@ export const Produtos: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                Markup (%)
+                Markup Desejado (%)
               </label>
               <input
                 type="number"
                 step="1"
+                min="0"
                 required
                 value={newMarkup}
                 onChange={(e) => setNewMarkup(parseFloat(e.target.value) || 0)}
@@ -830,17 +846,122 @@ export const Produtos: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                {tipoCadastro === 'GRADE' ? 'Estoque Inicial / Var (un)' : 'Estoque Inicial (un)'}
+                Venda Calculada (R$)
+              </label>
+              <div className="w-full h-11 px-3.5 rounded-xl bg-white/[0.04] border border-white/[0.16] text-sm font-bold text-white flex items-center justify-between">
+                <span>R$ {precoVendaCalculado.toFixed(2)}</span>
+                <span className="text-[10px] text-emerald-400 font-normal">automático</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Configuração de Estoque Simples vs Grade */}
+          {tipoCadastro === 'SIMPLES' ? (
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                Estoque Inicial (unidades)
               </label>
               <input
                 type="number"
                 required
+                min="0"
                 value={newEstoqueInicial}
                 onChange={(e) => setNewEstoqueInicial(parseInt(e.target.value) || 0)}
                 className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white focus:border-emerald-500 focus:outline-none"
               />
             </div>
-          </div>
+          ) : (
+            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.16] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                  Distribuição de Estoque nas Variações
+                </span>
+                <div className="flex rounded-lg bg-[#000000] border border-white/[0.16] p-0.5 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setModoDivisaoEstoque('POR_VARIACAO')}
+                    className={`px-2.5 py-1 rounded-md font-bold transition-all ${
+                      modoDivisaoEstoque === 'POR_VARIACAO'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Fixo por Variação
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModoDivisaoEstoque('DIVIDIR_TOTAL');
+                      const totalVars = previewCombinacoes.length || 1;
+                      setNewEstoqueInicial(Math.floor(qtdTotalLote / totalVars));
+                    }}
+                    className={`px-2.5 py-1 rounded-md font-bold transition-all ${
+                      modoDivisaoEstoque === 'DIVIDIR_TOTAL'
+                        ? 'bg-purple-600 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Dividir Quantidade Total
+                  </button>
+                </div>
+              </div>
+
+              {modoDivisaoEstoque === 'DIVIDIR_TOTAL' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-purple-300 uppercase tracking-wider mb-1">
+                      Quantidade Total do Lote (todas as peças)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={qtdTotalLote}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        setQtdTotalLote(val);
+                        const totalVars = previewCombinacoes.length || 1;
+                        setNewEstoqueInicial(Math.floor(val / totalVars));
+                      }}
+                      className="w-full h-10 px-3 rounded-lg bg-[#000000] border border-purple-500/40 text-sm font-bold text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div className="p-3 rounded-lg bg-purple-950/20 border border-purple-500/30 flex flex-col justify-center text-xs">
+                    <span className="text-slate-300">
+                      Resultado:{' '}
+                      <strong className="text-emerald-400 text-sm">
+                        {newEstoqueInicial} un
+                      </strong>{' '}
+                      para cada uma das {previewCombinacoes.length || 1} variações.
+                    </span>
+                    {previewCombinacoes.length > 0 && qtdTotalLote % previewCombinacoes.length > 0 && (
+                      <span className="text-[10px] text-amber-300 mt-0.5">
+                        Sobra de {qtdTotalLote % previewCombinacoes.length} un (distribuição inteira).
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                    Estoque Inicial por Variação (cada SKU receberá este saldo)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newEstoqueInicial}
+                    onChange={(e) => setNewEstoqueInicial(parseInt(e.target.value) || 0)}
+                    className="w-full h-10 px-3 rounded-lg bg-[#000000] border border-white/[0.16] text-sm text-white focus:outline-none"
+                  />
+                  <div className="text-[11px] text-slate-400 mt-1">
+                    Total em estoque somando as {previewCombinacoes.length} variações:{' '}
+                    <strong className="text-white">
+                      {newEstoqueInicial * (previewCombinacoes.length || 1)} peças
+                    </strong>.
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Grade / Variations Attribute Builder */}
           {tipoCadastro === 'GRADE' && (

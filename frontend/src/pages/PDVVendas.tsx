@@ -9,6 +9,7 @@ import {
   Venda,
   VendaEmEspera,
   CaixaTurno,
+  TurnoFechadoHistorico,
 } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
@@ -64,6 +65,7 @@ export const PDVVendas: React.FC = () => {
   const [vendasHistorico, setVendasHistorico] = useState<Venda[]>([]);
   const [vendasEspera, setVendasEspera] = useState<VendaEmEspera[]>([]);
   const [caixaTurno, setCaixaTurno] = useState<CaixaTurno | null>(null);
+  const [turnosHistorico, setTurnosHistorico] = useState<TurnoFechadoHistorico[]>([]);
 
   // Tab 1 (Caixa Ativo) States
   const [search, setSearch] = useState('');
@@ -136,18 +138,20 @@ export const PDVVendas: React.FC = () => {
   // Load all initial data
   const loadInitialData = async () => {
     try {
-      const [prods, clis, vends, esp, turno] = await Promise.all([
+      const [prods, clis, vends, esp, turno, histTurnos] = await Promise.all([
         api.getProdutos(activeLoja?.id),
         api.getClientes(),
-        api.getVendas(),
+        api.getVendas(activeLoja?.id),
         api.getVendasEspera(),
         api.getCaixaTurno(),
+        api.getHistoricoTurnos(),
       ]);
       setProdutos(prods);
       setClientes(clis);
       setVendasHistorico(vends);
       setVendasEspera(esp);
       setCaixaTurno(turno);
+      setTurnosHistorico(histTurnos);
     } catch {
       toast.error('Erro ao carregar dados do PDV.');
     }
@@ -330,6 +334,11 @@ export const PDVVendas: React.FC = () => {
 
   // Add item to cart
   const handleAddToCart = (prod: Produto) => {
+    if (!caixaTurno?.aberto) {
+      toast.warning('Caixa fechado! Abra o turno na aba "Operações de Caixa" para iniciar as vendas.');
+      return;
+    }
+
     // Se for um produto pai que possui variações, abre modal para o operador escolher a variação
     const variacoes = produtos.filter((p) => p.produto_pai_id === prod.id && p.ativo);
     if (variacoes.length > 0) {
@@ -342,6 +351,10 @@ export const PDVVendas: React.FC = () => {
   };
 
   const addItemDirectlyToCart = (prod: Produto) => {
+    if (!caixaTurno?.aberto) {
+      toast.warning('Caixa fechado! Abra o turno na aba "Operações de Caixa" para iniciar as vendas.');
+      return;
+    }
     const stock = activeLoja?.id ? prod.estoque_por_loja?.[activeLoja.id] ?? 0 : prod.estoque_total ?? 0;
     if (stock <= 0) {
       toast.error(`Produto "${prod.nome}" sem estoque disponível na loja!`);
@@ -381,6 +394,12 @@ export const PDVVendas: React.FC = () => {
 
   // Finalize Sale
   const handleFinalizeSale = async () => {
+    if (!caixaTurno?.aberto) {
+      toast.error('Caixa fechado! É obrigatório abrir o turno na aba "Operações de Caixa" antes de realizar vendas.');
+      setActiveTab('OPERACAO_CAIXA');
+      return;
+    }
+
     if (cart.length === 0) {
       toast.error('O carrinho de compras está vazio.');
       return;
@@ -433,8 +452,18 @@ export const PDVVendas: React.FC = () => {
     }
 
     try {
+      let lojaId = activeLoja?.id;
+      if (!lojaId) {
+        const lojas = await api.getLojas();
+        if (lojas.length > 0) lojaId = lojas[0].id;
+      }
+      if (!lojaId) {
+        toast.error('Loja não encontrada para registrar a venda.');
+        return;
+      }
+
       const sale = await api.registrarVenda({
-        loja_id: activeLoja?.id || '11111111-1111-1111-1111-111111111111',
+        loja_id: lojaId,
         cliente_id: selectedClienteId || null,
         forma_pagamento: modoPagamento === 'SPLIT' ? 'MULTIPLO' : formaPagamento,
         pagamentos: modoPagamento === 'SPLIT' ? splitPagamentos : undefined,
@@ -450,6 +479,7 @@ export const PDVVendas: React.FC = () => {
 
       setReceiptSale(sale);
       setReceiptModalOpen(true);
+      setVendasHistorico((prev) => [sale, ...prev]);
       setCart([]);
       setDesconto(0);
       setValorRecebido('');
@@ -459,8 +489,9 @@ export const PDVVendas: React.FC = () => {
 
       // Refresh data
       loadInitialData();
-    } catch {
-      toast.error('Erro ao registrar venda.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Erro ao registrar venda.';
+      toast.error(msg);
     }
   };
 
@@ -700,10 +731,16 @@ export const PDVVendas: React.FC = () => {
     const fundo = caixaTurno?.fundo_inicial || 0;
     let vendasDinheiro = 0;
     let vendasOutras = 0;
+    const dataAberturaTs = caixaTurno?.data_abertura ? new Date(caixaTurno.data_abertura).getTime() : 0;
 
     for (const v of vendasHistorico) {
-      if (v.status === 'CONCLUIDA') {
-        if (v.forma_pagamento === 'DINHEIRO') {
+      if (v.status === 'CONCLUIDA' && (!dataAberturaTs || new Date(v.data_venda).getTime() >= dataAberturaTs)) {
+        if (v.forma_pagamento === 'MULTIPLO' && v.pagamentos) {
+          for (const p of v.pagamentos) {
+            if (p.forma_pagamento === 'DINHEIRO') vendasDinheiro += p.valor;
+            else vendasOutras += p.valor;
+          }
+        } else if (v.forma_pagamento === 'DINHEIRO') {
           vendasDinheiro += v.valor_total;
         } else {
           vendasOutras += v.valor_total;
@@ -799,7 +836,32 @@ export const PDVVendas: React.FC = () => {
       {/* TAB 1: FRENTE DE CAIXA (ACTIVE POS)                                       */}
       {/* ========================================================================= */}
       {activeTab === 'CAIXA' && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6 items-start">
+        <div className="space-y-4">
+          {!caixaTurno?.aberto && (
+            <div className="p-4 sm:p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-bento-dark">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-amber-400" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-white">Turno de Caixa Fechado</h4>
+                  <p className="text-xs text-amber-200/80">
+                    O caixa precisa ser aberto na aba <strong>Operações de Caixa</strong> informando o fundo de troco antes de registrar vendas.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('OPERACAO_CAIXA')}
+                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 active:scale-95 transition-all shadow-md shrink-0 cursor-pointer"
+              >
+                <Unlock className="w-4 h-4" />
+                <span>Abrir Turno Agora</span>
+              </button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6 items-start">
           {/* Left 60%: Product Selection & Scanner */}
           <div className="md:col-span-7 space-y-4">
             {/* Barcode Scanner & Search Bar */}
@@ -1290,25 +1352,41 @@ export const PDVVendas: React.FC = () => {
                 </div>
 
                 <button
+                  type="button"
                   onClick={handleFinalizeSale}
                   disabled={
+                    !caixaTurno?.aberto ||
                     cart.length === 0 ||
                     (modoPagamento === 'SIMPLES' && (crediarioExcedido || Boolean(dinheiroInsuficiente))) ||
                     (modoPagamento === 'SPLIT' && (restanteSplit > 0 || splitPagamentos.length === 0 || Boolean(splitCrediarioExcedido)))
                   }
-                  className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-base font-bold shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none mt-2 btn-press hover-lift"
+                  className={`w-full py-3.5 px-4 rounded-xl text-white text-base font-bold shadow-lg transition-all flex items-center justify-center gap-2 mt-2 btn-press hover-lift ${
+                    !caixaTurno?.aberto
+                      ? 'bg-amber-600/70 hover:bg-amber-600 text-amber-100 cursor-pointer shadow-amber-600/20'
+                      : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/25 disabled:opacity-40 disabled:pointer-events-none'
+                  }`}
                 >
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>
-                    {modoPagamento === 'SPLIT'
-                      ? `Finalizar Venda Dividida (${splitPagamentos.length} ${splitPagamentos.length === 1 ? 'pagamento' : 'pagamentos'})`
-                      : 'Finalizar Venda & Emitir Cupom'}
-                  </span>
+                  {!caixaTurno?.aberto ? (
+                    <>
+                      <Lock className="w-5 h-5 text-amber-200" />
+                      <span>Caixa Fechado (Clique para Abrir)</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>
+                        {modoPagamento === 'SPLIT'
+                          ? `Finalizar Venda Dividida (${splitPagamentos.length} ${splitPagamentos.length === 1 ? 'pagamento' : 'pagamentos'})`
+                          : 'Finalizar Venda & Emitir Cupom'}
+                      </span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           </div>
         </div>
+      </div>
       )}
 
       {/* ========================================================================= */}
@@ -1765,6 +1843,84 @@ export const PDVVendas: React.FC = () => {
                         </td>
                         <td className="py-3.5 px-4 text-xs text-slate-300 whitespace-nowrap">
                           {op.motivo}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </BentoCard>
+
+          {/* Historical Closed Turns (Histórico dos PDV) */}
+          <BentoCard>
+            <div className="p-2 border-b border-white/[0.16] mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div>
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-emerald-400" />
+                  Histórico de Fechamentos de Caixa (Turnos Anteriores)
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Conferência de todos os turnos de PDV já encerrados com apuração de quebra ou sobra
+                </p>
+              </div>
+              <Badge variant="neutral">{turnosHistorico.length} turnos arquivados</Badge>
+            </div>
+            <div className="overflow-x-auto table-scrollbar pb-2">
+              <table className="w-full text-left min-w-[950px]">
+                <thead className="bg-[#000000] border-b border-white/[0.16]">
+                  <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
+                    <th className="py-3 px-4">Abertura / Fechamento</th>
+                    <th className="py-3 px-4">Operador</th>
+                    <th className="py-3 px-4">Fundo Inicial</th>
+                    <th className="py-3 px-4">Vendas Dinheiro</th>
+                    <th className="py-3 px-4">Suprimentos / Sangrias</th>
+                    <th className="py-3 px-4">Saldo Esperado</th>
+                    <th className="py-3 px-4">Contado (Gaveta)</th>
+                    <th className="py-3 px-4">Diferença / Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.14]">
+                  {turnosHistorico.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-8 text-center text-xs text-slate-500 whitespace-nowrap">
+                        Nenhum turno anterior arquivado ainda. Os fechamentos aparecerão aqui após o encerramento do caixa.
+                      </td>
+                    </tr>
+                  ) : (
+                    turnosHistorico.map((th) => (
+                      <tr key={th.id} className="hover:bg-white/[0.02] transition-colors whitespace-nowrap text-xs">
+                        <td className="py-3.5 px-4 text-slate-300">
+                          <div>Aberto: {new Date(th.data_abertura).toLocaleString('pt-BR')}</div>
+                          <div className="text-[11px] text-slate-500">Fechado: {new Date(th.data_fechamento).toLocaleString('pt-BR')}</div>
+                        </td>
+                        <td className="py-3.5 px-4 font-semibold text-white">
+                          {th.operador_nome}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-300">
+                          R$ {th.fundo_inicial.toFixed(2)}
+                        </td>
+                        <td className="py-3.5 px-4 text-emerald-400 font-bold">
+                          R$ {th.total_vendas_dinheiro.toFixed(2)}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-400">
+                          <span className="text-emerald-400">+{th.total_suprimentos.toFixed(2)}</span> /{' '}
+                          <span className="text-amber-400">-{th.total_sangrias.toFixed(2)}</span>
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-white">
+                          R$ {th.saldo_esperado.toFixed(2)}
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-white">
+                          R$ {th.saldo_informado.toFixed(2)}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          {Math.abs(th.diferenca) < 0.01 ? (
+                            <Badge variant="emerald">Exato (R$ 0,00)</Badge>
+                          ) : th.diferenca < 0 ? (
+                            <Badge variant="danger">Quebra -R$ {Math.abs(th.diferenca).toFixed(2)}</Badge>
+                          ) : (
+                            <Badge variant="emerald">Sobra +R$ {th.diferenca.toFixed(2)}</Badge>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -2270,18 +2426,21 @@ export const PDVVendas: React.FC = () => {
             </div>
             {typeof saldoContado === 'number' && (
               <div className="flex justify-between border-t border-white/[0.16] pt-2 font-bold">
-                <span className="text-slate-300">Diferença / Quebra de Caixa:</span>
+                <span className="text-slate-300">Conferência Física:</span>
                 <span
                   className={`text-sm ${
-                    saldoContado - drawerStats.saldoEsperadoGaveta === 0
-                      ? 'text-emerald-400'
+                    Math.abs(saldoContado - drawerStats.saldoEsperadoGaveta) < 0.01
+                      ? 'text-emerald-400 font-extrabold'
                       : saldoContado - drawerStats.saldoEsperadoGaveta < 0
                       ? 'text-rose-400'
                       : 'text-emerald-400'
                   }`}
                 >
-                  {saldoContado - drawerStats.saldoEsperadoGaveta >= 0 ? '+' : ''}
-                  R$ {(saldoContado - drawerStats.saldoEsperadoGaveta).toFixed(2)}
+                  {Math.abs(saldoContado - drawerStats.saldoEsperadoGaveta) < 0.01
+                    ? '✓ Caixa Exato (R$ 0,00)'
+                    : saldoContado - drawerStats.saldoEsperadoGaveta < 0
+                    ? `Quebra de Caixa: -R$ ${Math.abs(saldoContado - drawerStats.saldoEsperadoGaveta).toFixed(2)}`
+                    : `Sobra de Caixa: +R$ ${(saldoContado - drawerStats.saldoEsperadoGaveta).toFixed(2)}`}
                 </span>
               </div>
             )}

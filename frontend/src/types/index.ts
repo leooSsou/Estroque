@@ -306,6 +306,22 @@ export interface CaixaTurno {
   operacoes: OperacaoCaixa[];
 }
 
+export interface TurnoFechadoHistorico {
+  id: string;
+  data_abertura: string;
+  data_fechamento: string;
+  operador_nome: string;
+  fundo_inicial: number;
+  total_vendas_dinheiro: number;
+  total_suprimentos: number;
+  total_sangrias: number;
+  saldo_esperado: number;
+  saldo_informado: number;
+  diferenca: number;
+  observacao?: string;
+  operacoes: OperacaoCaixa[];
+}
+
 export interface ItemImportadoNFe {
   produto: Produto;
   quantidade_importada: number;

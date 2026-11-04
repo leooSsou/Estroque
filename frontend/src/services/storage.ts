@@ -22,6 +22,7 @@ import {
   VendaEmEspera,
   OperacaoCaixa,
   CaixaTurno,
+  TurnoFechadoHistorico,
 } from '../types';
 
 const STORAGE_PREFIX = 'estroque_saas_';
@@ -830,6 +831,10 @@ class StorageService {
   }
 
   // Operações de Caixa (Turno)
+  getHistoricoTurnos(): TurnoFechadoHistorico[] {
+    return this.get<TurnoFechadoHistorico[]>('turnos_historico', []);
+  }
+
   getCaixaTurno(): CaixaTurno {
     const user = this.getUser();
     return this.get<CaixaTurno>('caixa_turno', {
@@ -922,9 +927,20 @@ class StorageService {
   fecharCaixa(valorContado: number, observacao?: string): { diferenca: number; resumo: CaixaTurno } {
     const caixa = this.getCaixaTurno();
     const vendas = this.getVendas();
-    const vendasDinheiro = vendas
-      .filter((v) => v.status === 'CONCLUIDA' && v.forma_pagamento === 'DINHEIRO')
-      .reduce((acc, v) => acc + v.valor_total, 0);
+    const dataAberturaTs = caixa.data_abertura ? new Date(caixa.data_abertura).getTime() : 0;
+
+    let vendasDinheiro = 0;
+    for (const v of vendas) {
+      if (v.status === 'CONCLUIDA' && new Date(v.data_venda).getTime() >= dataAberturaTs) {
+        if (v.forma_pagamento === 'MULTIPLO' && v.pagamentos) {
+          for (const p of v.pagamentos) {
+            if (p.forma_pagamento === 'DINHEIRO') vendasDinheiro += p.valor;
+          }
+        } else if (v.forma_pagamento === 'DINHEIRO') {
+          vendasDinheiro += v.valor_total;
+        }
+      }
+    }
 
     const suprimentos = caixa.operacoes
       .filter((o) => o.tipo === 'SUPRIMENTO')
@@ -934,9 +950,10 @@ class StorageService {
       .filter((o) => o.tipo === 'SANGRIA')
       .reduce((acc, o) => acc + o.valor, 0);
 
-    const saldoEsperado = caixa.fundo_inicial + vendasDinheiro + suprimentos - sangrias;
-    const diferenca = valorContado - saldoEsperado;
+    const saldoEsperado = Number((caixa.fundo_inicial + vendasDinheiro + suprimentos - sangrias).toFixed(2));
+    const diferenca = Number((valorContado - saldoEsperado).toFixed(2));
 
+    const dataFechamento = new Date().toISOString();
     const opFechamento: OperacaoCaixa = {
       id: `op-fechamento-${Date.now()}`,
       tipo: 'FECHAMENTO',
@@ -944,13 +961,33 @@ class StorageService {
       motivo: `Fechamento de caixa. Saldo esperado: R$ ${saldoEsperado.toFixed(2)}. Diferença: R$ ${diferenca.toFixed(2)}${
         observacao ? ` - ${observacao}` : ''
       }`,
-      data_hora: new Date().toISOString(),
+      data_hora: dataFechamento,
       operador_nome: caixa.operador_nome,
     };
 
     caixa.operacoes.unshift(opFechamento);
     caixa.aberto = false;
     this.set('caixa_turno', caixa);
+
+    // Arquivar no histórico de turnos fechados
+    const historico = this.getHistoricoTurnos();
+    const registroTurno: TurnoFechadoHistorico = {
+      id: `turno-${Date.now()}`,
+      data_abertura: caixa.data_abertura,
+      data_fechamento: dataFechamento,
+      operador_nome: caixa.operador_nome,
+      fundo_inicial: caixa.fundo_inicial,
+      total_vendas_dinheiro: vendasDinheiro,
+      total_suprimentos: suprimentos,
+      total_sangrias: sangrias,
+      saldo_esperado: saldoEsperado,
+      saldo_informado: valorContado,
+      diferenca: diferenca,
+      observacao: observacao,
+      operacoes: [...caixa.operacoes],
+    };
+    historico.unshift(registroTurno);
+    this.set('turnos_historico', historico);
 
     return { diferenca, resumo: caixa };
   }
