@@ -421,6 +421,27 @@ export interface AtualizarPlanoConfigPayload {
   destaque?: boolean;
 }
 
+export interface CadastrarTenantPayload {
+  nome_fantasia: string;
+  razao_social?: string;
+  cnpj: string;
+  plano: 'STARTER' | 'PRO' | 'ENTERPRISE';
+  limite_lojas?: number;
+  limite_usuarios?: number;
+  nome_loja?: string;
+  endereco_loja?: string;
+  dono_nome: string;
+  dono_email: string;
+  dono_senha: string;
+}
+
+export interface CadastrarLojaPayload {
+  nome: string;
+  cnpj: string;
+  endereco?: string;
+}
+
+
 
 
 

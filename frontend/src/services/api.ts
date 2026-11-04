@@ -30,6 +30,9 @@ import {
   TenantDetalhesCompletos,
   PlanoConfig,
   AtualizarPlanoConfigPayload,
+  CadastrarTenantPayload,
+  CadastrarLojaPayload,
+  TenantLojaResumo,
 } from '../types';
 import { storage } from './storage';
 
@@ -1059,6 +1062,26 @@ class ApiClient {
     if (res.data) return res.data;
     if (res.isBackend && res.error) throw new Error(res.error);
     throw new Error('Falha ao atualizar plano');
+  }
+
+  async cadastrarAdminTenant(payload: CadastrarTenantPayload): Promise<TenantAdmin> {
+    const res = await this.request<TenantAdmin>('/admin/tenants', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    throw new Error('Falha ao cadastrar inquilino');
+  }
+
+  async cadastrarAdminLoja(tenantId: string, payload: CadastrarLojaPayload): Promise<TenantLojaResumo> {
+    const res = await this.request<TenantLojaResumo>(`/admin/tenants/${tenantId}/lojas`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    throw new Error('Falha ao cadastrar filial');
   }
 }
 

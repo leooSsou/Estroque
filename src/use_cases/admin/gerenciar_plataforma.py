@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
@@ -5,12 +6,20 @@ from uuid import UUID
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from src.domain.entities.loja import Loja
 from src.domain.entities.tenant import Tenant
+from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
+    CnpjEmUsoException,
+    CnpjLojaEmUsoException,
     DomainException,
+    EmailEmUsoException,
+    LimitePlanoAtingidoException,
     TenantNaoEncontradoException,
 )
+from src.domain.repositories.loja_repository import LojaRepository
 from src.domain.repositories.tenant_repository import TenantRepository
+from src.domain.repositories.usuario_repository import UsuarioRepository
 from src.infrastructure.database.models import (
     LojaModel,
     PlanoConfigModel,
@@ -19,6 +28,7 @@ from src.infrastructure.database.models import (
     UsuarioModel,
     VendaModel,
 )
+from src.use_cases.autenticacao.autenticar_usuario import ServicoCriptografia
 
 PLANOS_PRECOS = {
     "STARTER": 99.0,
@@ -549,4 +559,139 @@ class ObterDetalhesTenantSuperAdmin:
             )
         finally:
             self.db.info.pop("ignore_tenant_filter", None)
+
+
+@dataclass(frozen=True)
+class CadastrarTenantSuperAdminInput:
+    nome_fantasia: str
+    razao_social: str
+    cnpj: str
+    plano: str
+    dono_nome: str
+    dono_email: str
+    dono_senha_plana: str
+    limite_lojas: int | None = None
+    limite_usuarios: int | None = None
+    nome_loja: str | None = None
+    endereco_loja: str | None = None
+
+
+class CadastrarTenantSuperAdmin:
+    """
+    Caso de Uso: Super-Admin cadastra um novo inquilino (Tenant), sua Loja Matriz e o Dono inicial.
+    """
+    def __init__(
+        self,
+        tenant_repo: TenantRepository,
+        usuario_repo: UsuarioRepository,
+        loja_repo: LojaRepository,
+        servico_cripto: ServicoCriptografia,
+        db: Session | None = None,
+    ) -> None:
+        self.tenant_repo = tenant_repo
+        self.usuario_repo = usuario_repo
+        self.loja_repo = loja_repo
+        self.servico_cripto = servico_cripto
+        self.db = db
+
+    def executar(self, input_data: CadastrarTenantSuperAdminInput) -> Tenant:
+        # 1. Valida unicidade de CNPJ da empresa
+        cnpj_limpo = re.sub(r"\D", "", input_data.cnpj)
+        if self.tenant_repo.obter_por_cnpj(cnpj_limpo):
+            raise CnpjEmUsoException(cnpj_limpo)
+
+        # 2. Valida unicidade de e-mail do dono
+        email_normalizado = input_data.dono_email.strip().lower()
+        if self.usuario_repo.obter_por_email(email_normalizado):
+            raise EmailEmUsoException(email_normalizado)
+
+        # 3. Determina limites do plano escolhido
+        plano_upper = (input_data.plano or "PRO").strip().upper()
+        if plano_upper not in PLANOS_LIMITES_PADRAO:
+            raise DomainException(f"Plano '{input_data.plano}' inválido.")
+
+        padrao_lojas, padrao_usuarios = PLANOS_LIMITES_PADRAO[plano_upper]
+        if self.db:
+            try:
+                self.db.info["ignore_tenant_filter"] = True
+                cfg = self.db.query(PlanoConfigModel).filter(PlanoConfigModel.id == plano_upper).first()
+                if cfg:
+                    padrao_lojas = cfg.limite_lojas
+                    padrao_usuarios = cfg.limite_usuarios
+            finally:
+                self.db.info.pop("ignore_tenant_filter", None)
+
+        limite_lojas = input_data.limite_lojas if input_data.limite_lojas and input_data.limite_lojas > 0 else padrao_lojas
+        limite_usuarios = input_data.limite_usuarios if input_data.limite_usuarios and input_data.limite_usuarios > 0 else padrao_usuarios
+
+        # 4. Cria e salva a entidade Tenant
+        tenant = Tenant(
+            nome_fantasia=input_data.nome_fantasia,
+            razao_social=input_data.razao_social or input_data.nome_fantasia,
+            cnpj=input_data.cnpj,
+            ativo=True,
+            plano=plano_upper,
+            limite_lojas=limite_lojas,
+            limite_usuarios=limite_usuarios,
+        )
+        tenant_salvo = self.tenant_repo.salvar(tenant)
+
+        # 5. Cria e salva a Loja Matriz inicial
+        nome_loja = input_data.nome_loja or f"Matriz - {input_data.nome_fantasia}"
+        endereco_loja = input_data.endereco_loja or "Matriz Principal"
+        loja = Loja(
+            nome=nome_loja,
+            cnpj=input_data.cnpj,
+            endereco=endereco_loja,
+            tenant_id=tenant_salvo.id,
+        )
+        self.loja_repo.salvar(loja)
+
+        # 6. Criptografa a senha e cria o Usuario DONO (DONO tem acesso global e loja_atribuida_id=None)
+        senha_hash = self.servico_cripto.gerar_hash(input_data.dono_senha_plana)
+        usuario = Usuario(
+            nome=input_data.dono_nome,
+            email=email_normalizado,
+            senha_hash=senha_hash,
+            role="DONO",
+            tenant_id=tenant_salvo.id,
+        )
+        self.usuario_repo.salvar(usuario)
+
+        return tenant_salvo
+
+
+class CadastrarLojaSuperAdmin:
+    """
+    Caso de Uso: Super-Admin cadastra uma nova filial para um inquilino.
+    """
+    def __init__(
+        self,
+        tenant_repo: TenantRepository,
+        loja_repo: LojaRepository,
+    ) -> None:
+        self.tenant_repo = tenant_repo
+        self.loja_repo = loja_repo
+
+    def executar(self, tenant_id: UUID, nome: str, cnpj: str, endereco: str | None = None) -> Loja:
+        tenant = self.tenant_repo.obter_por_id(tenant_id)
+        if not tenant:
+            raise TenantNaoEncontradoException(str(tenant_id))
+
+        lojas_existentes = self.loja_repo.listar_todas(tenant_id)
+        if len(lojas_existentes) >= tenant.limite_lojas:
+            raise LimitePlanoAtingidoException("lojas", tenant.limite_lojas)
+
+        loja_existente = self.loja_repo.obter_por_cnpj(cnpj, tenant_id)
+        if loja_existente:
+            raise CnpjLojaEmUsoException(cnpj)
+
+        loja = Loja(
+            nome=nome,
+            cnpj=cnpj,
+            endereco=endereco or "Endereço Filial",
+            tenant_id=tenant_id,
+        )
+        return self.loja_repo.salvar(loja)
+
 
