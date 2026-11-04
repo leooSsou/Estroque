@@ -399,20 +399,5 @@ export interface TenantDetalhesCompletos extends TenantAdmin {
   usuarios: TenantUsuarioResumo[];
 }
 
-export interface ImpersonateResult {
-  access_token: string;
-  token_type: string;
-  tenant_id: string;
-  tenant_nome: string;
-  usuario_id: string;
-  usuario_nome: string;
-  usuario_email: string;
-  usuario_role: string;
-  loja_id?: string | null;
-  loja_nome?: string | null;
-  impersonated_by_id: string;
-  impersonated_by_email: string;
-}
-
 
 

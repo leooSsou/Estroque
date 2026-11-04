@@ -304,7 +304,7 @@ def test_superadmin_obter_detalhes_completos_tenant(
     )
     assert res_colab.status_code == status.HTTP_201_CREATED
 
-    # Consulta visão 360° como Super Admin
+    # Consulta visão 360° como Super Admin (LGPD compliant)
     res = client.get(f"/admin/tenants/{tenant_id}/detalhes", headers=admin_headers)
     assert res.status_code == status.HTTP_200_OK
     detalhes = res.json()
@@ -315,46 +315,24 @@ def test_superadmin_obter_detalhes_completos_tenant(
     assert "plano" in detalhes
     assert len(detalhes["lojas"]) >= 1
     assert any(loja["nome"] == "Filial Detalhes" for loja in detalhes["lojas"])
-    assert len(detalhes["usuarios"]) >= 2  # Dono + Gerente
-    assert any(u["email"] == colab_email for u in detalhes["usuarios"])
+    # LGPD: Apenas o DONO do contrato é listado nos detalhes, colaboradores ficam privados
+    assert len(detalhes["usuarios"]) == 1
+    assert detalhes["usuarios"][0]["role"] == "DONO"
     assert "total_produtos" in detalhes
     assert "total_vendas_qtd" in detalhes
 
 
-def test_superadmin_impersonar_tenant_e_acessar_loja(
+def test_superadmin_impersonate_removido_por_seguranca_lgpd(
     client: TestClient, superadmin_setup, cliente_tenant_setup
 ):
     admin_headers = superadmin_setup["admin_headers"]
     tenant_id = cliente_tenant_setup["tenant_id"]
 
-    # 1. Super-Admin solicita impersonation do tenant
+    # Rota de impersonate foi descontinuada e deve retornar 404
     res_imp = client.post(
         f"/admin/tenants/{tenant_id}/impersonate",
         headers=admin_headers,
     )
-    assert res_imp.status_code == status.HTTP_200_OK
-    dados_imp = res_imp.json()
+    assert res_imp.status_code == status.HTTP_404_NOT_FOUND
 
-    assert "access_token" in dados_imp
-    assert dados_imp["token_type"] == "bearer"
-    assert dados_imp["tenant_id"] == tenant_id
-    assert dados_imp["impersonated_by_email"] == superadmin_setup["admin_email"]
-
-    # 2. Usa o token gerado para navegar nos dados do inquilino (ex: consultar lojas ou produtos)
-    token_suporte = dados_imp["access_token"]
-    headers_suporte = {"Authorization": f"Bearer {token_suporte}"}
-
-    res_lojas_suporte = client.get("/lojas/", headers=headers_suporte)
-    assert res_lojas_suporte.status_code == status.HTTP_200_OK
-    lojas = res_lojas_suporte.json()
-    assert isinstance(lojas, list)
-
-    # 3. Usuário comum (DONO de loja normal) NÃO pode impersonar outros tenants
-    cliente_headers = cliente_tenant_setup["headers"]
-    outro_tenant_id = str(uuid4())
-    res_negado = client.post(
-        f"/admin/tenants/{outro_tenant_id}/impersonate",
-        headers=cliente_headers,
-    )
-    assert res_negado.status_code == status.HTTP_403_FORBIDDEN
 

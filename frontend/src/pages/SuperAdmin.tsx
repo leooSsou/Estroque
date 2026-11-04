@@ -26,7 +26,6 @@ import {
   Crown,
   Sparkles,
   Eye,
-  LogIn,
   Package,
   MapPin,
   Mail,
@@ -43,9 +42,8 @@ const PLANOS_INFO: Record<
 };
 
 export const SuperAdmin: React.FC = () => {
-  const { user, impersonateTenant } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentTab = (searchParams.get('tab') as 'geral' | 'tenants' | 'planos') || 'geral';
@@ -66,9 +64,6 @@ export const SuperAdmin: React.FC = () => {
 
   // Estado de alteração de status inline
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
-
-  // Estado do Modo Suporte / Impersonate
-  const [impersonatingTenantId, setImpersonatingTenantId] = useState<string | null>(null);
 
   // Estado do Drawer de Detalhes 360°
   const [drawerTenantId, setDrawerTenantId] = useState<string | null>(null);
@@ -186,23 +181,6 @@ export const SuperAdmin: React.FC = () => {
       setDrawerTenantId(null);
     } finally {
       setCarregandoDetalhes(false);
-    }
-  };
-
-  const handleImpersonate = async (tenant: { id: string; nome_fantasia: string }) => {
-    const confirmMsg = `Deseja entrar na conta de "${tenant.nome_fantasia}" em MODO SUPORTE?\n\nVocê navegará na loja como operador autorizado. Um banner no topo permitirá retornar ao Super Admin a qualquer momento.`;
-    if (!window.confirm(confirmMsg)) return;
-
-    setImpersonatingTenantId(tenant.id);
-    try {
-      await impersonateTenant(tenant.id);
-      toast.success(`Acessando conta de "${tenant.nome_fantasia}" em modo suporte!`);
-      navigate('/dashboard');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Falha ao iniciar modo suporte';
-      toast.error(msg);
-    } finally {
-      setImpersonatingTenantId(null);
     }
   };
 
@@ -651,19 +629,9 @@ export const SuperAdmin: React.FC = () => {
                             <button
                               onClick={() => handleOpenDetalhes(t.id)}
                               className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors border border-transparent hover:border-blue-500/20"
-                              title="Visão 360° (Detalhes, Lojas e Equipe)"
+                              title="Visão 360° (Detalhes e Lojas)"
                             >
                               <Eye className="w-4 h-4" />
-                            </button>
-
-                            {/* Botão Acessar Conta (Modo Suporte) */}
-                            <button
-                              onClick={() => handleImpersonate(t)}
-                              disabled={impersonatingTenantId === t.id}
-                              className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors border border-transparent hover:border-amber-500/20"
-                              title="Acessar Conta (Modo Suporte)"
-                            >
-                              <LogIn className={`w-4 h-4 ${impersonatingTenantId === t.id ? 'animate-pulse text-amber-400' : ''}`} />
                             </button>
 
                             {/* Botão Alterar Plano */}
@@ -1029,33 +997,24 @@ export const SuperAdmin: React.FC = () => {
                   {/* Barra de Ações Rápidas */}
                   <div className="flex flex-wrap items-center gap-2.5 p-3 rounded-2xl bg-white/[0.02] border border-white/[0.08]">
                     <button
-                      onClick={() => handleImpersonate(detalhesTenant)}
-                      disabled={impersonatingTenantId === detalhesTenant.id}
-                      className="flex-1 min-w-[170px] flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 transition-colors shadow-lg shadow-amber-500/10"
-                    >
-                      <LogIn className="w-4 h-4" />
-                      <span>Acessar Modo Suporte</span>
-                    </button>
-
-                    <button
                       onClick={() => handleOpenModalPlano(detalhesTenant)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors"
                     >
                       <Sliders className="w-3.5 h-3.5" />
-                      <span>Plano & Cotas</span>
+                      <span>Gerenciar Plano & Cotas</span>
                     </button>
 
                     <button
                       onClick={() => handleToggleStatus(detalhesTenant)}
                       disabled={togglingStatusId === detalhesTenant.id}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border ${
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border ${
                         detalhesTenant.ativo
                           ? 'text-rose-400 bg-rose-500/10 border-rose-500/20 hover:bg-rose-500/20'
                           : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
                       }`}
                     >
                       <Power className="w-3.5 h-3.5" />
-                      <span>{detalhesTenant.ativo ? 'Suspender' : 'Reativar'}</span>
+                      <span>{detalhesTenant.ativo ? 'Suspender Inquilino' : 'Reativar Inquilino'}</span>
                     </button>
                   </div>
 
@@ -1136,17 +1095,17 @@ export const SuperAdmin: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Seção 2: Equipe & Usuários */}
+                  {/* Seção 2: Responsável Legal (LGPD Compliant) */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-purple-400" />
                         <h3 className="text-sm font-bold text-white">
-                          Equipe & Usuários ({detalhesTenant.usuarios.length})
+                          Titular / Dono do Contrato
                         </h3>
                       </div>
                       <span className="text-[11px] text-slate-400">
-                        Cota: {detalhesTenant.usuarios.length} de {detalhesTenant.limite_usuarios}
+                        Total da equipe: {detalhesTenant.total_usuarios} de {detalhesTenant.limite_usuarios} usuários
                       </span>
                     </div>
 
@@ -1159,21 +1118,13 @@ export const SuperAdmin: React.FC = () => {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-white text-xs">{u.nome}</span>
-                              <Badge variant={u.role === 'DONO' ? 'purple' : 'neutral'}>
-                                {u.role}
-                              </Badge>
+                              <Badge variant="purple">DONO</Badge>
                             </div>
                             <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                               <Mail className="w-3 h-3 text-slate-500" />
                               <span>{u.email}</span>
                             </div>
                           </div>
-
-                          {u.loja_nome && (
-                            <div className="text-[10px] text-slate-400 text-right">
-                              Filial: <strong className="text-slate-300">{u.loja_nome}</strong>
-                            </div>
-                          )}
                         </div>
                       ))}
                     </div>
