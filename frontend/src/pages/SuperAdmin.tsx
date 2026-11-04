@@ -208,10 +208,10 @@ export const SuperAdmin: React.FC = () => {
     return { STARTER: starter, PRO: pro, ENTERPRISE: enterprise };
   }, [tenants]);
 
-  // Top 5 Tenants em Faturamento
-  const topTenantsFaturamento = useMemo(() => {
+  // Inquilinos Recentes (últimos cadastrados)
+  const ultimosTenants = useMemo(() => {
     return [...tenants]
-      .sort((a, b) => b.total_vendas_valor - a.total_vendas_valor)
+      .sort((a, b) => new Date(b.data_cadastro).getTime() - new Date(a.data_cadastro).getTime())
       .slice(0, 5);
   }, [tenants]);
 
@@ -301,7 +301,7 @@ export const SuperAdmin: React.FC = () => {
       {currentTab === 'geral' && (
         <div className="space-y-6">
           {/* Bento Grid: Métricas da Plataforma */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
             <BentoCard className="p-5 flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
@@ -320,27 +320,6 @@ export const SuperAdmin: React.FC = () => {
                 <div className="flex items-center gap-1.5 mt-1 text-xs text-emerald-400 font-medium">
                   <TrendingUp className="w-3.5 h-3.5" />
                   <span>Receita mensal de assinaturas</span>
-                </div>
-              </div>
-            </BentoCard>
-
-            <BentoCard className="p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  GMV Transacionado
-                </span>
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="text-2xl font-bold text-white tracking-tight">
-                  {metrics
-                    ? `R$ ${metrics.gmv_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                    : '...'}
-                </div>
-                <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400">
-                  <span>{metrics?.total_vendas ?? 0} vendas realizadas pelas lojas</span>
                 </div>
               </div>
             </BentoCard>
@@ -387,7 +366,7 @@ export const SuperAdmin: React.FC = () => {
             </BentoCard>
           </div>
 
-          {/* Grid Secundário: Distribuição de Planos & Top Faturamento */}
+          {/* Grid Secundário: Distribuição de Planos & Inquilinos Recentes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <BentoCard className="p-5">
               <h3 className="text-sm font-bold text-white mb-1">Distribuição por Plano Comercial</h3>
@@ -433,34 +412,40 @@ export const SuperAdmin: React.FC = () => {
             </BentoCard>
 
             <BentoCard className="p-5">
-              <h3 className="text-sm font-bold text-white mb-1">Top Inquilinos por Volume de Vendas</h3>
-              <p className="text-xs text-slate-400 mb-4">Empresas com maior faturamento transacionado no sistema.</p>
+              <h3 className="text-sm font-bold text-white mb-1">Inquilinos Recentes</h3>
+              <p className="text-xs text-slate-400 mb-4">Últimas empresas cadastradas na plataforma.</p>
 
               <div className="space-y-2.5">
-                {topTenantsFaturamento.map((t, idx) => (
-                  <div
-                    key={t.id}
-                    className="flex items-center justify-between p-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-xs font-mono font-bold text-slate-500 w-4 text-center">
-                        #{idx + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-xs text-white truncate">{t.nome_fantasia}</div>
-                        <div className="text-[11px] text-slate-500">
-                          {t.total_vendas_qtd} vendas • Plano {t.plano}
+                {ultimosTenants.map((t) => {
+                  const planoInfo = PLANOS_INFO[t.plano] || { label: t.plano, badgeVariant: 'neutral' };
+                  return (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between p-2.5 bg-white/[0.02] border border-white/[0.06] rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer"
+                      onClick={() => handleOpenDetalhes(t.id)}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-xs text-white truncate">{t.nome_fantasia}</div>
+                          <div className="text-[11px] text-slate-500">
+                            {t.total_lojas} {t.total_lojas === 1 ? 'filial' : 'filiais'} • {t.total_usuarios} {t.total_usuarios === 1 ? 'usuário' : 'usuários'}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-xs font-bold text-emerald-400">
-                        R$ {t.total_vendas_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      <div className="text-right flex-shrink-0 flex items-center gap-2">
+                        <Badge variant={planoInfo.badgeVariant}>{planoInfo.label}</Badge>
+                        {t.ativo ? (
+                          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" title="Ativo" />
+                        ) : (
+                          <span className="inline-block w-2 h-2 rounded-full bg-rose-400" title="Suspenso" />
+                        )}
                       </div>
-                      <div className="text-[10px] text-slate-500">{t.total_lojas} filiais</div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </BentoCard>
           </div>
@@ -538,7 +523,6 @@ export const SuperAdmin: React.FC = () => {
                   <th className="py-3 px-3">Plano</th>
                   <th className="py-3 px-3 text-center">Lojas</th>
                   <th className="py-3 px-3 text-center">Usuários</th>
-                  <th className="py-3 px-3">Faturamento Rede</th>
                   <th className="py-3 px-3">Status</th>
                   <th className="py-3 px-3 text-right">Ações</th>
                 </tr>
@@ -546,14 +530,14 @@ export const SuperAdmin: React.FC = () => {
               <tbody className="divide-y divide-white/[0.04]">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                    <td colSpan={6} className="py-8 text-center text-slate-500">
                       <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-400" />
                       Carregando inquilinos...
                     </td>
                   </tr>
                 ) : filteredTenants.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">
+                    <td colSpan={6} className="py-8 text-center text-slate-500">
                       Nenhum inquilino encontrado com os filtros aplicados.
                     </td>
                   </tr>
@@ -598,15 +582,6 @@ export const SuperAdmin: React.FC = () => {
                           >
                             {usuariosOcupacao}
                           </span>
-                        </td>
-
-                        <td className="py-3.5 px-3">
-                          <div className="font-semibold text-white">
-                            R$ {t.total_vendas_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </div>
-                          <div className="text-[11px] text-slate-500">
-                            {t.total_vendas_qtd} {t.total_vendas_qtd === 1 ? 'venda' : 'vendas'}
-                          </div>
                         </td>
 
                         <td className="py-3.5 px-3">
@@ -1019,17 +994,7 @@ export const SuperAdmin: React.FC = () => {
                   </div>
 
                   {/* Bento Grid de KPIs do Inquilino */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08]">
-                      <div className="text-[11px] text-slate-400">Faturamento</div>
-                      <div className="text-base font-bold text-emerald-400 mt-1">
-                        R$ {detalhesTenant.total_vendas_valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">
-                        {detalhesTenant.total_vendas_qtd} vendas
-                      </div>
-                    </div>
-
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.08]">
                       <div className="text-[11px] text-slate-400">Produtos</div>
                       <div className="text-base font-bold text-white mt-1">
