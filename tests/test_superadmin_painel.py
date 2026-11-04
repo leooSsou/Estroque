@@ -336,3 +336,55 @@ def test_superadmin_impersonate_removido_por_seguranca_lgpd(
     assert res_imp.status_code == status.HTTP_404_NOT_FOUND
 
 
+def test_superadmin_listar_e_atualizar_planos_comerciais(
+    client: TestClient, superadmin_setup
+):
+    admin_headers = superadmin_setup["admin_headers"]
+
+    # 1. Listar planos configurados
+    res = client.get("/admin/planos", headers=admin_headers)
+    assert res.status_code == status.HTTP_200_OK
+    planos = res.json()
+    assert len(planos) >= 3
+
+    starter = next(p for p in planos if p["id"] == "STARTER")
+    assert starter["nome"] == "Starter"
+    assert starter["preco_mensal"] == 99.0
+    assert starter["limite_lojas"] == 1
+    assert starter["limite_usuarios"] == 2
+    assert isinstance(starter["recursos"], list)
+
+    # 2. Atualizar plano STARTER com novos valores, limites e recursos liberados
+    payload = {
+        "nome": "Starter Plus",
+        "descricao": "Pequenos e médios comércios",
+        "preco_mensal": 129.90,
+        "limite_lojas": 2,
+        "limite_usuarios": 4,
+        "recursos": [
+            "Até 2 filiais integradas",
+            "Até 4 colaboradores",
+            "PDV e Frente de Caixa",
+            "Controle de Estoque e Grade",
+        ],
+        "destaque": False,
+    }
+    res_put = client.put("/admin/planos/STARTER", json=payload, headers=admin_headers)
+    assert res_put.status_code == status.HTTP_200_OK
+    atualizado = res_put.json()
+    assert atualizado["nome"] == "Starter Plus"
+    assert atualizado["preco_mensal"] == 129.90
+    assert atualizado["limite_lojas"] == 2
+    assert atualizado["limite_usuarios"] == 4
+    assert len(atualizado["recursos"]) == 4
+
+    # 3. Validação de dados inválidos (preço negativo)
+    res_invalido = client.put(
+        "/admin/planos/STARTER",
+        json={**payload, "preco_mensal": -10.0},
+        headers=admin_headers,
+    )
+    assert res_invalido.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+

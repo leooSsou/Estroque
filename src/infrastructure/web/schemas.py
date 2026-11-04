@@ -658,4 +658,29 @@ class TenantDetalhesCompletosResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PlanoConfigResponse(BaseModel):
+    id: str
+    nome: str
+    descricao: str
+    preco_mensal: float
+    limite_lojas: int
+    limite_usuarios: int
+    recursos: list[str] = Field(default_factory=list)
+    badge_variant: str = "neutral"
+    destaque: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AtualizarPlanoConfigRequest(BaseModel):
+    preco_mensal: float = Field(..., ge=0.0, description="Valor mensal da assinatura do plano")
+    limite_lojas: int = Field(..., ge=1, description="Limite padrão de filiais")
+    limite_usuarios: int = Field(..., ge=1, description="Limite padrão de colaboradores")
+    recursos: list[str] = Field(..., description="Lista de recursos/módulos liberados no plano")
+    nome: str | None = Field(default=None, max_length=50)
+    descricao: str | None = Field(default=None, max_length=100)
+    destaque: bool | None = Field(default=None)
+
+
+
 

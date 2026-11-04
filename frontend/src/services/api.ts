@@ -28,6 +28,8 @@ import {
   PlataformaDashboardMetrics,
   AlterarPlanoPayload,
   TenantDetalhesCompletos,
+  PlanoConfig,
+  AtualizarPlanoConfigPayload,
 } from '../types';
 import { storage } from './storage';
 
@@ -989,6 +991,74 @@ class ApiClient {
     if (res.data) return res.data;
     if (res.isBackend && res.error) throw new Error(res.error);
     throw new Error('Falha ao carregar detalhes completos do tenant');
+  }
+
+  async getAdminPlanos(): Promise<PlanoConfig[]> {
+    const res = await this.request<PlanoConfig[]>('/admin/planos');
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    return [
+      {
+        id: 'STARTER',
+        nome: 'Starter',
+        descricao: 'Pequenos comércios',
+        preco_mensal: 99.0,
+        limite_lojas: 1,
+        limite_usuarios: 2,
+        recursos: [
+          'Até 1 filial (loja matriz)',
+          'Até 2 colaboradores',
+          'PDV e Frente de Caixa',
+          'Gestão Básica de Produtos e Estoque',
+        ],
+        badge_variant: 'neutral',
+        destaque: false,
+      },
+      {
+        id: 'PRO',
+        nome: 'Pro (Mais Popular)',
+        descricao: 'Empresas em expansão',
+        preco_mensal: 249.0,
+        limite_lojas: 5,
+        limite_usuarios: 10,
+        recursos: [
+          'Até 5 filiais integradas',
+          'Até 10 colaboradores',
+          'Transferências de Estoque entre lojas',
+          'Entrada e Importação de NF-e',
+          'Emissão de Vendas e PDV Avançado',
+        ],
+        badge_variant: 'purple',
+        destaque: true,
+      },
+      {
+        id: 'ENTERPRISE',
+        nome: 'Enterprise',
+        descricao: 'Grandes redes e franquias',
+        preco_mensal: 799.0,
+        limite_lojas: 50,
+        limite_usuarios: 100,
+        recursos: [
+          'Até 50 filiais',
+          'Até 100 colaboradores',
+          'Curva ABC e Inteligência de Estoque',
+          'Auditorias físicas com Ledger em tempo real',
+          'Suporte prioritário e limites escaláveis',
+        ],
+        badge_variant: 'emerald',
+        destaque: false,
+      },
+    ];
+  }
+
+  async atualizarAdminPlano(planoId: string, payload: AtualizarPlanoConfigPayload): Promise<PlanoConfig> {
+    const res = await this.request<PlanoConfig>(`/admin/planos/${planoId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    throw new Error('Falha ao atualizar plano');
   }
 }
 

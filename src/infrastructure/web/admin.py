@@ -15,6 +15,8 @@ from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     AlterarPlanoTenantRequest,
     AlterarStatusTenantRequest,
+    AtualizarPlanoConfigRequest,
+    PlanoConfigResponse,
     PlataformaDashboardResponse,
     TenantAdminResponse,
     TenantDetalhesCompletosResponse,
@@ -22,7 +24,9 @@ from src.infrastructure.web.schemas import (
 from src.use_cases.admin.gerenciar_plataforma import (
     AlterarPlanoTenant,
     AlterarStatusTenant,
+    AtualizarPlanoSuperAdmin,
     GerarMetricasPlataforma,
+    ListarPlanosSuperAdmin,
     ListarTenantsSuperAdmin,
     ObterDetalhesTenantSuperAdmin,
 )
@@ -126,7 +130,7 @@ def alterar_plano_tenant(
     """
     exigir_permissao(current_user, ["ADMIN_SAAS"])
     tenant_repo = RepositorioTenantSQLAlchemy(db)
-    use_case = AlterarPlanoTenant(tenant_repo)
+    use_case = AlterarPlanoTenant(tenant_repo, db=db)
     try:
         use_case.executar(
             tenant_id=tenant_id,
@@ -166,4 +170,47 @@ def obter_detalhes_completos_tenant(
         return TenantDetalhesCompletosResponse.model_validate(detalhes)
     except TenantNaoEncontradoException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.get("/planos", response_model=list[PlanoConfigResponse])
+def listar_planos(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> list[PlanoConfigResponse]:
+    """
+    Lista todos os planos comerciais e suas configurações de limites e recursos liberados.
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+    use_case = ListarPlanosSuperAdmin(db)
+    planos = use_case.executar()
+    return [PlanoConfigResponse.model_validate(p) for p in planos]
+
+
+@router.put("/planos/{plano_id}", response_model=PlanoConfigResponse)
+def atualizar_plano(
+    plano_id: str,
+    request: AtualizarPlanoConfigRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> PlanoConfigResponse:
+    """
+    Atualiza valor, limites e recursos liberados de um plano comercial da plataforma.
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+    use_case = AtualizarPlanoSuperAdmin(db)
+    try:
+        plano = use_case.executar(
+            plano_id=plano_id,
+            preco_mensal=request.preco_mensal,
+            limite_lojas=request.limite_lojas,
+            limite_usuarios=request.limite_usuarios,
+            recursos=request.recursos,
+            nome=request.nome,
+            descricao=request.descricao,
+            destaque=request.destaque,
+        )
+        return PlanoConfigResponse.model_validate(plano)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 

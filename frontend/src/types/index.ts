@@ -399,5 +399,28 @@ export interface TenantDetalhesCompletos extends TenantAdmin {
   usuarios: TenantUsuarioResumo[];
 }
 
+export interface PlanoConfig {
+  id: 'STARTER' | 'PRO' | 'ENTERPRISE';
+  nome: string;
+  descricao: string;
+  preco_mensal: number;
+  limite_lojas: number;
+  limite_usuarios: number;
+  recursos: string[];
+  badge_variant: 'neutral' | 'purple' | 'emerald';
+  destaque: boolean;
+}
+
+export interface AtualizarPlanoConfigPayload {
+  nome?: string;
+  descricao?: string;
+  preco_mensal: number;
+  limite_lojas: number;
+  limite_usuarios: number;
+  recursos: string[];
+  destaque?: boolean;
+}
+
+
 
 
