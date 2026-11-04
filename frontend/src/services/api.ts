@@ -28,7 +28,6 @@ import {
   PlataformaDashboardMetrics,
   AlterarPlanoPayload,
   TenantDetalhesCompletos,
-  ImpersonateResult,
 } from '../types';
 import { storage } from './storage';
 
@@ -981,15 +980,6 @@ class ApiClient {
     if (res.data) return res.data;
     if (res.isBackend && res.error) throw new Error(res.error);
     throw new Error('Falha ao carregar detalhes completos do tenant');
-  }
-
-  async impersonateTenant(tenantId: string): Promise<ImpersonateResult> {
-    const res = await this.request<ImpersonateResult>(`/admin/tenants/${tenantId}/impersonate`, {
-      method: 'POST',
-    });
-    if (res.data) return res.data;
-    if (res.isBackend && res.error) throw new Error(res.error);
-    throw new Error('Falha ao iniciar modo suporte no tenant');
   }
 }
 

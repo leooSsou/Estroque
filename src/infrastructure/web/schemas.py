@@ -658,21 +658,4 @@ class TenantDetalhesCompletosResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ImpersonateResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    tenant_id: UUID
-    tenant_nome: str
-    usuario_id: UUID
-    usuario_nome: str
-    usuario_email: str
-    usuario_role: str
-    loja_id: UUID | None = None
-    loja_nome: str | None = None
-    impersonated_by_id: UUID
-    impersonated_by_email: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 

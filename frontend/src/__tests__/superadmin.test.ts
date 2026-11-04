@@ -138,27 +138,6 @@ async function run() {
     assert.equal(mockDetalhes.usuarios[0].role, 'DONO');
   });
 
-  await testCase('5.6: Deve validar contrato do ImpersonateResult e dados de sessão de suporte', () => {
-    const mockImp = {
-      access_token: 'fake.jwt.token',
-      token_type: 'bearer',
-      tenant_id: 'tenant-target-123',
-      tenant_nome: 'Loja Cliente',
-      usuario_id: 'usr-dono-456',
-      usuario_nome: 'Dono Cliente',
-      usuario_email: 'dono@cliente.com',
-      usuario_role: 'DONO',
-      loja_id: 'loja-matriz-789',
-      loja_nome: 'Loja Matriz',
-      impersonated_by_id: 'admin-super-001',
-      impersonated_by_email: 'admin@estroque.app',
-    };
-
-    assert.equal(mockImp.usuario_role, 'DONO');
-    assert.equal(mockImp.impersonated_by_email, 'admin@estroque.app');
-    assert.ok(mockImp.access_token.length > 0);
-  });
-
   console.log(`\nResultados: ${passed} passaram, ${failed} falharam.`);
   if (failed > 0) {
     process.exit(1);
