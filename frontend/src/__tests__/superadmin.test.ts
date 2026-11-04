@@ -138,6 +138,20 @@ async function run() {
     assert.equal(mockDetalhes.usuarios[0].role, 'DONO');
   });
 
+  await testCase('5.6: Deve listar e validar contratos de planos comerciais e edição de recursos', async () => {
+    const planos = await api.getAdminPlanos();
+    assert.ok(Array.isArray(planos));
+    assert.ok(planos.length >= 3);
+
+    const pro = planos.find((p) => p.id === 'PRO');
+    assert.ok(pro);
+    assert.ok(typeof pro?.preco_mensal === 'number');
+    assert.ok(typeof pro?.limite_lojas === 'number');
+    assert.ok(typeof pro?.limite_usuarios === 'number');
+    assert.ok(Array.isArray(pro?.recursos));
+    assert.ok(pro?.recursos.length > 0);
+  });
+
   console.log(`\nResultados: ${passed} passaram, ${failed} falharam.`);
   if (failed > 0) {
     process.exit(1);

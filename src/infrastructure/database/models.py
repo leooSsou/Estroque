@@ -347,3 +347,21 @@ class ItemDevolucaoModel(Base):
     produto = relationship("ProdutoModel")
 
 
+class PlanoConfigModel(Base):
+    """
+    Configuração de planos comerciais da plataforma SaaS gerenciados pelo Super-Admin.
+    """
+    __tablename__ = "planos_config"
+
+    id: Mapped[str] = mapped_column(String(20), primary_key=True)  # STARTER, PRO, ENTERPRISE
+    nome: Mapped[str] = mapped_column(String(50), nullable=False)
+    descricao: Mapped[str] = mapped_column(String(100), nullable=False)
+    preco_mensal: Mapped[float] = mapped_column(Float, nullable=False)
+    limite_lojas: Mapped[int] = mapped_column(nullable=False)
+    limite_usuarios: Mapped[int] = mapped_column(nullable=False)
+    recursos: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    badge_variant: Mapped[str] = mapped_column(String(20), nullable=False, default="neutral")
+    destaque: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+

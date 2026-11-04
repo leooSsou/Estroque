@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
-import { TenantAdmin, PlataformaDashboardMetrics, TenantDetalhesCompletos } from '../types';
+import { TenantAdmin, PlataformaDashboardMetrics, TenantDetalhesCompletos, PlanoConfig } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import {
@@ -30,6 +30,9 @@ import {
   MapPin,
   Mail,
   UserCheck,
+  Edit3,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 
 const PLANOS_INFO: Record<
@@ -41,6 +44,18 @@ const PLANOS_INFO: Record<
   ENTERPRISE: { label: 'Enterprise', badgeVariant: 'emerald', mrr: 799.0, lojasMax: 50, usuariosMax: 100 },
 };
 
+const SUGESTOES_RECURSOS = [
+  'PDV e Frente de Caixa',
+  'Entrada e Importação de NF-e',
+  'Transferências de Estoque entre lojas',
+  'Grade e Variações de Produtos',
+  'Curva ABC e Inteligência de Estoque',
+  'Auditorias físicas com Ledger em tempo real',
+  'Gestão Financeira e Crediário de Clientes',
+  'Trocas e Devoluções com Compensação',
+  'Suporte Prioritário 24/7',
+];
+
 export const SuperAdmin: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -50,6 +65,58 @@ export const SuperAdmin: React.FC = () => {
 
   const [metrics, setMetrics] = useState<PlataformaDashboardMetrics | null>(null);
   const [tenants, setTenants] = useState<TenantAdmin[]>([]);
+  const [planos, setPlanos] = useState<PlanoConfig[]>([
+    {
+      id: 'STARTER',
+      nome: 'Starter',
+      descricao: 'Pequenos comércios',
+      preco_mensal: 99.0,
+      limite_lojas: 1,
+      limite_usuarios: 2,
+      recursos: [
+        'Até 1 filial (loja matriz)',
+        'Até 2 colaboradores',
+        'PDV e Frente de Caixa',
+        'Gestão Básica de Produtos e Estoque',
+      ],
+      badge_variant: 'neutral',
+      destaque: false,
+    },
+    {
+      id: 'PRO',
+      nome: 'Pro (Mais Popular)',
+      descricao: 'Empresas em expansão',
+      preco_mensal: 249.0,
+      limite_lojas: 5,
+      limite_usuarios: 10,
+      recursos: [
+        'Até 5 filiais integradas',
+        'Até 10 colaboradores',
+        'Transferências de Estoque entre lojas',
+        'Entrada e Importação de NF-e',
+        'Emissão de Vendas e PDV Avançado',
+      ],
+      badge_variant: 'purple',
+      destaque: true,
+    },
+    {
+      id: 'ENTERPRISE',
+      nome: 'Enterprise',
+      descricao: 'Grandes redes e franquias',
+      preco_mensal: 799.0,
+      limite_lojas: 50,
+      limite_usuarios: 100,
+      recursos: [
+        'Até 50 filiais',
+        'Até 100 colaboradores',
+        'Curva ABC e Inteligência de Estoque',
+        'Auditorias físicas com Ledger em tempo real',
+        'Suporte prioritário e limites escaláveis',
+      ],
+      badge_variant: 'emerald',
+      destaque: false,
+    },
+  ]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
@@ -61,6 +128,17 @@ export const SuperAdmin: React.FC = () => {
   const [modalLimiteLojas, setModalLimiteLojas] = useState(5);
   const [modalLimiteUsuarios, setModalLimiteUsuarios] = useState(10);
   const [savingPlano, setSavingPlano] = useState(false);
+
+  // Estado do Modal de Edição de Configuração do Plano
+  const [editingPlano, setEditingPlano] = useState<PlanoConfig | null>(null);
+  const [formPlanoNome, setFormPlanoNome] = useState('');
+  const [formPlanoDescricao, setFormPlanoDescricao] = useState('');
+  const [formPlanoPreco, setFormPlanoPreco] = useState<number>(0);
+  const [formPlanoLojas, setFormPlanoLojas] = useState<number>(1);
+  const [formPlanoUsuarios, setFormPlanoUsuarios] = useState<number>(2);
+  const [formPlanoRecursos, setFormPlanoRecursos] = useState<string[]>([]);
+  const [novoRecursoTexto, setNovoRecursoTexto] = useState('');
+  const [savingConfigPlano, setSavingConfigPlano] = useState(false);
 
   // Estado de alteração de status inline
   const [togglingStatusId, setTogglingStatusId] = useState<string | null>(null);
@@ -75,12 +153,16 @@ export const SuperAdmin: React.FC = () => {
       if (!isSilent) setLoading(true);
       else setRefreshing(true);
       try {
-        const [dash, tenantsList] = await Promise.all([
+        const [dash, tenantsList, planosList] = await Promise.all([
           api.getPlataformaDashboard(),
           api.getAdminTenants(),
+          api.getAdminPlanos(),
         ]);
         setMetrics(dash);
         setTenants(tenantsList);
+        if (planosList && planosList.length > 0) {
+          setPlanos(planosList);
+        }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Falha ao carregar dados do painel super-admin';
         toast.error(msg);
@@ -137,12 +219,90 @@ export const SuperAdmin: React.FC = () => {
     setModalLimiteUsuarios(tenant.limite_usuarios);
   };
 
+  const planosMap = useMemo(() => {
+    const map: Record<
+      string,
+      { label: string; badgeVariant: 'neutral' | 'emerald' | 'purple'; mrr: number; lojasMax: number; usuariosMax: number }
+    > = {};
+    planos.forEach((p) => {
+      map[p.id] = {
+        label: p.nome,
+        badgeVariant: p.badge_variant,
+        mrr: p.preco_mensal,
+        lojasMax: p.limite_lojas,
+        usuariosMax: p.limite_usuarios,
+      };
+    });
+    return map;
+  }, [planos]);
+
   const handleSelectPlanoPredefinido = (plano: 'STARTER' | 'PRO' | 'ENTERPRISE') => {
     setModalPlano(plano);
-    const info = PLANOS_INFO[plano];
+    const info = planosMap[plano] || PLANOS_INFO[plano];
     if (info) {
       setModalLimiteLojas(info.lojasMax);
       setModalLimiteUsuarios(info.usuariosMax);
+    }
+  };
+
+  const handleOpenEditarPlano = (p: PlanoConfig) => {
+    setEditingPlano(p);
+    setFormPlanoNome(p.nome);
+    setFormPlanoDescricao(p.descricao);
+    setFormPlanoPreco(p.preco_mensal);
+    setFormPlanoLojas(p.limite_lojas);
+    setFormPlanoUsuarios(p.limite_usuarios);
+    setFormPlanoRecursos([...p.recursos]);
+    setNovoRecursoTexto('');
+  };
+
+  const handleAddRecurso = (texto?: string) => {
+    const item = (texto || novoRecursoTexto).trim();
+    if (!item) return;
+    if (formPlanoRecursos.includes(item)) {
+      toast.error('Este item já está na lista do plano.');
+      return;
+    }
+    setFormPlanoRecursos((prev) => [...prev, item]);
+    if (!texto) setNovoRecursoTexto('');
+  };
+
+  const handleRemoveRecurso = (idx: number) => {
+    setFormPlanoRecursos((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleSaveConfigPlano = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPlano) return;
+    if (formPlanoPreco < 0) {
+      toast.error('O valor mensal não pode ser negativo.');
+      return;
+    }
+    if (formPlanoLojas < 1 || formPlanoUsuarios < 1) {
+      toast.error('Os limites de filiais e usuários devem ser maiores que zero.');
+      return;
+    }
+
+    setSavingConfigPlano(true);
+    try {
+      const updated = await api.atualizarAdminPlano(editingPlano.id, {
+        nome: formPlanoNome,
+        descricao: formPlanoDescricao,
+        preco_mensal: Number(formPlanoPreco),
+        limite_lojas: Number(formPlanoLojas),
+        limite_usuarios: Number(formPlanoUsuarios),
+        recursos: formPlanoRecursos,
+      });
+
+      setPlanos((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      toast.success(`Plano "${updated.nome}" atualizado com sucesso!`);
+      setEditingPlano(null);
+      loadData(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao atualizar plano';
+      toast.error(msg);
+    } finally {
+      setSavingConfigPlano(false);
     }
   };
 
@@ -374,7 +534,7 @@ export const SuperAdmin: React.FC = () => {
 
               <div className="space-y-3">
                 {(['STARTER', 'PRO', 'ENTERPRISE'] as const).map((p) => {
-                  const info = PLANOS_INFO[p];
+                  const info = planosMap[p] || PLANOS_INFO[p];
                   const count = tenantsPorPlano[p].length;
                   const total = tenants.length || 1;
                   const pct = Math.round((count / total) * 100);
@@ -417,7 +577,7 @@ export const SuperAdmin: React.FC = () => {
 
               <div className="space-y-2.5">
                 {ultimosTenants.map((t) => {
-                  const planoInfo = PLANOS_INFO[t.plano] || { label: t.plano, badgeVariant: 'neutral' };
+                  const planoInfo = planosMap[t.plano] || PLANOS_INFO[t.plano] || { label: t.plano, badgeVariant: 'neutral' };
                   return (
                     <div
                       key={t.id}
@@ -543,7 +703,7 @@ export const SuperAdmin: React.FC = () => {
                   </tr>
                 ) : (
                   filteredTenants.map((t) => {
-                    const planoInfo = PLANOS_INFO[t.plano] || { label: t.plano, badgeVariant: 'neutral' };
+                    const planoInfo = planosMap[t.plano] || PLANOS_INFO[t.plano] || { label: t.plano, badgeVariant: 'neutral' };
                     const lojasOcupacao = `${t.total_lojas} / ${t.limite_lojas}`;
                     const usuariosOcupacao = `${t.total_usuarios} / ${t.limite_usuarios}`;
                     const isLojasCritico = t.total_lojas >= t.limite_lojas;
@@ -649,106 +809,75 @@ export const SuperAdmin: React.FC = () => {
       {currentTab === 'planos' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Card Starter */}
-            <BentoCard className="p-5 flex flex-col justify-between border-white/[0.12]">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <Badge variant="neutral">Starter</Badge>
-                  <span className="text-xs text-slate-400">Pequenos comércios</span>
-                </div>
-                <div className="text-3xl font-extrabold text-white">
-                  R$ 99 <span className="text-sm font-normal text-slate-400">/mês</span>
-                </div>
-                <ul className="mt-4 space-y-2 text-xs text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Até 1 filial (loja matriz)</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Até 2 colaboradores</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>PDV e Frente de Caixa</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-6 pt-3 border-t border-white/[0.08] text-xs text-slate-400">
-                Inquilinos neste plano:{' '}
-                <span className="font-bold text-white">{tenantsPorPlano.STARTER.length}</span>
-              </div>
-            </BentoCard>
+            {planos.map((p) => {
+              const borderClass =
+                p.id === 'ENTERPRISE'
+                  ? 'border-emerald-500/30 bg-emerald-950/10'
+                  : p.id === 'PRO'
+                  ? 'border-purple-500/30 bg-purple-950/10'
+                  : 'border-white/[0.12]';
 
-            {/* Card Pro */}
-            <BentoCard className="p-5 flex flex-col justify-between border-purple-500/30 bg-purple-950/10">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <Badge variant="purple">Pro (Mais Popular)</Badge>
-                  <Zap className="w-4 h-4 text-purple-400" />
-                </div>
-                <div className="text-3xl font-extrabold text-white">
-                  R$ 249 <span className="text-sm font-normal text-slate-400">/mês</span>
-                </div>
-                <ul className="mt-4 space-y-2 text-xs text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Até 5 filiais integradas</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Até 10 colaboradores</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Transferências de Estoque entre lojas</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Entrada e Importação de NF-e</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-6 pt-3 border-t border-purple-500/20 text-xs text-slate-400">
-                Inquilinos neste plano:{' '}
-                <span className="font-bold text-white">{tenantsPorPlano.PRO.length}</span>
-              </div>
-            </BentoCard>
-
-            {/* Card Enterprise */}
-            <BentoCard className="p-5 flex flex-col justify-between border-emerald-500/30 bg-emerald-950/10">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <Badge variant="emerald">Enterprise</Badge>
+              const icon =
+                p.id === 'ENTERPRISE' ? (
                   <Crown className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="text-3xl font-extrabold text-white">
-                  R$ 799 <span className="text-sm font-normal text-slate-400">/mês</span>
-                </div>
-                <ul className="mt-4 space-y-2 text-xs text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Até 50 filiais</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Até 100 colaboradores</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Curva ABC e Inteligência de Estoque</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Auditorias físicas com Ledger em tempo real</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-6 pt-3 border-t border-emerald-500/20 text-xs text-slate-400">
-                Inquilinos neste plano:{' '}
-                <span className="font-bold text-white">{tenantsPorPlano.ENTERPRISE.length}</span>
-              </div>
-            </BentoCard>
+                ) : p.id === 'PRO' ? (
+                  <Zap className="w-4 h-4 text-purple-400" />
+                ) : (
+                  <Sparkles className="w-4 h-4 text-slate-400" />
+                );
+
+              const inquilinosCount = tenantsPorPlano[p.id as keyof typeof tenantsPorPlano]?.length || 0;
+
+              return (
+                <BentoCard key={p.id} className={`p-5 flex flex-col justify-between ${borderClass}`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={p.badge_variant}>{p.nome}</Badge>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-slate-400">{p.descricao}</span>
+                        {icon}
+                      </div>
+                    </div>
+                    <div className="text-3xl font-extrabold text-white">
+                      R$ {p.preco_mensal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}{' '}
+                      <span className="text-sm font-normal text-slate-400">/mês</span>
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-3 text-xs font-medium text-slate-400 pb-3 border-b border-white/[0.06]">
+                      <span>Até {p.limite_lojas} {p.limite_lojas === 1 ? 'filial' : 'filiais'}</span>
+                      <span>•</span>
+                      <span>Até {p.limite_usuarios} colaboradores</span>
+                    </div>
+
+                    <ul className="mt-3.5 space-y-2 text-xs text-slate-300">
+                      {p.recursos.map((rec, idx) => (
+                        <li key={idx} className="flex items-center gap-2">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                          <span>{rec}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="mt-6 pt-3 border-t border-white/[0.08] space-y-3">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span>Inquilinos neste plano:</span>
+                      <span className="font-bold text-white">{inquilinosCount}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEditarPlano(p)}
+                      className="w-full py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs font-semibold text-white flex items-center justify-center gap-2 transition-all hover:border-purple-500/40 group"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-purple-400 group-hover:scale-110 transition-transform" />
+                      <span>Editar Plano & Recursos</span>
+                    </button>
+                  </div>
+                </BentoCard>
+              );
+            })}
           </div>
 
           {/* Atalho para alterar o plano dos clientes */}
@@ -765,8 +894,8 @@ export const SuperAdmin: React.FC = () => {
                     <span className="text-slate-500 text-[11px] ml-2 font-mono">{t.cnpj}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge variant={PLANOS_INFO[t.plano]?.badgeVariant || 'neutral'}>
-                      {t.plano}
+                    <Badge variant={planosMap[t.plano]?.badgeVariant || PLANOS_INFO[t.plano]?.badgeVariant || 'neutral'}>
+                      {planosMap[t.plano]?.label || t.plano}
                     </Badge>
                     <button
                       onClick={() => handleOpenModalPlano(t)}
@@ -911,6 +1040,220 @@ export const SuperAdmin: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal: Editar Configuração do Plano Comercial & O que está liberado */}
+      {editingPlano && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-[#121214] border border-white/[0.12] rounded-2xl w-full max-w-lg p-6 shadow-2xl relative my-8">
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center">
+                  <Sliders className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Editar Plano Comercial</h3>
+                  <p className="text-xs text-slate-400">
+                    Modifique valor, limites e recursos liberados deste tier
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingPlano(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/[0.06] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveConfigPlano} className="mt-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                    Nome do Plano
+                  </label>
+                  <input
+                    type="text"
+                    value={formPlanoNome}
+                    onChange={(e) => setFormPlanoNome(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                    Subtítulo / Descrição
+                  </label>
+                  <input
+                    type="text"
+                    value={formPlanoDescricao}
+                    onChange={(e) => setFormPlanoDescricao(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Valor da Assinatura Mensal (R$/mês)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-xs text-slate-500 font-bold">R$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formPlanoPreco}
+                    onChange={(e) => setFormPlanoPreco(parseFloat(e.target.value) || 0)}
+                    required
+                    className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-emerald-400 font-bold focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                    Limite Padrão de Filiais
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formPlanoLojas}
+                    onChange={(e) => setFormPlanoLojas(parseInt(e.target.value) || 1)}
+                    required
+                    className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                    Limite Padrão de Usuários
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={formPlanoUsuarios}
+                    onChange={(e) => setFormPlanoUsuarios(parseInt(e.target.value) || 1)}
+                    required
+                    className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              {/* O que o plano tem liberado (Recursos & Módulos) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-slate-300">
+                    O que este plano tem liberado (Recursos & Benefícios)
+                  </label>
+                  <span className="text-[11px] text-slate-500">
+                    {formPlanoRecursos.length} itens cadastrados
+                  </span>
+                </div>
+
+                {/* Lista de itens atuais */}
+                <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                  {formPlanoRecursos.map((rec, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between px-3 py-2 bg-white/[0.02] border border-white/[0.08] rounded-xl text-xs text-slate-200"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                        <span className="truncate">{rec}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRecurso(idx)}
+                        className="text-slate-500 hover:text-rose-400 p-1 transition-colors"
+                        title="Remover este item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {formPlanoRecursos.length === 0 && (
+                    <div className="text-center py-4 text-xs text-slate-500 border border-dashed border-white/[0.08] rounded-xl">
+                      Nenhum recurso cadastrado para este plano.
+                    </div>
+                  )}
+                </div>
+
+                {/* Adicionar novo recurso manualmente */}
+                <div className="flex gap-2 mt-2.5">
+                  <input
+                    type="text"
+                    value={novoRecursoTexto}
+                    onChange={(e) => setNovoRecursoTexto(e.target.value)}
+                    placeholder="Adicionar recurso personalizado (ex: Suporte 24h)"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddRecurso();
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddRecurso()}
+                    className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Adicionar</span>
+                  </button>
+                </div>
+
+                {/* Sugestões rápidas de módulos */}
+                <div className="mt-3">
+                  <span className="text-[11px] text-slate-500 block mb-1.5 font-medium">
+                    Sugestões rápidas para liberar:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SUGESTOES_RECURSOS.filter((sug) => !formPlanoRecursos.includes(sug)).map((sug) => (
+                      <button
+                        key={sug}
+                        type="button"
+                        onClick={() => handleAddRecurso(sug)}
+                        className="text-[10px] px-2.5 py-1 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-purple-500/40 text-slate-400 hover:text-white transition-colors"
+                      >
+                        + {sug}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.08]">
+                <button
+                  type="button"
+                  onClick={() => setEditingPlano(null)}
+                  disabled={savingConfigPlano}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-white/[0.04] transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingConfigPlano}
+                  className="px-5 py-2 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-500 disabled:opacity-50 rounded-xl transition-colors flex items-center gap-1.5 shadow-lg shadow-purple-600/20"
+                >
+                  {savingConfigPlano ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Salvando...</span>
+                    </>
+                  ) : (
+                    <span>Salvar Alterações</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Slide-over Drawer: Visão 360° do Inquilino */}
       {drawerTenantId && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
@@ -936,10 +1279,12 @@ export const SuperAdmin: React.FC = () => {
                     {detalhesTenant && (
                       <Badge
                         variant={
-                          PLANOS_INFO[detalhesTenant.plano]?.badgeVariant || 'neutral'
+                          planosMap[detalhesTenant.plano]?.badgeVariant ||
+                          PLANOS_INFO[detalhesTenant.plano]?.badgeVariant ||
+                          'neutral'
                         }
                       >
-                        {PLANOS_INFO[detalhesTenant.plano]?.label || detalhesTenant.plano}
+                        {planosMap[detalhesTenant.plano]?.label || detalhesTenant.plano}
                       </Badge>
                     )}
                   </div>
