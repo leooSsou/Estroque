@@ -53,8 +53,8 @@ export const LedgerAuditoria: React.FC = () => {
       `"${produtos[m.produto_id]?.nome || m.produto_id}"`,
       `"${produtos[m.produto_id]?.sku || ''}"`,
       m.quantidade,
-      m.saldo_anterior ?? '',
-      m.saldo_resultante ?? '',
+      m.saldo_anterior !== undefined && m.saldo_anterior !== null ? m.saldo_anterior : '',
+      m.saldo_resultante !== undefined && m.saldo_resultante !== null ? m.saldo_resultante : '',
       `"${m.responsavel || 'Operador'}"`,
       `"${m.motivo}"`,
     ]);
@@ -265,10 +265,10 @@ export const LedgerAuditoria: React.FC = () => {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
-                      {mov.saldo_anterior ?? '—'} un
+                      {mov.saldo_anterior !== undefined && mov.saldo_anterior !== null ? `${mov.saldo_anterior} un` : '—'}
                     </td>
                     <td className="py-3.5 px-4 text-sm font-bold text-white whitespace-nowrap">
-                      {mov.saldo_resultante ?? '—'} un
+                      {mov.saldo_resultante !== undefined && mov.saldo_resultante !== null ? `${mov.saldo_resultante} un` : '—'}
                     </td>
                     <td className="py-3.5 px-4 text-sm font-semibold text-slate-300 whitespace-nowrap">
                       {mov.responsavel || 'Operador'}

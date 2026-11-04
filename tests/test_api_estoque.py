@@ -241,3 +241,57 @@ def test_seguranca_autenticacao_rotas_estoque_devem_exigir_jwt(client: TestClien
     headers_invalido = {"Authorization": "Bearer token_falso_e_invalido"}
     res4 = client.get("/estoque/saldos", headers=headers_invalido)
     assert res4.status_code == 401
+
+
+def test_movimentacoes_calculam_saldo_anterior_e_resultante(client: TestClient) -> None:
+    token = registrar_e_autenticar(client, "TenantSaldoLedger", "88999000000198")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    res_loja = client.post("/lojas/", json={"nome": "Loja Ledger", "cnpj": "11222333000181", "endereco": "Rua Ledger"}, headers=headers)
+    loja_id = res_loja.json()["id"]
+
+    res_prod = client.post("/produtos/", json={"nome": "Prod Ledger", "sku": "SKU-LEDGER-1", "preco_custo": 10.0, "preco_venda": 20.0, "markup": 1.0}, headers=headers)
+    prod_id = res_prod.json()["id"]
+
+    # 1. Entrada de 50
+    res_m1 = client.post("/estoque/movimentar", json={
+        "loja_id": loja_id,
+        "produto_id": prod_id,
+        "tipo": "ENTRADA",
+        "quantidade": 50,
+        "motivo": "Carga inicial"
+    }, headers=headers)
+    assert res_m1.status_code == 200
+    assert res_m1.json()["movimentacao"]["saldo_anterior"] == 0
+    assert res_m1.json()["movimentacao"]["saldo_resultante"] == 50
+
+    # 2. Saída de 10
+    res_m2 = client.post("/estoque/movimentar", json={
+        "loja_id": loja_id,
+        "produto_id": prod_id,
+        "tipo": "SAIDA",
+        "quantidade": 10,
+        "motivo": "Venda balcão"
+    }, headers=headers)
+    assert res_m2.status_code == 200
+    assert res_m2.json()["movimentacao"]["saldo_anterior"] == 50
+    assert res_m2.json()["movimentacao"]["saldo_resultante"] == 40
+
+    # 3. Consulta histórico (ledger)
+    res_ledger = client.get("/estoque/movimentacoes", headers=headers)
+    assert res_ledger.status_code == 200
+    movs = res_ledger.json()
+    assert len(movs) == 2
+
+    # Ordem decrescente (mais recente primeiro: saída de 10)
+    assert movs[0]["tipo"] == "SAIDA"
+    assert movs[0]["quantidade"] == 10
+    assert movs[0]["saldo_anterior"] == 50
+    assert movs[0]["saldo_resultante"] == 40
+
+    # Mais antiga: entrada de 50
+    assert movs[1]["tipo"] == "ENTRADA"
+    assert movs[1]["quantidade"] == 50
+    assert movs[1]["saldo_anterior"] == 0
+    assert movs[1]["saldo_resultante"] == 50
+

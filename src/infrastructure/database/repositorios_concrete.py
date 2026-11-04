@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from sqlalchemy import or_
@@ -703,7 +703,7 @@ class RepositorioEstoqueMovimentacaoSQLAlchemy(EstoqueMovimentacaoRepository):
             quantidade=movimentacao.quantidade,
             motivo=movimentacao.motivo,
             tenant_id=movimentacao.tenant_id,
-            data_movimentacao=movimentacao.data_movimentacao
+            data_movimentacao=movimentacao.data_movimentacao or datetime.now(timezone.utc)
         )
         self.db.add(model)
         self.db.flush()

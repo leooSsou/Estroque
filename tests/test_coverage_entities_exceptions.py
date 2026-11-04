@@ -327,6 +327,10 @@ def test_estoque_movimentacao_and_saldo_branches():
         EstoqueMovimentacao(loja_id=loja_id, produto_id=produto_id, tipo="ENTRADA", quantidade=10, motivo="M", tenant_id=tenant_id, id="invalid")  # type: ignore
     with pytest.raises(ValueError, match="data_movimentacao deve ser um objeto datetime"):
         EstoqueMovimentacao(loja_id=loja_id, produto_id=produto_id, tipo="ENTRADA", quantidade=10, motivo="M", tenant_id=tenant_id, data_movimentacao="invalid")  # type: ignore
+    with pytest.raises(ValueError, match="saldo_anterior deve ser um número inteiro"):
+        EstoqueMovimentacao(loja_id=loja_id, produto_id=produto_id, tipo="ENTRADA", quantidade=10, motivo="M", tenant_id=tenant_id, saldo_anterior="invalid")  # type: ignore
+    with pytest.raises(ValueError, match="saldo_resultante deve ser um número inteiro"):
+        EstoqueMovimentacao(loja_id=loja_id, produto_id=produto_id, tipo="ENTRADA", quantidade=10, motivo="M", tenant_id=tenant_id, saldo_resultante="invalid")  # type: ignore
 
     # Saldo
     with pytest.raises(ValueError, match="id deve ser um UUID"):

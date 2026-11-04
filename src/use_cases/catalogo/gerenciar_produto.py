@@ -2,12 +2,14 @@ import itertools
 from dataclasses import dataclass
 from uuid import UUID
 
+from src.domain.entities.estoque_movimentacao import EstoqueMovimentacao
 from src.domain.entities.estoque_saldo import EstoqueSaldo
 from src.domain.entities.produto import Produto
 from src.domain.exceptions.business import (
     ProdutoNaoEncontradoException,
     SkuProdutoEmUsoException,
 )
+from src.domain.repositories.estoque_movimentacao_repository import EstoqueMovimentacaoRepository
 from src.domain.repositories.estoque_saldo_repository import EstoqueSaldoRepository
 from src.domain.repositories.produto_repository import ProdutoRepository
 
@@ -198,10 +200,12 @@ class CriarProdutoComGrade:
     def __init__(
         self,
         produto_repo: ProdutoRepository,
-        saldo_repo: EstoqueSaldoRepository | None = None
+        saldo_repo: EstoqueSaldoRepository | None = None,
+        movimentacao_repo: EstoqueMovimentacaoRepository | None = None,
     ) -> None:
         self.produto_repo = produto_repo
         self.saldo_repo = saldo_repo
+        self.movimentacao_repo = movimentacao_repo
 
     def executar(self, input_data: CriarProdutoComGradeInput) -> CriarProdutoComGradeOutput:
         # 1. Validação básica dos atributos
@@ -296,6 +300,16 @@ class CriarProdutoComGrade:
                     quantidade=input_data.estoque_inicial_por_variacao
                 )
                 self.saldo_repo.salvar(saldo)
+                if self.movimentacao_repo is not None:
+                    mov = EstoqueMovimentacao(
+                        loja_id=input_data.loja_id,
+                        produto_id=f.id,
+                        tipo="ENTRADA",
+                        quantidade=input_data.estoque_inicial_por_variacao,
+                        motivo="Estoque inicial de cadastro de produto (Grade)",
+                        tenant_id=input_data.tenant_id
+                    )
+                    self.movimentacao_repo.salvar(mov)
 
         return CriarProdutoComGradeOutput(produto_pai=pai_salvo, variacoes=filhos_salvos)
 
