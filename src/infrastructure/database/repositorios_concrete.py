@@ -79,6 +79,7 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
             plano=model.plano or "PRO",
             limite_lojas=model.limite_lojas or 5,
             limite_usuarios=model.limite_usuarios or 10,
+            modulos_customizados=model.modulos_customizados if isinstance(model.modulos_customizados, dict) else {},
         )
 
     def salvar(self, tenant: Tenant) -> Tenant:
@@ -94,6 +95,7 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
                 plano=tenant.plano,
                 limite_lojas=tenant.limite_lojas,
                 limite_usuarios=tenant.limite_usuarios,
+                modulos_customizados=tenant.modulos_customizados or {},
             )
             self.db.add(model)
         else:
@@ -105,6 +107,7 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
             model.plano = tenant.plano
             model.limite_lojas = tenant.limite_lojas
             model.limite_usuarios = tenant.limite_usuarios
+            model.modulos_customizados = tenant.modulos_customizados or {}
             
         # O commit agora é delegado para a transação geral da rota/caso de uso.
         # Apenas damos flush para carregar possíveis IDs e gerados pelo banco.

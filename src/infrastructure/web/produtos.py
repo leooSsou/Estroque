@@ -14,6 +14,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioProdutoSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
+from src.infrastructure.web.authorization import verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     AdicionarVariacaoRequest,
@@ -79,7 +80,12 @@ def criar_produto(
         )
 
 
-@router.post("/grade", response_model=ProdutoComGradeResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/grade",
+    response_model=ProdutoComGradeResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(verificar_modulo_ativo("grade"))],
+)
 def criar_produto_com_grade(
     request: ProdutoGradeCreateRequest,
     db: Session = Depends(get_db),
@@ -168,7 +174,12 @@ def listar_variacoes_do_produto(
     return [ProdutoResponse.model_validate(v) for v in output.variacoes]
 
 
-@router.post("/{produto_id}/variacoes", response_model=ProdutoResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{produto_id}/variacoes",
+    response_model=ProdutoResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(verificar_modulo_ativo("grade"))],
+)
 def adicionar_variacao_ao_produto(
     produto_id: UUID,
     request: AdicionarVariacaoRequest,

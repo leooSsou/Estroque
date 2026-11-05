@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
+from src.domain.constants.modulos import CATALOGO_MODULOS, obter_modulos_ativos_map
 from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
     CnpjEmUsoException,
@@ -142,17 +143,32 @@ def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)) -
 
 
 @router.get("/me", response_model=UserResponse)
-def get_me(current_user: Usuario = Depends(get_current_user)) -> UserResponse:
+def get_me(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> UserResponse:
     """
-    Retorna as informações do usuário autenticado no momento.
+    Retorna as informações do usuário autenticado no momento, incluindo módulos ativos e plano.
     """
+    if current_user.role == "ADMIN_SAAS":
+        plano = "ENTERPRISE"
+        modulos_ativos = {k: True for k in CATALOGO_MODULOS}
+    else:
+        tenant_repo = RepositorioTenantSQLAlchemy(db)
+        tenant = tenant_repo.obter_por_id(current_user.tenant_id)
+        plano = tenant.plano if tenant else "PRO"
+        modulos_custom = tenant.modulos_customizados if tenant and isinstance(tenant.modulos_customizados, dict) else {}
+        modulos_ativos = obter_modulos_ativos_map(plano, modulos_custom)
+
     return UserResponse(
         id=current_user.id,
         nome=current_user.nome,
         email=current_user.email,
         role=current_user.role,
         tenant_id=current_user.tenant_id,
-        loja_atribuida_id=current_user.loja_atribuida_id
+        loja_atribuida_id=current_user.loja_atribuida_id,
+        plano=plano,
+        modulos_ativos=modulos_ativos,
     )
 
 

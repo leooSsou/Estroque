@@ -14,6 +14,7 @@ interface AuthContextType {
   logout: () => void;
   setActiveLoja: (loja: Loja) => void;
   refreshLojas: () => Promise<void>;
+  hasModulo: (moduloKey: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -110,6 +111,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveLojaState(null);
   };
 
+  const hasModulo = (moduloKey: string): boolean => {
+    if (!user) return false;
+    if (user.role === 'ADMIN_SAAS') return true;
+    if (moduloKey === 'dashboard' || moduloKey === 'produtos' || moduloKey === 'estoque') return true;
+    if (user.modulos_ativos && typeof user.modulos_ativos === 'object') {
+      if (moduloKey in user.modulos_ativos) {
+        return Boolean(user.modulos_ativos[moduloKey]);
+      }
+    }
+    return true;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -123,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         setActiveLoja,
         refreshLojas,
+        hasModulo,
       }}
     >
       {children}

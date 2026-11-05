@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
+from src.domain.constants.modulos import CATALOGO_MODULOS
 from src.domain.utils.validation import validar_cnpj
 
 PLANOS_PERMITIDOS = {"STARTER", "PRO", "ENTERPRISE"}
@@ -22,6 +23,7 @@ class Tenant:
     plano: str = "PRO"
     limite_lojas: int = 5
     limite_usuarios: int = 10
+    modulos_customizados: dict[str, bool] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         # Validação de tipos iniciais
@@ -56,5 +58,14 @@ class Tenant:
 
         if not isinstance(self.limite_usuarios, int) or self.limite_usuarios <= 0:
             raise ValueError("O limite de usuários deve ser um número inteiro positivo.")
+
+        if not isinstance(self.modulos_customizados, dict):
+            raise ValueError("O campo modulos_customizados deve ser um dicionário.")
+
+        for k, v in self.modulos_customizados.items():
+            if k not in CATALOGO_MODULOS:
+                raise ValueError(f"Módulo '{k}' inválido. Módulos válidos: {', '.join(sorted(CATALOGO_MODULOS.keys()))}.")
+            if not isinstance(v, bool):
+                raise ValueError(f"O valor para o módulo '{k}' deve ser um booleano.")
 
 

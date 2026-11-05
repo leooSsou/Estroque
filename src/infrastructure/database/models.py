@@ -40,6 +40,7 @@ class TenantModel(Base):
     plano: Mapped[str] = mapped_column(String(20), default="PRO", nullable=False)
     limite_lojas: Mapped[int] = mapped_column(default=5, nullable=False)
     limite_usuarios: Mapped[int] = mapped_column(default=10, nullable=False)
+    modulos_customizados: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
 
 class UsuarioModel(HasTenant, Base):
     """

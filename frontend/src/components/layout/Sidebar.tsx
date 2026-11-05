@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen = false,
   onCloseMobile = () => {},
 }) => {
-  const { user } = useAuth();
+  const { user, hasModulo } = useAuth();
   const location = useLocation();
 
   // Para o ADMIN_SAAS, armazena se a seção de testes de loja está expandida
@@ -62,18 +62,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   // Módulos operacionais de loja
-  const storeNavItems = [
-    { to: '/', label: 'Visão Geral da Loja', icon: LayoutDashboard },
-    { to: '/produtos', label: 'Produtos', icon: Package },
-    { to: '/estoque', label: 'Estoque', icon: Boxes },
-    { to: '/pdv', label: 'Frente de Caixa (PDV)', icon: ShoppingCart },
-    { to: '/financeiro', label: 'Financeiro', icon: Wallet },
-    { to: '/transferencias', label: 'Transferências', icon: ArrowLeftRight },
-    { to: '/nfe', label: 'Entrada NF-e', icon: FileSpreadsheet },
-    { to: '/ledger', label: 'Auditoria & Ledger', icon: ScrollText },
-    { to: '/contatos', label: 'Contatos', icon: Users },
-    { to: '/analytics', label: 'Curva ABC', icon: BarChart3 },
+  const allStoreNavItems = [
+    { to: '/', label: 'Visão Geral da Loja', icon: LayoutDashboard, modulo: 'dashboard' },
+    { to: '/produtos', label: 'Produtos', icon: Package, modulo: 'produtos' },
+    { to: '/estoque', label: 'Estoque', icon: Boxes, modulo: 'estoque' },
+    { to: '/pdv', label: 'Frente de Caixa (PDV)', icon: ShoppingCart, modulo: 'pdv' },
+    { to: '/financeiro', label: 'Financeiro', icon: Wallet, modulo: 'financeiro' },
+    { to: '/transferencias', label: 'Transferências', icon: ArrowLeftRight, modulo: 'transferencias' },
+    { to: '/nfe', label: 'Entrada NF-e', icon: FileSpreadsheet, modulo: 'nfe' },
+    { to: '/ledger', label: 'Auditoria & Ledger', icon: ScrollText, modulo: 'auditoria' },
+    { to: '/contatos', label: 'Contatos', icon: Users, modulo: 'contatos' },
+    { to: '/analytics', label: 'Curva ABC', icon: BarChart3, modulo: 'analytics' },
   ];
+
+  const storeNavItems = isSuperAdmin
+    ? allStoreNavItems
+    : allStoreNavItems.filter((item) => hasModulo(item.modulo));
 
   const isSuperAdminItemActive = (itemTab: string) => {
     if (location.pathname !== '/admin') return false;

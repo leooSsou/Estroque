@@ -7,6 +7,8 @@ export interface User {
   role: UserRole;
   tenant_id: string;
   loja_atribuida_id?: string | null;
+  plano?: string;
+  modulos_ativos?: Record<string, boolean>;
 }
 
 export interface Loja {
@@ -360,6 +362,26 @@ export interface RegisterTenantPayload {
   dono_senha: string;
 }
 
+export type ModuloOrigem = 'PLANO' | 'BONUS' | 'BLOQUEADO' | 'DESATIVADO';
+
+export interface ModuloDetalhe {
+  chave: string;
+  nome: string;
+  descricao: string;
+  icone: string;
+  rota: string;
+  ativo: boolean;
+  incluso_no_plano: boolean;
+  origem: ModuloOrigem;
+}
+
+export interface TenantModulosResponse {
+  tenant_id: string;
+  plano: string;
+  modulos_customizados: Record<string, boolean>;
+  modulos: ModuloDetalhe[];
+}
+
 export interface TenantAdmin {
   id: string;
   nome_fantasia: string;
@@ -374,6 +396,8 @@ export interface TenantAdmin {
   total_usuarios: number;
   total_vendas_valor: number;
   total_vendas_qtd: number;
+  modulos_customizados?: Record<string, boolean>;
+  modulos_ativos?: Record<string, boolean>;
 }
 
 export interface PlataformaDashboardMetrics {
@@ -413,6 +437,7 @@ export interface TenantDetalhesCompletos extends TenantAdmin {
   total_produtos: number;
   lojas: TenantLojaResumo[];
   usuarios: TenantUsuarioResumo[];
+  modulos?: ModuloDetalhe[];
 }
 
 export interface PlanoConfig {
