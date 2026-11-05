@@ -3,6 +3,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from src.domain.constants.modulos import (
+    CATALOGO_MODULOS,
+    MODULOS_PADRAO_POR_PLANO,
+    calcular_modulos_tenant,
+)
 from src.domain.entities.usuario import Usuario
 from src.domain.exceptions.business import (
     CnpjEmUsoException,
@@ -24,18 +29,22 @@ from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     AlterarPlanoTenantRequest,
     AlterarStatusTenantRequest,
+    AtualizarModulosTenantRequest,
     AtualizarPlanoConfigRequest,
     CriarLojaSuperAdminRequest,
     CriarTenantSuperAdminRequest,
+    ModuloDetalheResponse,
     PlanoConfigResponse,
     PlataformaDashboardResponse,
     TenantAdminResponse,
     TenantDetalhesCompletosResponse,
     TenantLojaResumoResponse,
+    TenantModulosResponse,
 )
 from src.use_cases.admin.gerenciar_plataforma import (
     AlterarPlanoTenant,
     AlterarStatusTenant,
+    AtualizarModulosTenant,
     AtualizarPlanoSuperAdmin,
     CadastrarLojaSuperAdmin,
     CadastrarTenantSuperAdmin,
@@ -145,7 +154,6 @@ def cadastrar_tenant(
         db.info.pop("ignore_tenant_filter", None)
 
 
-
 @router.get("/tenants/{tenant_id}", response_model=TenantAdminResponse)
 def obter_tenant_detalhes(
     tenant_id: UUID,
@@ -232,6 +240,76 @@ def alterar_plano_tenant(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except (DomainException, ValueError) as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/modulos/catalogo")
+def obter_catalogo_modulos(
+    current_user: Usuario = Depends(get_current_user),
+) -> dict:
+    """
+    Retorna o catálogo de módulos e os padrões de planos para a gestão do Super Admin.
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+    return {
+        "modulos": CATALOGO_MODULOS,
+        "planos_padrao": MODULOS_PADRAO_POR_PLANO,
+    }
+
+
+@router.get("/tenants/{tenant_id}/modulos", response_model=TenantModulosResponse)
+def obter_modulos_tenant(
+    tenant_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> TenantModulosResponse:
+    """
+    Retorna o detalhamento dos módulos de um inquilino (plano base + customizações/bônus).
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+    tenant_repo = RepositorioTenantSQLAlchemy(db)
+    tenant = tenant_repo.obter_por_id(tenant_id)
+    if not tenant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tenant com identificador '{tenant_id}' não foi encontrado.",
+        )
+    modulos_custom = tenant.modulos_customizados if isinstance(tenant.modulos_customizados, dict) else {}
+    detalhes = calcular_modulos_tenant(tenant.plano, modulos_custom)
+    return TenantModulosResponse(
+        tenant_id=tenant.id,
+        plano=tenant.plano,
+        modulos_customizados=modulos_custom,
+        modulos=[ModuloDetalheResponse.model_validate(m) for m in detalhes],
+    )
+
+
+@router.patch("/tenants/{tenant_id}/modulos", response_model=TenantModulosResponse)
+def atualizar_modulos_tenant(
+    tenant_id: UUID,
+    request: AtualizarModulosTenantRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> TenantModulosResponse:
+    """
+    Atualiza as permissões de módulos para um cliente específico (conceder bônus ou bloquear funcionalidades).
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+    tenant_repo = RepositorioTenantSQLAlchemy(db)
+    use_case = AtualizarModulosTenant(tenant_repo)
+    try:
+        tenant_atualizado = use_case.executar(tenant_id, request.modulos)
+        modulos_custom = tenant_atualizado.modulos_customizados if isinstance(tenant_atualizado.modulos_customizados, dict) else {}
+        detalhes = calcular_modulos_tenant(tenant_atualizado.plano, modulos_custom)
+        return TenantModulosResponse(
+            tenant_id=tenant_atualizado.id,
+            plano=tenant_atualizado.plano,
+            modulos_customizados=modulos_custom,
+            modulos=[ModuloDetalheResponse.model_validate(m) for m in detalhes],
+        )
+    except TenantNaoEncontradoException as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
 
 
 @router.get("/tenants/{tenant_id}/detalhes", response_model=TenantDetalhesCompletosResponse)

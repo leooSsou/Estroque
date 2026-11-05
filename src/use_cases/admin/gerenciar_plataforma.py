@@ -1,11 +1,12 @@
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from src.domain.constants.modulos import calcular_modulos_tenant, obter_modulos_ativos_map
 from src.domain.entities.loja import Loja
 from src.domain.entities.tenant import Tenant
 from src.domain.entities.usuario import Usuario
@@ -71,6 +72,8 @@ class TenantSuperAdminItem:
     total_usuarios: int
     total_vendas_valor: float
     total_vendas_qtd: int
+    modulos_customizados: dict[str, bool] = field(default_factory=dict)
+    modulos_ativos: dict[str, bool] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -132,6 +135,8 @@ class ListarTenantsSuperAdmin:
             resultado: list[TenantSuperAdminItem] = []
             for t in tenants:
                 vendas_qtd, vendas_val = vendas_map.get(t.id, (0, 0.0))
+                modulos_cust = t.modulos_customizados if isinstance(t.modulos_customizados, dict) else {}
+                modulos_at = obter_modulos_ativos_map(t.plano, modulos_cust)
                 resultado.append(
                     TenantSuperAdminItem(
                         id=t.id,
@@ -147,6 +152,8 @@ class ListarTenantsSuperAdmin:
                         total_usuarios=usuarios_map.get(t.id, 0),
                         total_vendas_valor=vendas_val,
                         total_vendas_qtd=vendas_qtd,
+                        modulos_customizados=modulos_cust,
+                        modulos_ativos=modulos_at,
                     )
                 )
 
@@ -177,6 +184,7 @@ class AlterarStatusTenant:
             plano=tenant.plano,
             limite_lojas=tenant.limite_lojas,
             limite_usuarios=tenant.limite_usuarios,
+            modulos_customizados=tenant.modulos_customizados,
         )
 
         return self.tenant_repo.salvar(tenant_atualizado)
@@ -229,8 +237,37 @@ class AlterarPlanoTenant:
             plano=plano_upper,
             limite_lojas=novo_limite_lojas,
             limite_usuarios=novo_limite_usuarios,
+            modulos_customizados=tenant.modulos_customizados,
         )
 
+        return self.tenant_repo.salvar(tenant_atualizado)
+
+
+class AtualizarModulosTenant:
+    """
+    Caso de Uso: Atualiza a personalização de módulos/funcionalidades ativas para um inquilino.
+    Permite conceder bônus ou restringir recursos de forma granular.
+    """
+    def __init__(self, tenant_repo: TenantRepository) -> None:
+        self.tenant_repo = tenant_repo
+
+    def executar(self, tenant_id: UUID, modulos: dict[str, bool]) -> Tenant:
+        tenant = self.tenant_repo.obter_por_id(tenant_id)
+        if not tenant:
+            raise TenantNaoEncontradoException(str(tenant_id))
+
+        tenant_atualizado = Tenant(
+            id=tenant.id,
+            nome_fantasia=tenant.nome_fantasia,
+            razao_social=tenant.razao_social,
+            cnpj=tenant.cnpj,
+            data_cadastro=tenant.data_cadastro,
+            ativo=tenant.ativo,
+            plano=tenant.plano,
+            limite_lojas=tenant.limite_lojas,
+            limite_usuarios=tenant.limite_usuarios,
+            modulos_customizados=modulos,
+        )
         return self.tenant_repo.salvar(tenant_atualizado)
 
 
@@ -470,6 +507,8 @@ class TenantDetalhesCompletosOutput:
     total_vendas_valor: float
     lojas: list[LojaResumoItem]
     usuarios: list[UsuarioResumoItem]
+    modulos_customizados: dict[str, bool] = field(default_factory=dict)
+    modulos: list[dict] = field(default_factory=list)
 
 
 class ObterDetalhesTenantSuperAdmin:
@@ -541,6 +580,9 @@ class ObterDetalhesTenantSuperAdmin:
             total_vendas_qtd = vendas_stats[0] if vendas_stats else 0
             total_vendas_valor = float(vendas_stats[1]) if vendas_stats else 0.0
 
+            modulos_custom = tenant.modulos_customizados if isinstance(tenant.modulos_customizados, dict) else {}
+            modulos_info = calcular_modulos_tenant(tenant.plano, modulos_custom)
+
             return TenantDetalhesCompletosOutput(
                 id=tenant.id,
                 nome_fantasia=tenant.nome_fantasia,
@@ -556,6 +598,8 @@ class ObterDetalhesTenantSuperAdmin:
                 total_vendas_valor=total_vendas_valor,
                 lojas=lojas_resumo,
                 usuarios=usuarios_resumo,
+                modulos_customizados=modulos_custom,
+                modulos=modulos_info,
             )
         finally:
             self.db.info.pop("ignore_tenant_filter", None)

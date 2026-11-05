@@ -26,6 +26,7 @@ import {
   AuditarEstoqueResponse,
   RegisterTenantPayload,
   TenantAdmin,
+  TenantModulosResponse,
   PlataformaDashboardMetrics,
   AlterarPlanoPayload,
   TenantDetalhesCompletos,
@@ -992,6 +993,29 @@ class ApiClient {
     if (res.data) return res.data;
     if (res.isBackend && res.error) throw new Error(res.error);
     throw new Error('Falha ao alterar plano do tenant');
+  }
+
+  async getTenantModulos(tenantId: string): Promise<TenantModulosResponse> {
+    const res = await this.request<TenantModulosResponse>(`/admin/tenants/${tenantId}/modulos`);
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    return storage.getTenantModulos(tenantId);
+  }
+
+  async updateTenantModulos(tenantId: string, modulos: Record<string, boolean>): Promise<TenantModulosResponse> {
+    const res = await this.request<TenantModulosResponse>(`/admin/tenants/${tenantId}/modulos`, {
+      method: 'PATCH',
+      body: JSON.stringify({ modulos }),
+    });
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    return storage.updateTenantModulos(tenantId, modulos);
+  }
+
+  async getModulosCatalogo(): Promise<{ modulos: Record<string, any>; planos_padrao: Record<string, string[]> }> {
+    const res = await this.request<{ modulos: Record<string, any>; planos_padrao: Record<string, string[]> }>('/admin/modulos/catalogo');
+    if (res.data) return res.data;
+    return storage.getModulosCatalogo();
   }
 
   async getAdminTenantDetalhesCompletos(tenantId: string): Promise<TenantDetalhesCompletos> {

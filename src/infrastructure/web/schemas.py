@@ -50,6 +50,8 @@ class UserResponse(BaseModel):
     role: str
     tenant_id: UUID
     loja_atribuida_id: UUID | None = None
+    plano: str | None = None
+    modulos_ativos: dict[str, bool] = Field(default_factory=dict)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -580,6 +582,35 @@ class CurvaABCOResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ModuloDetalheResponse(BaseModel):
+    chave: str
+    nome: str
+    descricao: str
+    icone: str
+    rota: str
+    ativo: bool
+    incluso_no_plano: bool
+    origem: str  # 'PLANO' | 'BONUS' | 'BLOQUEADO' | 'DESATIVADO'
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TenantModulosResponse(BaseModel):
+    tenant_id: UUID
+    plano: str
+    modulos_customizados: dict[str, bool]
+    modulos: list[ModuloDetalheResponse]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AtualizarModulosTenantRequest(BaseModel):
+    modulos: dict[str, bool] = Field(
+        ...,
+        description="Mapeamento de módulo para status liberado/bloqueado. Ex: {'nfe': True, 'pdv': False}"
+    )
+
+
 class TenantAdminResponse(BaseModel):
     id: UUID
     nome_fantasia: str
@@ -594,6 +625,8 @@ class TenantAdminResponse(BaseModel):
     total_usuarios: int = 0
     total_vendas_valor: float = 0.0
     total_vendas_qtd: int = 0
+    modulos_customizados: dict[str, bool] = Field(default_factory=dict)
+    modulos_ativos: dict[str, bool] = Field(default_factory=dict)
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -656,6 +689,8 @@ class TenantDetalhesCompletosResponse(BaseModel):
     total_vendas_valor: float = 0.0
     lojas: list[TenantLojaResumoResponse] = Field(default_factory=list)
     usuarios: list[TenantUsuarioResumoResponse] = Field(default_factory=list)
+    modulos_customizados: dict[str, bool] = Field(default_factory=dict)
+    modulos: list[ModuloDetalheResponse] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

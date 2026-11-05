@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+import { ShieldAlert } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { AppShell } from './components/layout/AppShell';
@@ -71,6 +72,37 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+const ModuloRouteGuard: React.FC<{ modulo: string; moduloNome: string; children: React.ReactNode }> = ({
+  modulo,
+  moduloNome,
+  children,
+}) => {
+  const { hasModulo, user } = useAuth();
+  if (user?.role === 'ADMIN_SAAS') return <>{children}</>;
+
+  if (!hasModulo(modulo)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[65vh] text-center p-6">
+        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-4 shadow-lg shadow-amber-500/10">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">Módulo Não Habilitado</h2>
+        <p className="text-sm text-slate-400 max-w-md mb-6 leading-relaxed">
+          O módulo <strong className="text-white">{moduloNome}</strong> não está incluso no plano da sua empresa ou foi temporariamente desativado pelo administrador.
+        </p>
+        <Link
+          to="/"
+          className="px-4 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.14] text-xs font-semibold text-white transition-all"
+        >
+          Voltar ao Início
+        </Link>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
@@ -91,14 +123,70 @@ export const App: React.FC = () => {
               <Route index element={<Dashboard />} />
               <Route path="produtos" element={<Produtos />} />
               <Route path="estoque" element={<Estoque />} />
-              <Route path="ledger" element={<LedgerAuditoria />} />
-              <Route path="nfe" element={<NFeImport />} />
-              <Route path="transferencias" element={<Transferencias />} />
-              <Route path="auditoria" element={<Auditoria />} />
-              <Route path="pdv" element={<PDVVendas />} />
-              <Route path="financeiro" element={<Financeiro />} />
-              <Route path="contatos" element={<Contatos />} />
-              <Route path="analytics" element={<Analytics />} />
+              <Route
+                path="ledger"
+                element={
+                  <ModuloRouteGuard modulo="auditoria" moduloNome="Auditoria & Ledger">
+                    <LedgerAuditoria />
+                  </ModuloRouteGuard>
+                }
+              />
+              <Route
+                path="nfe"
+                element={
+                  <ModuloRouteGuard modulo="nfe" moduloNome="Entrada NF-e">
+                    <NFeImport />
+                  </ModuloRouteGuard>
+                }
+              />
+              <Route
+                path="transferencias"
+                element={
+                  <ModuloRouteGuard modulo="transferencias" moduloNome="Transferências">
+                    <Transferencias />
+                  </ModuloRouteGuard>
+                }
+              />
+              <Route
+                path="auditoria"
+                element={
+                  <ModuloRouteGuard modulo="auditoria" moduloNome="Auditoria Física">
+                    <Auditoria />
+                  </ModuloRouteGuard>
+                }
+              />
+              <Route
+                path="pdv"
+                element={
+                  <ModuloRouteGuard modulo="pdv" moduloNome="Frente de Caixa (PDV)">
+                    <PDVVendas />
+                  </ModuloRouteGuard>
+                }
+              />
+              <Route
+                path="financeiro"
+                element={
+                  <ModuloRouteGuard modulo="financeiro" moduloNome="Financeiro">
+                    <Financeiro />
+                  </ModuloRouteGuard>
+                }
+              />
+              <Route
+                path="contatos"
+                element={
+                  <ModuloRouteGuard modulo="contatos" moduloNome="Contatos & Crediário">
+                    <Contatos />
+                  </ModuloRouteGuard>
+                }
+              />
+              <Route
+                path="analytics"
+                element={
+                  <ModuloRouteGuard modulo="analytics" moduloNome="Curva ABC & Analytics">
+                    <Analytics />
+                  </ModuloRouteGuard>
+                }
+              />
               <Route path="admin" element={<SuperAdmin />} />
             </Route>
 

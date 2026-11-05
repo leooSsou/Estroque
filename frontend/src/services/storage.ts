@@ -23,6 +23,7 @@ import {
   OperacaoCaixa,
   CaixaTurno,
   TurnoFechadoHistorico,
+  TenantModulosResponse,
 } from '../types';
 
 const STORAGE_PREFIX = 'estroque_saas_';
@@ -1084,6 +1085,71 @@ class StorageService {
         estoque_atual: p.estoque_total,
       };
     });
+  }
+
+  getModulosCatalogo(): { modulos: Record<string, any>; planos_padrao: Record<string, string[]> } {
+    return {
+      modulos: {
+        pdv: { nome: 'Frente de Caixa (PDV)', descricao: 'Vendas, turnos e sangrias', icone: 'ShoppingCart', rota: '/pdv' },
+        nfe: { nome: 'Entrada & Importação NF-e', descricao: 'Importação XML e compras', icone: 'FileSpreadsheet', rota: '/nfe' },
+        financeiro: { nome: 'Gestão Financeira', descricao: 'Despesas e receitas', icone: 'Wallet', rota: '/financeiro' },
+        transferencias: { nome: 'Transferências de Estoque', descricao: 'Movimentações entre lojas', icone: 'ArrowLeftRight', rota: '/transferencias' },
+        auditoria: { nome: 'Auditoria & Ledger', descricao: 'Contagem e livro-razão', icone: 'ScrollText', rota: '/ledger' },
+        contatos: { nome: 'Contatos & Crediário', descricao: 'Clientes e crediário', icone: 'Users', rota: '/contatos' },
+        analytics: { nome: 'Curva ABC & Analytics', descricao: 'Inteligência de estoque', icone: 'BarChart3', rota: '/analytics' },
+        grade: { nome: 'Grade & Variações', descricao: 'Matriz de cor e tamanho', icone: 'Boxes', rota: '/produtos' },
+      },
+      planos_padrao: {
+        STARTER: ['pdv', 'contatos'],
+        PRO: ['pdv', 'contatos', 'financeiro', 'grade', 'nfe', 'transferencias', 'auditoria', 'analytics'],
+        ENTERPRISE: ['pdv', 'nfe', 'financeiro', 'transferencias', 'auditoria', 'contatos', 'analytics', 'grade'],
+      },
+    };
+  }
+
+  getTenantModulos(tenantId: string): TenantModulosResponse {
+    const catalogo = this.getModulosCatalogo();
+    const stored = this.get<Record<string, Record<string, boolean>>>('tenant_modulos', {});
+    const custom = stored[tenantId] || {};
+    const plano = 'PRO';
+    const padroes = catalogo.planos_padrao[plano];
+
+    const modulos = Object.entries(catalogo.modulos).map(([chave, meta]) => {
+      const incluso_no_plano = padroes.includes(chave);
+      let ativo = incluso_no_plano;
+      let origem: 'PLANO' | 'BONUS' | 'BLOQUEADO' | 'DESATIVADO' = incluso_no_plano ? 'PLANO' : 'DESATIVADO';
+      if (chave in custom) {
+        ativo = Boolean(custom[chave]);
+        if (ativo && !incluso_no_plano) origem = 'BONUS';
+        else if (!ativo && incluso_no_plano) origem = 'BLOQUEADO';
+        else if (ativo && incluso_no_plano) origem = 'PLANO';
+        else origem = 'DESATIVADO';
+      }
+      return {
+        chave,
+        nome: meta.nome,
+        descricao: meta.descricao,
+        icone: meta.icone,
+        rota: meta.rota,
+        ativo,
+        incluso_no_plano,
+        origem,
+      };
+    });
+
+    return {
+      tenant_id: tenantId,
+      plano,
+      modulos_customizados: custom,
+      modulos,
+    };
+  }
+
+  updateTenantModulos(tenantId: string, modulos: Record<string, boolean>): TenantModulosResponse {
+    const stored = this.get<Record<string, Record<string, boolean>>>('tenant_modulos', {});
+    stored[tenantId] = modulos;
+    this.set('tenant_modulos', stored);
+    return this.getTenantModulos(tenantId);
   }
 }
 

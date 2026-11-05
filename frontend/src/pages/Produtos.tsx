@@ -26,8 +26,9 @@ import {
 } from 'lucide-react';
 
 export const Produtos: React.FC = () => {
-  const { activeLoja } = useAuth();
+  const { activeLoja, hasModulo } = useAuth();
   const { toast } = useToast();
+  const gradeLiberada = hasModulo('grade');
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'TODOS' | 'NORMAL' | 'BAIXO' | 'RUPTURA'>('TODOS');
@@ -758,15 +759,24 @@ export const Produtos: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setTipoCadastro('GRADE')}
+              onClick={() => {
+                if (!gradeLiberada) {
+                  toast.error('O módulo de Grade e Variações não está habilitado para o seu plano.');
+                  return;
+                }
+                setTipoCadastro('GRADE');
+              }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
-                tipoCadastro === 'GRADE'
+                !gradeLiberada
+                  ? 'opacity-50 cursor-not-allowed text-slate-500'
+                  : tipoCadastro === 'GRADE'
                   ? 'bg-purple-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <Layers className="w-4 h-4" />
-              Produto com Grade / Variações
+              <span>Produto com Grade / Variações</span>
+              {!gradeLiberada && <span className="text-[10px] bg-white/[0.1] px-1.5 py-0.5 rounded text-amber-300">Bloqueado</span>}
             </button>
           </div>
 

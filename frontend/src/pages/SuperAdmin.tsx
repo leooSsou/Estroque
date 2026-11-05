@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
-import { TenantAdmin, PlataformaDashboardMetrics, TenantDetalhesCompletos, PlanoConfig } from '../types';
+import { TenantAdmin, PlataformaDashboardMetrics, TenantDetalhesCompletos, PlanoConfig, ModuloDetalhe } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import {
@@ -33,7 +33,26 @@ import {
   Edit3,
   Plus,
   Trash2,
+  FileSpreadsheet,
+  ShoppingCart,
+  Wallet,
+  ArrowLeftRight,
+  ScrollText,
+  BarChart3,
+  Boxes,
+  Check,
 } from 'lucide-react';
+
+const MODULO_ICONS: Record<string, React.ElementType> = {
+  pdv: ShoppingCart,
+  nfe: FileSpreadsheet,
+  financeiro: Wallet,
+  transferencias: ArrowLeftRight,
+  auditoria: ScrollText,
+  contatos: Users,
+  analytics: BarChart3,
+  grade: Boxes,
+};
 
 const PLANOS_INFO: Record<
   string,
@@ -164,6 +183,13 @@ export const SuperAdmin: React.FC = () => {
   const [novaFilialCnpj, setNovaFilialCnpj] = useState('');
   const [novaFilialEndereco, setNovaFilialEndereco] = useState('');
   const [savingNovaFilial, setSavingNovaFilial] = useState(false);
+
+  // Estado do Modal de Módulos & Permissões Customizadas (Bônus / Bloqueio)
+  const [modalModulosTenant, setModalModulosTenant] = useState<TenantAdmin | TenantDetalhesCompletos | null>(null);
+  const [modulosLista, setModulosLista] = useState<ModuloDetalhe[]>([]);
+  const [modulosState, setModulosState] = useState<Record<string, boolean>>({});
+  const [loadingModulos, setLoadingModulos] = useState(false);
+  const [savingModulos, setSavingModulos] = useState(false);
 
   // Estado do Drawer de Detalhes 360°
   const [drawerTenantId, setDrawerTenantId] = useState<string | null>(null);
@@ -455,6 +481,90 @@ export const SuperAdmin: React.FC = () => {
       toast.error(msg);
     } finally {
       setSavingNovaFilial(false);
+    }
+  };
+
+  const handleOpenModalModulos = async (tenant: TenantAdmin | TenantDetalhesCompletos) => {
+    setModalModulosTenant(tenant);
+    setLoadingModulos(true);
+    try {
+      const resp = await api.getTenantModulos(tenant.id);
+      setModulosLista(resp.modulos);
+      const stateMap: Record<string, boolean> = {};
+      resp.modulos.forEach((m) => {
+        stateMap[m.chave] = m.ativo;
+      });
+      setModulosState(stateMap);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao carregar módulos do cliente';
+      toast.error(msg);
+      setModalModulosTenant(null);
+    } finally {
+      setLoadingModulos(false);
+    }
+  };
+
+  const handleToggleModulo = (chave: string) => {
+    setModulosState((prev) => ({
+      ...prev,
+      [chave]: !prev[chave],
+    }));
+  };
+
+  const handleRestaurarPadroesPlano = () => {
+    if (!modulosLista.length) return;
+    const stateMap: Record<string, boolean> = {};
+    modulosLista.forEach((m) => {
+      stateMap[m.chave] = m.incluso_no_plano;
+    });
+    setModulosState(stateMap);
+    toast.info('Valores restaurados para o padrão do plano.');
+  };
+
+  const handleSalvarModulos = async () => {
+    if (!modalModulosTenant) return;
+    setSavingModulos(true);
+    try {
+      const modulos_customizados: Record<string, boolean> = {};
+      modulosLista.forEach((m) => {
+        const atual = !!modulosState[m.chave];
+        if (atual !== m.incluso_no_plano) {
+          modulos_customizados[m.chave] = atual;
+        }
+      });
+
+      const updated = await api.updateTenantModulos(modalModulosTenant.id, modulos_customizados);
+      toast.success(`Módulos de "${modalModulosTenant.nome_fantasia}" atualizados com sucesso!`);
+
+      const modulosAtivosMap: Record<string, boolean> = {};
+      updated.modulos.forEach((m) => {
+        modulosAtivosMap[m.chave] = m.ativo;
+      });
+
+      setTenants((prev) =>
+        prev.map((t) =>
+          t.id === modalModulosTenant.id
+            ? { ...t, modulos_customizados: updated.modulos_customizados, modulos_ativos: modulosAtivosMap }
+            : t
+        )
+      );
+
+      if (detalhesTenant && detalhesTenant.id === modalModulosTenant.id) {
+        setDetalhesTenant({
+          ...detalhesTenant,
+          modulos_customizados: updated.modulos_customizados,
+          modulos_ativos: modulosAtivosMap,
+          modulos: updated.modulos,
+        });
+      }
+
+      setModalModulosTenant(null);
+      loadData(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao salvar permissões de módulos';
+      toast.error(msg);
+    } finally {
+      setSavingModulos(false);
     }
   };
 
@@ -923,6 +1033,15 @@ export const SuperAdmin: React.FC = () => {
                               title="Alterar Plano e Limites"
                             >
                               <Sliders className="w-4 h-4" />
+                            </button>
+
+                            {/* Botão Módulos & Bônus */}
+                            <button
+                              onClick={() => handleOpenModalModulos(t)}
+                              className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors border border-transparent hover:border-emerald-500/20"
+                              title="Gerenciar Módulos e Bônus"
+                            >
+                              <Sparkles className="w-4 h-4" />
                             </button>
 
                             {/* Botão Suspender / Ativar */}
@@ -1741,6 +1860,187 @@ export const SuperAdmin: React.FC = () => {
         </div>
       )}
 
+      {/* Modal: Gerenciamento Granular de Módulos & Bônus */}
+      {modalModulosTenant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#121214] border border-white/[0.12] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-white/[0.08]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-white">
+                      Controle de Módulos & Bônus
+                    </h3>
+                    <Badge variant={planosMap[modalModulosTenant.plano]?.badgeVariant || 'neutral'}>
+                      {planosMap[modalModulosTenant.plano]?.label || modalModulosTenant.plano}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {modalModulosTenant.nome_fantasia} ({modalModulosTenant.cnpj})
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalModulosTenant(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/[0.06] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-xs text-slate-300">
+                <p>
+                  <strong className="text-emerald-400">Flexibilidade Total:</strong> Ative funcionalidades que não pertencem ao plano contratado como <strong>Bônus VIP</strong>, ou bloqueie abas específicas caso o cliente não queira utilizá-las.
+                </p>
+              </div>
+
+              {loadingModulos ? (
+                <div className="py-16 text-center text-slate-500">
+                  <RefreshCw className="w-7 h-7 animate-spin mx-auto mb-2 text-emerald-400" />
+                  <p className="text-xs">Carregando catálogo de módulos...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {modulosLista.map((mod) => {
+                    const Icon = MODULO_ICONS[mod.chave] || Package;
+                    const isAtivo = !!modulosState[mod.chave];
+                    const isPadrao = mod.incluso_no_plano;
+                    const isBonus = isAtivo && !isPadrao;
+                    const isBloqueado = !isAtivo && isPadrao;
+
+                    return (
+                      <div
+                        key={mod.chave}
+                        onClick={() => handleToggleModulo(mod.chave)}
+                        className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3 ${
+                          isBonus
+                            ? 'bg-emerald-500/10 border-emerald-500/30 hover:border-emerald-500/50'
+                            : isBloqueado
+                            ? 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50'
+                            : isAtivo
+                            ? 'bg-white/[0.03] border-white/[0.1] hover:border-white/[0.2]'
+                            : 'bg-black/25 border-white/[0.05] opacity-60 hover:opacity-80'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                              isBonus
+                                ? 'bg-emerald-500/20 text-emerald-300'
+                                : isBloqueado
+                                ? 'bg-rose-500/20 text-rose-300'
+                                : isAtivo
+                                ? 'bg-purple-500/10 text-purple-300'
+                                : 'bg-white/[0.04] text-slate-500'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-xs text-white">
+                                {mod.nome}
+                              </span>
+                              {isBonus && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                  ✨ Bônus
+                                </span>
+                              )}
+                              {isBloqueado && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                                  🚫 Bloqueado
+                                </span>
+                              )}
+                              {isAtivo && isPadrao && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                                  Incluso no Plano
+                                </span>
+                              )}
+                              {!isAtivo && !isPadrao && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-normal text-slate-500">
+                                  Desativado
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                              {mod.descricao}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Switch Switcher */}
+                        <div className="flex-shrink-0 pt-0.5">
+                          <div
+                            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${
+                              isAtivo ? 'bg-emerald-500' : 'bg-white/[0.12]'
+                            }`}
+                          >
+                            <div
+                              className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                                isAtivo ? 'translate-x-5' : 'translate-x-0'
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-white/[0.08] flex items-center justify-between bg-white/[0.01]">
+              <button
+                type="button"
+                onClick={handleRestaurarPadroesPlano}
+                disabled={loadingModulos || savingModulos}
+                className="text-xs text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
+              >
+                Restaurar padrão do plano ({modalModulosTenant.plano})
+              </button>
+
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setModalModulosTenant(null)}
+                  disabled={savingModulos}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-white/[0.04] transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSalvarModulos}
+                  disabled={loadingModulos || savingModulos}
+                  className="px-5 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-xl transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-600/20"
+                >
+                  {savingModulos ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Salvando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Salvar Módulos</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Slide-over Drawer: Visão 360° do Inquilino */}
       {drawerTenantId && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm animate-fade-in">
@@ -1808,7 +2108,15 @@ export const SuperAdmin: React.FC = () => {
                       className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors"
                     >
                       <Sliders className="w-3.5 h-3.5" />
-                      <span>Gerenciar Plano & Cotas</span>
+                      <span>Plano & Cotas</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleOpenModalModulos(detalhesTenant)}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Módulos & Bônus</span>
                     </button>
 
                     <button
@@ -1821,7 +2129,7 @@ export const SuperAdmin: React.FC = () => {
                       }`}
                     >
                       <Power className="w-3.5 h-3.5" />
-                      <span>{detalhesTenant.ativo ? 'Suspender Inquilino' : 'Reativar Inquilino'}</span>
+                      <span>{detalhesTenant.ativo ? 'Suspender' : 'Reativar'}</span>
                     </button>
                   </div>
 
@@ -1849,6 +2157,75 @@ export const SuperAdmin: React.FC = () => {
                         {detalhesTenant.usuarios.length} <span className="text-xs font-normal text-slate-500">/ {detalhesTenant.limite_usuarios}</span>
                       </div>
                       <div className="text-[10px] text-slate-500 mt-0.5">usuários ativos</div>
+                    </div>
+                  </div>
+
+                  {/* Seção 0: Módulos & Recursos Ativos */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-emerald-400" />
+                        <h3 className="text-sm font-bold text-white">
+                          Funcionalidades & Módulos
+                        </h3>
+                      </div>
+                      <button
+                        onClick={() => handleOpenModalModulos(detalhesTenant)}
+                        className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        <span>Gerenciar</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {detalhesTenant.modulos?.map((mod) => {
+                        const Icon = MODULO_ICONS[mod.chave] || Package;
+                        const isBonus = mod.origem === 'BONUS';
+                        const isBloqueado = mod.origem === 'BLOQUEADO';
+                        const isAtivo = mod.ativo;
+
+                        return (
+                          <div
+                            key={mod.chave}
+                            className={`p-2.5 rounded-xl border transition-all ${
+                              isBonus
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                : isBloqueado
+                                ? 'bg-rose-500/10 border-rose-500/25 text-rose-300'
+                                : isAtivo
+                                ? 'bg-white/[0.03] border-white/[0.08] text-white'
+                                : 'bg-black/20 border-white/[0.04] text-slate-500 opacity-60'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span className="text-xs font-semibold truncate">{mod.nome}</span>
+                              </div>
+                              <span
+                                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                  isAtivo ? 'bg-emerald-400' : 'bg-slate-600'
+                                }`}
+                              />
+                            </div>
+                            <div className="text-[10px]">
+                              {isBonus && (
+                                <span className="text-emerald-400 font-medium">✨ Bônus VIP</span>
+                              )}
+                              {isBloqueado && (
+                                <span className="text-rose-400 font-medium">🚫 Bloqueado</span>
+                              )}
+                              {mod.origem === 'PLANO' && (
+                                <span className="text-purple-300 font-medium">Incluso no plano</span>
+                              )}
+                              {mod.origem === 'DESATIVADO' && (
+                                <span className="text-slate-500">Não incluso</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
