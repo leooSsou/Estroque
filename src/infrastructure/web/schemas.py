@@ -292,6 +292,8 @@ class MovimentacaoEstoqueResponse(BaseModel):
     motivo: str
     tenant_id: UUID
     data_movimentacao: datetime
+    saldo_anterior: int | None = None
+    saldo_resultante: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

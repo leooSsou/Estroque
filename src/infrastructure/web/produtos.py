@@ -9,6 +9,7 @@ from src.domain.exceptions.business import (
     SkuProdutoEmUsoException,
 )
 from src.infrastructure.database.repositorios_concrete import (
+    RepositorioEstoqueMovimentacaoSQLAlchemy,
     RepositorioEstoqueSaldoSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
 )
@@ -90,7 +91,8 @@ def criar_produto_com_grade(
     """
     produto_repo = RepositorioProdutoSQLAlchemy(db)
     saldo_repo = RepositorioEstoqueSaldoSQLAlchemy(db)
-    use_case = CriarProdutoComGrade(produto_repo, saldo_repo)
+    movimentacao_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(db)
+    use_case = CriarProdutoComGrade(produto_repo, saldo_repo, movimentacao_repo)
 
     atributos_input = [
         AtributoGradeInput(nome=a.nome, valores=a.valores)

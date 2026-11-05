@@ -16,6 +16,8 @@ class EstoqueMovimentacao:
     tenant_id: UUID
     id: UUID = field(default_factory=uuid4)
     data_movimentacao: datetime | None = None
+    saldo_anterior: int | None = None
+    saldo_resultante: int | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.loja_id, UUID):
@@ -37,3 +39,7 @@ class EstoqueMovimentacao:
             raise ValueError("O id deve ser um UUID válido.")
         if self.data_movimentacao is not None and not isinstance(self.data_movimentacao, datetime):
             raise ValueError("A data_movimentacao deve ser um objeto datetime válido.")
+        if self.saldo_anterior is not None and not isinstance(self.saldo_anterior, int):
+            raise ValueError("O saldo_anterior deve ser um número inteiro ou None.")
+        if self.saldo_resultante is not None and not isinstance(self.saldo_resultante, int):
+            raise ValueError("O saldo_resultante deve ser um número inteiro ou None.")

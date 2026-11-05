@@ -17,6 +17,7 @@ import {
   RegistrarDevolucaoPayload,
   VendaEmEspera,
   CaixaTurno,
+  TurnoFechadoHistorico,
   OperacaoCaixa,
   FinanceiroLancamento,
   DashboardAnalytics,
@@ -787,6 +788,10 @@ class ApiClient {
     return storage.getCaixaTurno();
   }
 
+  async getHistoricoTurnos(): Promise<TurnoFechadoHistorico[]> {
+    return storage.getHistoricoTurnos();
+  }
+
   async abrirCaixa(fundoInicial: number): Promise<CaixaTurno> {
     return storage.abrirCaixa(fundoInicial);
   }
@@ -838,7 +843,7 @@ class ApiClient {
     const activeId =
       lojaId ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
-    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-') && res.diferenca !== 0) {
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-') && Math.abs(res.diferenca) >= 0.01) {
       if (res.diferenca < 0) {
         await this.request('/financeiro/despesas', {
           method: 'POST',

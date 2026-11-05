@@ -196,6 +196,18 @@ def test_criar_produto_com_grade_matricial_sucesso(client: TestClient, auth_head
         assert v["id"] in saldos_produtos_ids
         assert saldos_produtos_ids[v["id"]] == 15
 
+    # Consulta movimentações iniciais geradas para as variações
+    res_movs = client.get("/estoque/movimentacoes", headers=headers)
+    assert res_movs.status_code == status.HTTP_200_OK
+    movs = res_movs.json()
+    assert len(movs) == 6
+    for m in movs:
+        assert m["tipo"] == "ENTRADA"
+        assert m["quantidade"] == 15
+        assert m["saldo_anterior"] == 0
+        assert m["saldo_resultante"] == 15
+        assert "Grade" in m["motivo"]
+
 
 def test_listar_produtos_filtro_apenas_pais(client: TestClient, auth_headers_grade: dict[str, str]):
     headers = {"Authorization": auth_headers_grade["Authorization"]}

@@ -355,7 +355,7 @@ export const Dashboard: React.FC = () => {
                       {mov.responsavel || 'Operador'}
                     </td>
                     <td className="py-3.5 px-4 text-sm font-bold text-white text-right whitespace-nowrap">
-                      {mov.saldo_resultante ?? '—'} un
+                      {mov.saldo_resultante !== undefined && mov.saldo_resultante !== null ? `${mov.saldo_resultante} un` : '—'}
                     </td>
                   </tr>
                 ))

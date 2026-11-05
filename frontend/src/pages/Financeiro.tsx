@@ -34,7 +34,7 @@ export const Financeiro: React.FC = () => {
   const [despesaValor, setDespesaValor] = useState(250.0);
   const [despesaCategoria, setDespesaCategoria] = useState('Manutenção Predial');
   const [despesaDescricao, setDespesaDescricao] = useState('');
-  const [despesaStatus, setDespesaStatus] = useState<'PENDENTE' | 'PAGO'>('PAGO');
+  const [despesaStatus, setDespesaStatus] = useState<'PENDENTE' | 'PAGO'>('PENDENTE');
 
   const loadData = async () => {
     setLoading(true);
@@ -53,8 +53,14 @@ export const Financeiro: React.FC = () => {
   const handleCreateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let lojaId = activeLoja?.id;
+      if (!lojaId) {
+        const lojas = await api.getLojas();
+        if (lojas.length > 0) lojaId = lojas[0].id;
+      }
+
       await api.registrarDespesa({
-        loja_id: activeLoja?.id || '11111111-1111-1111-1111-111111111111',
+        loja_id: lojaId || '11111111-1111-1111-1111-111111111111',
         valor: despesaValor,
         categoria: despesaCategoria,
         status_pagamento: despesaStatus,
@@ -88,20 +94,23 @@ export const Financeiro: React.FC = () => {
   };
 
   const [search, setSearch] = useState('');
-  const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'RECEITA' | 'DESPESA'>('TODOS');
+  const [tipoFilter, setTipoFilter] = useState<'TODOS' | 'RECEITA' | 'DESPESA' | 'PENDENTE'>('TODOS');
 
   // Compute counts
   const counts = useMemo(() => {
     let receitas = 0;
     let despesas = 0;
+    let pendentes = 0;
     for (const l of lancamentos) {
       if (l.tipo === 'RECEITA') receitas++;
       else if (l.tipo === 'DESPESA') despesas++;
+      if (l.status_pagamento === 'PENDENTE') pendentes++;
     }
     return {
       todos: lancamentos.length,
       receitas,
       despesas,
+      pendentes,
     };
   }, [lancamentos]);
 
@@ -111,7 +120,8 @@ export const Financeiro: React.FC = () => {
       const match =
         (l.descricao || '').toLowerCase().includes(q) ||
         (l.categoria || '').toLowerCase().includes(q);
-      if (tipoFilter !== 'TODOS' && l.tipo !== tipoFilter) return false;
+      if (tipoFilter === 'PENDENTE' && l.status_pagamento !== 'PENDENTE') return false;
+      if (tipoFilter !== 'TODOS' && tipoFilter !== 'PENDENTE' && l.tipo !== tipoFilter) return false;
       return match;
     });
   }, [lancamentos, search, tipoFilter]);
@@ -243,6 +253,20 @@ export const Financeiro: React.FC = () => {
                   {counts.despesas}
                 </span>
               </button>
+
+              <button
+                onClick={() => setTipoFilter('PENDENTE')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                  tipoFilter === 'PENDENTE'
+                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 font-bold scale-[1.02]'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                <span>A Pagar (Pendentes)</span>
+                <span className={`px-1.5 py-0.5 rounded-full text-[11px] font-bold ${tipoFilter === 'PENDENTE' ? 'bg-black/30 text-white' : 'bg-[#000000] text-slate-300 border border-white/[0.16]'}`}>
+                  {counts.pendentes}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -250,7 +274,7 @@ export const Financeiro: React.FC = () => {
             title="Lançamentos & Extrato Contábil"
           >
             <div className="overflow-x-auto table-scrollbar pb-2">
-              <table className="w-full text-left min-w-[900px]">
+              <table className="w-full text-left min-w-[950px]">
                 <thead className="bg-[#000000] border-b border-white/[0.16]">
                   <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
                     <th className="py-3.5 px-4">Data</th>
@@ -259,6 +283,7 @@ export const Financeiro: React.FC = () => {
                     <th className="py-3.5 px-4">Categoria</th>
                     <th className="py-3.5 px-4 text-center">Status</th>
                     <th className="py-3.5 px-4 text-right">Valor</th>
+                    <th className="py-3.5 px-4 text-center">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.14]">
@@ -279,21 +304,9 @@ export const Financeiro: React.FC = () => {
                         {l.categoria}
                       </td>
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <div className="inline-flex items-center gap-2">
-                          <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
-                            {l.status_pagamento}
-                          </Badge>
-                          {l.status_pagamento === 'PENDENTE' && (
-                            <button
-                              onClick={() => handleQuitarLancamento(l)}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 text-[11px] font-bold inline-flex items-center gap-1 transition-all active:scale-95"
-                              title="Marcar lançamento como PAGO"
-                            >
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>Dar Baixa</span>
-                            </button>
-                          )}
-                        </div>
+                        <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
+                          {l.status_pagamento === 'PAGO' ? 'Liquidado' : 'A Pagar'}
+                        </Badge>
                       </td>
                       <td
                         className={`py-3.5 px-4 text-sm font-bold text-right whitespace-nowrap ${
@@ -301,6 +314,24 @@ export const Financeiro: React.FC = () => {
                         }`}
                       >
                         {l.tipo === 'RECEITA' ? '+' : '-'} {l.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </td>
+                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        {l.status_pagamento === 'PENDENTE' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleQuitarLancamento(l)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
+                            title="Quitar lançamento e marcar como PAGO"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Dar Baixa (Pagar)</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs font-semibold text-emerald-400/80 inline-flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            Pago
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -419,8 +450,8 @@ export const Financeiro: React.FC = () => {
                 value={despesaStatus}
                 onChange={(val) => setDespesaStatus(val as 'PENDENTE' | 'PAGO')}
                 options={[
-                  { value: 'PAGO', label: 'Liquidado (Pago)' },
                   { value: 'PENDENTE', label: 'A Pagar (Pendente)' },
+                  { value: 'PAGO', label: 'Liquidado (Pago Imediatamente)' },
                 ]}
               />
             </div>
