@@ -2,20 +2,34 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from dotenv import load_dotenv
 from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError
 
-# Carrega variáveis de ambiente ou utiliza fallbacks para desenvolvimento
-ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
-DEFAULT_DEV_SECRET = "saas_super_secret_dev_key_12345!"
-_secret = os.getenv("JWT_SECRET_KEY")
+load_dotenv()
 
+# Carrega variáveis de ambiente ou falha fechado por segurança
+ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
+is_production = ENVIRONMENT in {"production", "prod"}
+
+INSECURE_DEV_SECRETS = {
+    "saas_super_secret_dev_key_12345!",
+    "sua_chave_secreta_super_segura_local_12345",
+}
+
+_secret = os.getenv("JWT_SECRET_KEY") or os.getenv("JWT_SECRET")
+
+# Falhar fechado: JWT_SECRET_KEY é obrigatória em qualquer ambiente
 if not _secret:
-    if ENVIRONMENT in {"production", "prod"}:
-        raise RuntimeError("CRITICAL: JWT_SECRET_KEY é obrigatória em ambiente de produção.")
-    _secret = DEFAULT_DEV_SECRET
-elif ENVIRONMENT in {"production", "prod"} and _secret == DEFAULT_DEV_SECRET:
-    raise RuntimeError("CRITICAL: JWT_SECRET_KEY de desenvolvimento não pode ser usada em produção.")
+    raise RuntimeError(
+        "CRITICAL: JWT_SECRET_KEY não foi informada nas variáveis de ambiente. "
+        "A aplicação recusa iniciar sem uma chave secreta definida."
+    )
+
+if is_production and _secret in INSECURE_DEV_SECRETS:
+    raise RuntimeError(
+        "CRITICAL: JWT_SECRET_KEY de desenvolvimento não pode ser usada em produção."
+    )
 
 SECRET_KEY = _secret
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")

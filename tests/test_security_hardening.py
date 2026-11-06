@@ -218,25 +218,37 @@ def test_brecha_3_inversao_de_papeis_transferencia_bloqueada(client: TestClient)
     assert res_ok_rec.status_code == 200
 
 
-def test_brecha_4_jwt_secret_obrigatorio_em_producao():
+def test_brecha_4_jwt_secret_obrigatorio_em_todos_os_ambientes():
     """
-    Em ambiente de produção, chave ausente ou chave default de dev lança exceção.
+    Chave ausente deve falhar fechado (RuntimeError) independentemente do ENVIRONMENT.
+    Chave insegura de desenvolvimento em produção também deve ser rejeitada.
     """
+    import importlib
+
     from src.infrastructure.security import jwt_handler
 
-    with patch.dict(os.environ, {"ENVIRONMENT": "production", "JWT_SECRET_KEY": ""}):
-        with pytest.raises(RuntimeError, match="JWT_SECRET_KEY é obrigatória em ambiente de produção"):
-            import importlib
+    # Falha fechado se ausente em produção
+    with patch.dict(os.environ, {"ENVIRONMENT": "production", "JWT_SECRET_KEY": "", "JWT_SECRET": ""}):
+        with pytest.raises(RuntimeError, match="JWT_SECRET_KEY não foi informada"):
             importlib.reload(jwt_handler)
 
+    # Falha fechado se ausente em desenvolvimento (evita vulnerabilidade caso deploy esqueça ENVIRONMENT=prod)
+    with patch.dict(os.environ, {"ENVIRONMENT": "development", "JWT_SECRET_KEY": "", "JWT_SECRET": ""}):
+        with pytest.raises(RuntimeError, match="JWT_SECRET_KEY não foi informada"):
+            importlib.reload(jwt_handler)
+
+    # Bloqueia chave dev padrão em produção
     with patch.dict(os.environ, {"ENVIRONMENT": "production", "JWT_SECRET_KEY": "saas_super_secret_dev_key_12345!"}):
         with pytest.raises(RuntimeError, match="não pode ser usada em produção"):
-            import importlib
             importlib.reload(jwt_handler)
 
-    # Restaura módulo em dev
-    with patch.dict(os.environ, {"ENVIRONMENT": "development", "JWT_SECRET_KEY": "saas_super_secret_dev_key_12345!"}):
-        import importlib
+    # Permite chave customizada e segura
+    with patch.dict(os.environ, {"ENVIRONMENT": "production", "JWT_SECRET_KEY": "producao_super_segura_custom_secret_key_999!"}):
+        importlib.reload(jwt_handler)
+        assert jwt_handler.SECRET_KEY == "producao_super_segura_custom_secret_key_999!"
+
+    # Restaura módulo em dev com chave de teste
+    with patch.dict(os.environ, {"ENVIRONMENT": "development", "JWT_SECRET_KEY": "sua_chave_secreta_super_segura_local_12345"}):
         importlib.reload(jwt_handler)
 
 
@@ -376,4 +388,35 @@ def test_brecha_8_troca_de_senha_fluxo_completo(client: TestClient):
     assert res_login_nova.status_code == 200
     assert "access_token" in res_login_nova.json()
 
+
+def test_brecha_9_cors_hardening_e_restricao_estrita():
+    """
+    Assegura que CORS falhe fechado em produção se CORS_ORIGINS não for definida,
+    nunca aceite curinga '*' com credenciais, e restrinja estritamente a domínios
+    locais e oficiais em desenvolvimento.
+    """
+    import importlib
+
+    import src.infrastructure.web.main as main_module
+
+    # Produção sem CORS_ORIGINS -> Falha fechado (allow_origins vazio)
+    with patch.dict(os.environ, {"ENVIRONMENT": "production", "CORS_ORIGINS": ""}):
+        importlib.reload(main_module)
+        assert main_module.allow_origins == []
+
+    # Rejeição estrita de curinga '*' mesmo se especificado em CORS_ORIGINS
+    with patch.dict(os.environ, {"ENVIRONMENT": "production", "CORS_ORIGINS": "*, https://estroque-web.onrender.com"}):
+        importlib.reload(main_module)
+        assert "*" not in main_module.allow_origins
+        assert main_module.allow_origins == ["https://estroque-web.onrender.com"]
+
+    # Em desenvolvimento, inclui localhost e domínios oficiais
+    with patch.dict(os.environ, {"ENVIRONMENT": "development", "CORS_ORIGINS": ""}):
+        importlib.reload(main_module)
+        assert "http://localhost:5173" in main_module.allow_origins
+        assert "https://estroque-web.onrender.com" in main_module.allow_origins
+
+    # Restaura módulo com ambiente padrão
+    with patch.dict(os.environ, {"ENVIRONMENT": "development", "CORS_ORIGINS": ""}):
+        importlib.reload(main_module)
 

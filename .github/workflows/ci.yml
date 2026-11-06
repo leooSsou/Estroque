@@ -26,6 +26,7 @@ jobs:
           echo "DATABASE_TEST_URL=postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas_test" >> .env
           echo "REDIS_URL=redis://redis:6379/0" >> .env
           echo "JWT_SECRET=ci-secret-key-for-testing-1234567890!" >> .env
+          echo "JWT_SECRET_KEY=ci-secret-key-for-testing-1234567890!" >> .env
           echo "JWT_ALGORITHM=HS256" >> .env
           echo "ACCESS_TOKEN_EXPIRE_MINUTES=1440" >> .env
           echo "CELERY_TASK_ALWAYS_EAGER=True" >> .env

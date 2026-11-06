@@ -16,6 +16,7 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { Select } from '../components/common/Select';
 import { RelatorioVendasPDFModal } from '../components/pdv/RelatorioVendasPDFModal';
+import { printThermalReceipt, ThermalReceiptData } from '../services/receiptPrinter';
 import {
   ShoppingCart,
   Search,
@@ -675,41 +676,177 @@ export const PDVVendas: React.FC = () => {
     }
   };
 
+  // Helper para calcular estoque exibido (se pai de grade, soma o estoque de todas as variações filhas ativas)
+  const getProductDisplayStock = (prod: Produto) => {
+    const variacoes = produtos.filter((p) => p.produto_pai_id === prod.id && p.ativo);
+    if (variacoes.length > 0) {
+      return variacoes.reduce((acc, v) => {
+        const s = activeLoja?.id
+          ? v.estoque_por_loja?.[activeLoja.id] ?? 0
+          : v.estoque_total ?? 0;
+        return acc + s;
+      }, 0);
+    }
+    return activeLoja?.id
+      ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
+      : prod.estoque_total ?? 0;
+  };
+
+  // Produtos principais exibidos na vitrine do PDV (produtos pai ou avulsos, sem variações filhas soltas)
+  const produtosVitrine = useMemo(() => {
+    return produtos.filter((p) => !p.produto_pai_id && p.ativo);
+  }, [produtos]);
+
   // Filter Catalog
   const counts = useMemo(() => {
     let disponivel = 0;
     let esgotado = 0;
-    for (const p of produtos) {
-      const stock = activeLoja?.id
-        ? p.estoque_por_loja?.[activeLoja.id] ?? 0
-        : p.estoque_total ?? 0;
+    for (const p of produtosVitrine) {
+      const stock = getProductDisplayStock(p);
       if (stock > 0) disponivel++;
       else esgotado++;
     }
     return {
-      todos: produtos.length,
+      todos: produtosVitrine.length,
       disponivel,
       esgotado,
     };
-  }, [produtos, activeLoja]);
+  }, [produtosVitrine, produtos, activeLoja]);
 
   const filteredProdutos = useMemo(() => {
-    return produtos.filter((p) => {
-      const q = search.toLowerCase();
-      const matchSearch =
+    const q = search.trim().toLowerCase();
+    return produtosVitrine.filter((p) => {
+      // 1. O próprio produto pai ou avulso combina com o termo de busca
+      const matchParent =
         p.nome.toLowerCase().includes(q) ||
         p.sku.toLowerCase().includes(q) ||
-        (p.codigo_barras && p.codigo_barras.includes(q));
+        (p.codigo_barras && p.codigo_barras.toLowerCase().includes(q));
 
-      const stock = activeLoja?.id
-        ? p.estoque_por_loja?.[activeLoja.id] ?? 0
-        : p.estoque_total ?? 0;
+      // 2. Se for produto pai, verifica se alguma de suas variações filhas combina com o termo
+      const variacoesFilhas = produtos.filter((child) => child.produto_pai_id === p.id && child.ativo);
+      const matchChild = variacoesFilhas.some(
+        (child) =>
+          child.nome.toLowerCase().includes(q) ||
+          child.sku.toLowerCase().includes(q) ||
+          (child.codigo_barras && child.codigo_barras.toLowerCase().includes(q)) ||
+          (child.variacoes &&
+            Object.values(child.variacoes).some((v) =>
+              String(v).toLowerCase().includes(q)
+            ))
+      );
+
+      const matchSearch = !q || matchParent || matchChild;
+
+      const stock = getProductDisplayStock(p);
 
       if (catalogFilter === 'DISPONIVEL') return matchSearch && stock > 0;
       if (catalogFilter === 'ESGOTADO') return matchSearch && stock === 0;
       return matchSearch;
     });
-  }, [produtos, search, catalogFilter, activeLoja]);
+  }, [produtosVitrine, produtos, search, catalogFilter, activeLoja]);
+
+  // Handler para leitor de código de barras ou busca ao pressionar Enter
+  const handleBarcodeOrSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const query = search.trim();
+      if (!query) return;
+
+      const queryLower = query.toLowerCase();
+
+      // 1. Tenta correspondência exata por código de barras ou SKU em todos os produtos (incluindo variações filhas!)
+      const exactMatch = produtos.find(
+        (p) =>
+          p.ativo &&
+          ((p.codigo_barras && p.codigo_barras.toLowerCase() === queryLower) ||
+            p.sku.toLowerCase() === queryLower)
+      );
+
+      if (exactMatch) {
+        const temFilhos = produtos.some((p) => p.produto_pai_id === exactMatch.id && p.ativo);
+        if (temFilhos) {
+          setSelectedPaiForPicker(exactMatch);
+          setVariacoesPickerOpen(true);
+        } else {
+          addItemDirectlyToCart(exactMatch);
+          toast.success(`Adicionado: ${exactMatch.nome}`);
+        }
+        setSearch('');
+        return;
+      }
+
+      // 2. Se a vitrine filtrada tiver exatamente 1 item resultante, adiciona/abre direto
+      if (filteredProdutos.length === 1) {
+        handleAddToCart(filteredProdutos[0]);
+        setSearch('');
+      }
+    }
+  };
+
+  // Helper para resolver dados de itens no cupom de venda (nome, SKU e variação)
+  const getReceiptItemDetails = (it: { produto_id: string; produto_nome?: string; sku?: string }) => {
+    const prod = produtos.find((p) => p.id === it.produto_id);
+    const nome = it.produto_nome || prod?.nome || it.sku || prod?.sku || 'Item de Venda';
+    const sku = it.sku || prod?.sku || '';
+    let variacaoDesc = '';
+
+    if (prod?.variacoes && Object.keys(prod.variacoes).length > 0) {
+      variacaoDesc = Object.entries(prod.variacoes)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' | ');
+    }
+    return { nome, sku, variacaoDesc };
+  };
+
+  // Dispara impressão de cupom térmico padrão (80mm) via iframe isolado de alta fidelidade
+  const handlePrintReceipt = () => {
+    if (!receiptSale) return;
+
+    const clienteVenda = clientes.find((c) => c.id === receiptSale.cliente_id);
+    const clienteNome = receiptSale.cliente_nome || clienteVenda?.nome || 'Consumidor Final (Sem CPF)';
+
+    const itensParaImprimir = (receiptSale.itens || []).map((it) => {
+      const details = getReceiptItemDetails(it);
+      return {
+        nome: details.nome,
+        variacaoDesc: details.variacaoDesc,
+        sku: details.sku,
+        quantidade: it.quantidade,
+        precoUnitario: it.preco_unitario,
+        total: it.quantidade * it.preco_unitario,
+      };
+    });
+
+    const pagamentosParaImprimir =
+      receiptSale.pagamentos && receiptSale.pagamentos.length > 0
+        ? receiptSale.pagamentos.map((p) => ({
+            forma: p.forma_pagamento,
+            valor: p.valor,
+          }))
+        : undefined;
+
+    const receiptData: ThermalReceiptData = {
+      lojaNome: activeLoja?.nome || 'Estroque Enterprise',
+      lojaEndereco: activeLoja?.endereco || 'Matriz Central',
+      lojaCnpj: activeLoja?.cnpj ? `CNPJ: ${activeLoja.cnpj}` : 'CNPJ: 12.345.678/0001-90',
+      dataHora: receiptSale.data_venda
+        ? new Date(receiptSale.data_venda).toLocaleString('pt-BR')
+        : new Date().toLocaleString('pt-BR'),
+      cupomId: receiptSale.id,
+      operadorNome: user?.nome || user?.email?.split('@')[0] || 'Operador de Caixa',
+      clienteNome,
+      itens: itensParaImprimir,
+      totalItens: receiptSale.itens?.reduce((acc, it) => acc + it.quantidade, 0) || 0,
+      subtotal: (receiptSale.valor_total || 0) + (receiptSale.desconto || 0),
+      desconto: receiptSale.desconto || 0,
+      totalPagar: receiptSale.valor_total || 0,
+      formaPagamento: receiptSale.forma_pagamento,
+      pagamentos: pagamentosParaImprimir,
+      status: receiptSale.status,
+    };
+
+    printThermalReceipt(receiptData);
+  };
 
   // Filter Sales History (Tab 3)
   const filteredHistorico = useMemo(() => {
@@ -867,13 +1004,14 @@ export const PDVVendas: React.FC = () => {
             {/* Barcode Scanner & Search Bar */}
             <div className="p-4 rounded-3xl bg-[#000000] border border-white/[0.16] shadow-bento-dark space-y-3">
               <div className="relative group">
-                <Barcode className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+                <Barcode className="w-5 h-5 text-slate-400 group-focus-within:text-yellow-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={handleBarcodeOrSearchSubmit}
                   placeholder="Bipar leitor de código de barras ou pesquisar item..."
-                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
+                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 focus:outline-none transition-all duration-200"
                 />
                 {search && (
                   <button
@@ -923,9 +1061,9 @@ export const PDVVendas: React.FC = () => {
             {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
               {filteredProdutos.map((prod) => {
-                const stock = activeLoja?.id
-                  ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
-                  : prod.estoque_total ?? 0;
+                const variacoes = produtos.filter((p) => p.produto_pai_id === prod.id && p.ativo);
+                const hasVariacoes = variacoes.length > 0;
+                const stock = getProductDisplayStock(prod);
 
                 return (
                   <div
@@ -934,26 +1072,37 @@ export const PDVVendas: React.FC = () => {
                     className={`bg-[#000000] border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-250 group btn-press hover-lift ${
                       stock === 0
                         ? 'opacity-40 border-rose-500/20 pointer-events-none'
-                        : 'border-white/[0.16] hover:border-emerald-500/40 hover:bg-white/[0.04]'
+                        : 'border-white/[0.16] hover:border-yellow-400/50 hover:bg-white/[0.04]'
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-                        <span>{prod.sku}</span>
-                        <span className={stock === 0 ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}>
-                          {stock} un
-                        </span>
+                        <span className="font-mono">{prod.sku}</span>
+                        <div className="flex items-center gap-1.5">
+                          {hasVariacoes && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/25 text-[10px] font-bold">
+                              {variacoes.length} {variacoes.length === 1 ? 'variação' : 'variações'}
+                            </span>
+                          )}
+                          <span className={stock === 0 ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}>
+                            {stock} un
+                          </span>
+                        </div>
                       </div>
-                      <h4 className="text-sm font-bold text-white line-clamp-2 mb-2.5 group-hover:text-emerald-400 transition-colors">
+                      <h4 className="text-sm font-bold text-white line-clamp-2 mb-2.5 group-hover:text-yellow-400 transition-colors">
                         {prod.nome}
                       </h4>
                     </div>
 
                     <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.14]">
-                      <span className="text-base font-bold text-emerald-400">
+                      <span className="text-base font-bold text-yellow-400">
                         R$ {prod.preco_venda.toFixed(2)}
                       </span>
-                      <button className="w-8 h-8 rounded-xl bg-[#000000] border border-white/[0.16] group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 flex items-center justify-center text-slate-300 transition-all group-hover:scale-110">
+                      <button
+                        type="button"
+                        aria-label="Adicionar item"
+                        className="w-8 h-8 rounded-xl bg-[#000000] border border-white/[0.16] group-hover:bg-yellow-400 group-hover:text-black group-hover:border-yellow-400 flex items-center justify-center text-slate-300 font-bold transition-all group-hover:scale-110"
+                      >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -2057,7 +2206,7 @@ export const PDVVendas: React.FC = () => {
                     }}
                     className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
                       stock > 0
-                        ? 'bg-[#000000] border-white/[0.16] hover:border-purple-500 hover:bg-purple-950/20 active:scale-95'
+                        ? 'bg-[#000000] border-white/[0.16] hover:border-yellow-400 hover:bg-yellow-400/10 active:scale-95'
                         : 'bg-white/[0.02] border-white/[0.08] opacity-50 cursor-not-allowed'
                     }`}
                   >
@@ -2066,7 +2215,7 @@ export const PDVVendas: React.FC = () => {
                       <span className="font-mono text-[10px] text-slate-400">{v.sku}</span>
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/[0.08]">
-                      <span className="text-xs font-bold text-emerald-400">
+                      <span className="text-xs font-bold text-yellow-400">
                         {v.preco_venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </span>
                       <span className={`text-[11px] font-bold ${stock > 0 ? 'text-slate-300' : 'text-rose-400'}`}>
@@ -2538,85 +2687,175 @@ export const PDVVendas: React.FC = () => {
         onClose={() => setReceiptModalOpen(false)}
         title="Comprovante de Venda • Cupom Não-Fiscal"
         subtitle={`Transação #${receiptSale?.id.slice(0, 8)}`}
+        maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-[#000000] border border-white/[0.16] text-xs space-y-3">
-            <div className="text-center border-b border-white/[0.16] pb-3">
-              <div className="text-sm font-bold text-white">Estroque Enterprise</div>
-              <div className="text-[11px] text-slate-400">{activeLoja?.nome || 'Loja Matriz'}</div>
-              <div className="text-[10px] text-slate-500">{activeLoja?.cnpj || '12.345.678/0001-90'}</div>
-              <div className="text-[10px] text-slate-400 mt-1">
-                {receiptSale?.data_venda ? new Date(receiptSale.data_venda).toLocaleString('pt-BR') : ''}
+          {/* Caixa do Comprovante (Formatada para tela e para impressão térmica 80mm) */}
+          <div
+            id="printable-receipt"
+            className="p-5 sm:p-6 rounded-2xl bg-[#000000] border border-white/[0.16] text-xs space-y-3 font-mono print:bg-white print:border-none print:p-0 print:text-black"
+          >
+            {/* Cabeçalho da Empresa / Loja */}
+            <div className="text-center pb-2.5 border-b border-dashed border-white/[0.2] print:border-black receipt-dashed">
+              <div className="text-sm font-bold text-white uppercase tracking-wider print:text-black">
+                {activeLoja?.nome || 'Estroque Enterprise'}
+              </div>
+              <div className="text-[11px] text-slate-300 font-medium print:text-black">
+                {activeLoja?.endereco || 'Matriz Central'}
+              </div>
+              <div className="text-[11px] text-slate-400 print:text-black font-semibold mt-0.5">
+                {activeLoja?.cnpj ? `CNPJ: ${activeLoja.cnpj}` : 'CNPJ: 12.345.678/0001-90'}
+              </div>
+              <div className="text-[11px] font-bold text-yellow-400 uppercase tracking-widest mt-2 pt-1 border-t border-dashed border-white/[0.16] print:border-black print:text-black">
+                CUPOM NÃO-FISCAL
               </div>
             </div>
 
-            <div className="space-y-1 divide-y divide-white/[0.14]">
-              {receiptSale?.itens?.map((it) => (
-                <div key={it.id} className="pt-1.5 flex justify-between text-white">
-                  <span>
-                    {it.quantidade}x {it.produto_nome || it.sku}
-                  </span>
-                  <span className="text-emerald-400 font-bold">
-                    R$ {(it.quantidade * it.preco_unitario).toFixed(2)}
-                  </span>
-                </div>
-              ))}
+            {/* Metadados da Venda */}
+            <div className="text-[11px] space-y-1 text-slate-300 print:text-black py-1 border-b border-dashed border-white/[0.2] print:border-black receipt-dashed">
+              <div className="flex justify-between">
+                <span>Data/Hora:</span>
+                <span className="font-semibold text-white print:text-black">
+                  {receiptSale?.data_venda ? new Date(receiptSale.data_venda).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR')}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Cupom / Transação:</span>
+                <span className="font-bold text-white print:text-black">
+                  #{receiptSale?.id.slice(0, 8)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Operador:</span>
+                <span className="text-white print:text-black">
+                  {user?.nome || user?.email?.split('@')[0] || 'Operador de Caixa'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Cliente:</span>
+                <span className="text-white print:text-black font-medium">
+                  {(() => {
+                    const c = clientes.find((cli) => cli.id === receiptSale?.cliente_id);
+                    return receiptSale?.cliente_nome || c?.nome || 'Consumidor Final (Sem CPF)';
+                  })()}
+                </span>
+              </div>
             </div>
 
-            <div className="border-t border-white/[0.16] pt-2.5 space-y-1.5">
-              <div className="flex justify-between text-slate-300">
+            {/* Título da Seção de Itens */}
+            <div className="flex justify-between text-[11px] font-bold uppercase text-slate-400 print:text-black pt-1 border-b border-dashed border-white/[0.2] print:border-black pb-1">
+              <span>Item / Descrição</span>
+              <span>Total</span>
+            </div>
+
+            {/* Lista Detalhada de Itens com Resolução de Nome e Grade */}
+            <div className="space-y-2 py-1">
+              {receiptSale?.itens?.map((it, idx) => {
+                const details = getReceiptItemDetails(it);
+                const itemTotal = it.quantidade * it.preco_unitario;
+
+                return (
+                  <div key={it.id || idx} className="text-xs flex justify-between gap-3 text-white print:text-black">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-bold print:font-bold">
+                        {String(idx + 1).padStart(2, '0')}. {it.quantidade}x {details.nome}
+                      </span>
+                      {details.variacaoDesc && (
+                        <span className="text-[11px] text-yellow-400 font-medium print:text-black print:font-semibold">
+                          └ {details.variacaoDesc}
+                        </span>
+                      )}
+                      {details.sku && (
+                        <span className="text-[10px] text-slate-400 font-mono print:text-gray-700">
+                          SKU: {details.sku}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-yellow-400 font-bold print:text-black print:font-bold">
+                        R$ {itemTotal.toFixed(2)}
+                      </div>
+                      {it.quantidade > 1 && (
+                        <div className="text-[10px] text-slate-400 print:text-gray-600">
+                          ({it.quantidade}x {it.preco_unitario.toFixed(2)})
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Totais e Formas de Pagamento */}
+            <div className="border-t border-dashed border-white/[0.2] print:border-black pt-2 space-y-1.5 text-xs">
+              <div className="flex justify-between text-slate-300 print:text-black">
+                <span>Qtd. Total de Itens:</span>
+                <span className="font-semibold text-white print:text-black">
+                  {receiptSale?.itens?.reduce((acc, it) => acc + it.quantidade, 0) || 0} un
+                </span>
+              </div>
+
+              <div className="flex justify-between text-slate-300 print:text-black">
                 <span>Subtotal:</span>
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-white print:text-black">
                   R$ {((receiptSale?.valor_total || 0) + (receiptSale?.desconto || 0)).toFixed(2)}
                 </span>
               </div>
 
               {receiptSale?.desconto ? (
-                <div className="flex justify-between text-amber-400 font-medium">
-                  <span>Desconto Aplicado:</span>
+                <div className="flex justify-between text-amber-400 font-medium print:text-black print:font-semibold">
+                  <span>Desconto Concedido:</span>
                   <span>- R$ {receiptSale.desconto.toFixed(2)}</span>
                 </div>
               ) : null}
 
               {receiptSale?.pagamentos && receiptSale.pagamentos.length > 1 ? (
-                <div className="space-y-1 pt-1 border-t border-white/[0.12]">
-                  <span className="text-[11px] font-bold text-slate-300">Pagamentos Divididos:</span>
+                <div className="space-y-1 pt-1 border-t border-dashed border-white/[0.14] print:border-black">
+                  <span className="text-[11px] font-bold text-slate-300 print:text-black">Pagamento Dividido:</span>
                   {receiptSale.pagamentos.map((p, idx) => (
-                    <div key={idx} className="flex justify-between text-xs text-white">
-                      <span className="text-slate-400">• {p.forma_pagamento}:</span>
-                      <span className="font-semibold text-emerald-400">R$ {p.valor.toFixed(2)}</span>
+                    <div key={idx} className="flex justify-between text-xs text-white print:text-black">
+                      <span className="text-slate-400 print:text-black">• {p.forma_pagamento}:</span>
+                      <span className="font-semibold text-yellow-400 print:text-black">R$ {p.valor.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-slate-300 print:text-black">
                   <span>Forma de Pagamento:</span>
-                  <span className="font-bold text-white">{receiptSale?.forma_pagamento}</span>
+                  <span className="font-bold text-white print:text-black">{receiptSale?.forma_pagamento}</span>
                 </div>
               )}
 
-              <div className="flex justify-between text-sm font-bold text-white pt-1.5 border-t border-white/[0.16]">
-                <span>TOTAL:</span>
-                <span className="text-emerald-400 font-bold text-base">
+              {/* Total Final em Destaque */}
+              <div className="flex justify-between text-sm font-bold text-white print:text-black pt-2 border-t-2 border-dashed border-white/[0.25] print:border-black">
+                <span>TOTAL A PAGAR:</span>
+                <span className="text-yellow-400 font-extrabold text-base print:text-black">
                   R$ {receiptSale?.valor_total.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {receiptSale?.forma_pagamento === 'CREDIARIO' && (
-              <div className="p-2 rounded bg-[#000000] text-[10px] text-slate-300 text-center border border-white/[0.14]">
+              <div className="p-2 rounded bg-white/[0.04] text-[10px] text-slate-300 text-center border border-white/[0.14] print:border-black print:text-black">
                 Venda registrada no crediário da loja. Saldo devedor do cliente atualizado.
               </div>
             )}
 
             {receiptSale?.status === 'CANCELADA' && (
-              <div className="p-2 rounded bg-rose-500/15 text-[10px] text-rose-400 text-center font-bold border border-rose-500/30">
+              <div className="p-2 rounded bg-rose-500/15 text-[10px] text-rose-400 text-center font-bold border border-rose-500/30 print:border-black print:text-black">
                 ⚠️ VENDA CANCELADA / ESTORNADA NO SISTEMA
               </div>
             )}
+
+            {/* Rodapé Fiscal do Cupom */}
+            <div className="text-center text-[10px] text-slate-400 print:text-black pt-2 border-t border-dashed border-white/[0.16] print:border-black space-y-0.5">
+              <p className="font-bold">*** NÃO É DOCUMENTO FISCAL ***</p>
+              <p>Sistema Estroque PDV • Obrigado pela preferência!</p>
+            </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+          {/* Botões de Ação do Modal (Ocultos na Impressão via .no-print) */}
+          <div className="no-print flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               onClick={() => setReceiptModalOpen(false)}
               className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
@@ -2624,10 +2863,8 @@ export const PDVVendas: React.FC = () => {
               Fechar
             </button>
             <button
-              onClick={() => {
-                window.print();
-              }}
-              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2"
+              onClick={handlePrintReceipt}
+              className="h-11 px-6 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-sm font-extrabold shadow-md shadow-yellow-400/20 active:scale-95 transition-all flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Comprovante</span>

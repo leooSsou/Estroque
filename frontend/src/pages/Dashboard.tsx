@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { DashboardAnalytics, MovimentacaoEstoque, CurvaABCItem } from '../types';
+import { DashboardAnalytics, MovimentacaoEstoque, CurvaABCItem, Venda } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { StatCard } from '../components/common/StatCard';
 import { Badge } from '../components/common/Badge';
@@ -24,20 +24,50 @@ import {
   Inbox,
 } from 'lucide-react';
 
-function generateDaysArray(days: number): ChartDataPoint[] {
+function buildChartData(vendas: Venda[], days: number): ChartDataPoint[] {
   const points: ChartDataPoint[] = [];
   const now = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 86400000);
-    const dayStr = String(d.getDate()).padStart(2, '0');
-    const monthStr = String(d.getMonth() + 1).padStart(2, '0');
-    points.push({
-      date: `${dayStr}/${monthStr}`,
-      label: i === 0 ? 'Hoje' : `${dayStr}/${monthStr}`,
-      value: 0,
-      vendasCount: 0,
+
+  // Mapeia faturamento e contagem por chave 'YYYY-MM-DD'
+  const vendasPorDia = new Map<string, { total: number; count: number }>();
+
+  for (const v of vendas) {
+    if (v.status === 'CANCELADA') continue;
+    if (!v.data_venda) continue;
+
+    const dt = new Date(v.data_venda);
+    if (isNaN(dt.getTime())) continue;
+
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const d = String(dt.getDate()).padStart(2, '0');
+    const key = `${y}-${m}-${d}`;
+
+    const prev = vendasPorDia.get(key) || { total: 0, count: 0 };
+    vendasPorDia.set(key, {
+      total: prev.total + (Number(v.valor_total) || 0),
+      count: prev.count + 1,
     });
   }
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const key = `${y}-${m}-${day}`;
+    const dateLabel = `${day}/${m}`;
+
+    const info = vendasPorDia.get(key) || { total: 0, count: 0 };
+
+    points.push({
+      date: dateLabel,
+      label: i === 0 ? 'Hoje' : dateLabel,
+      value: info.total,
+      vendasCount: info.count,
+    });
+  }
+
   return points;
 }
 
@@ -47,6 +77,7 @@ export const Dashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<DashboardAnalytics | null>(null);
   const [recentMovements, setRecentMovements] = useState<MovimentacaoEstoque[]>([]);
   const [curvaItems, setCurvaItems] = useState<CurvaABCItem[]>([]);
+  const [vendas, setVendas] = useState<Venda[]>([]);
   const [, setLoading] = useState(true);
   const [activePeriod, setActivePeriod] = useState<number>(14);
 
@@ -54,14 +85,16 @@ export const Dashboard: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [dashData, ledgerData, abcData] = await Promise.all([
+        const [dashData, ledgerData, abcData, vendasData] = await Promise.all([
           api.getDashboardAnalytics(activeLoja?.id),
           api.getLedger(),
           api.getCurvaABC(activeLoja?.id),
+          api.getVendas(activeLoja?.id),
         ]);
         setMetrics(dashData);
         setRecentMovements(ledgerData.slice(0, 5));
         setCurvaItems(abcData);
+        setVendas(vendasData || []);
       } finally {
         setLoading(false);
       }
@@ -70,8 +103,8 @@ export const Dashboard: React.FC = () => {
   }, [activeLoja]);
 
   const currentChartData = useMemo(() => {
-    return generateDaysArray(activePeriod);
-  }, [activePeriod]);
+    return buildChartData(vendas, activePeriod);
+  }, [vendas, activePeriod]);
 
   const classeA = useMemo(() => curvaItems.filter((i) => i.classe === 'A'), [curvaItems]);
   const classeB = useMemo(() => curvaItems.filter((i) => i.classe === 'B'), [curvaItems]);
@@ -84,7 +117,10 @@ export const Dashboard: React.FC = () => {
   const faturamentoLiquido = metrics?.faturamento_liquido ?? 0;
   const ticketMedio = metrics?.ticket_medio ?? 0;
   const margemLucro = metrics?.margem_lucro ?? 0;
-  const vendasCount = faturamentoLiquido > 0 && ticketMedio > 0 ? Math.round(faturamentoLiquido / ticketMedio) : 0;
+  const vendasConcluidas = useMemo(() => vendas.filter((v) => v.status !== 'CANCELADA'), [vendas]);
+  const vendasCount =
+    vendasConcluidas.length ||
+    (faturamentoLiquido > 0 && ticketMedio > 0 ? Math.round(faturamentoLiquido / ticketMedio) : 0);
 
   return (
     <div className="space-y-6">

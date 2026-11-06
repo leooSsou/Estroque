@@ -150,6 +150,40 @@ async function runTestSuite() {
     assert.equal(clienteAtualizado?.saldo_devedor_crediario, saldoDevedorAnterior + 80.0);
   });
 
+  await testCase('1.5: Deve filtrar catálogo para vitrine única (apenas pais e avulsos) e somar estoque das variações', () => {
+    const lojaId = storage.getLojas()[0].id;
+    // Cria um produto com grade (3 variações com 15 un cada)
+    const res = storage.createProdutoGrade({
+      nome: 'Polo Piquet Estroque',
+      sku_base: 'POLO-PIQUET',
+      preco_custo: 40,
+      preco_venda: 90,
+      markup: 125,
+      loja_id: lojaId,
+      estoque_inicial_por_variacao: 15,
+      atributos: [
+        { nome: 'Tamanho', valores: ['P', 'M', 'G'] },
+      ],
+    });
+
+    const todosProdutos = storage.getProdutos();
+    // Filtro da vitrine (Opção 1): apenas produtos sem produto_pai_id
+    const vitrine = todosProdutos.filter((p) => !p.produto_pai_id && p.ativo);
+
+    // O produto pai deve estar na vitrine
+    const paiVitrine = vitrine.find((p) => p.id === res.produto_pai.id);
+    assert.ok(paiVitrine, 'Produto pai deve estar visível na vitrine');
+
+    // Nenhuma variação filha deve aparecer solta na vitrine
+    const filhasNaVitrine = vitrine.filter((p) => p.produto_pai_id === res.produto_pai.id);
+    assert.equal(filhasNaVitrine.length, 0, 'Variações filhas não devem poluir a vitrine');
+
+    // Cálculo do estoque somado das variações para o pai
+    const variacoes = todosProdutos.filter((p) => p.produto_pai_id === res.produto_pai.id && p.ativo);
+    const estoqueTotalPai = variacoes.reduce((acc, v) => acc + (v.estoque_por_loja?.[lojaId] ?? 0), 0);
+    assert.equal(estoqueTotalPai, 45, 'Estoque do produto pai deve ser 15 x 3 = 45');
+  });
+
   // =========================================================================
   // ABA 2: VENDAS EM ESPERA (Hold Queue)
   // =========================================================================
