@@ -176,6 +176,28 @@ class ApiClient {
 
     if (res.error) {
       if (res.error === 'BACKEND_OFFLINE') {
+        // Fallback para demonstração e testes visuais de UI quando o backend local não estiver iniciado
+        const cleanEmail = email.trim().toLowerCase();
+        if (
+          (cleanEmail === 'dono@estroque.com.br' && senha === 'senha123') ||
+          (cleanEmail === 'admin@estroque.app' && senha === 'admin123')
+        ) {
+          const isSuperAdmin = cleanEmail === 'admin@estroque.app';
+          const mockUser: User = {
+            id: isSuperAdmin ? '44444444-4444-4444-4444-444444444444' : '33333333-3333-3333-3333-333333333333',
+            nome: isSuperAdmin ? 'Administrador Demo' : 'Dono Demo',
+            email: cleanEmail,
+            role: isSuperAdmin ? 'ADMIN_SAAS' : 'DONO',
+            tenant_id: '00000000-0000-0000-0000-000000000001',
+          };
+          const mockToken = 'mock-demo-token-preview-estroque';
+          this.setToken(mockToken);
+          storage.setUser(mockUser);
+          if (storage.getLojas().length === 0) {
+            storage.seedDemoData();
+          }
+          return { user: mockUser, token: mockToken };
+        }
         throw new Error('Não foi possível conectar ao servidor. Verifique sua conexão ou se a API está online.');
       }
       throw new Error(res.error);
