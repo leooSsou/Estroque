@@ -64,8 +64,8 @@
   }
   .bento-card-interactive:hover {
     transform: translateY(-2px);
-    border-color: rgba(16, 185, 129, 0.35);
-    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6), 0 0 20px -3px rgba(16, 185, 129, 0.2);
+    border-color: rgba(255, 242, 26, 0.4);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6), 0 0 20px -3px rgba(255, 242, 26, 0.25);
   }
   .btn-press {
     transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
@@ -94,9 +94,25 @@
   }
   .bento-input:focus {
     outline: none;
-    border-color: #10B981;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    border-color: #FFF21A;
+    box-shadow: 0 0 0 2px rgba(255, 242, 26, 0.25);
   }
+}
+
+/* Botões de Ação Principal em Amarelo Elétrico (#FFF21A) com Contraste Preto Ótimo */
+.bg-emerald-600.text-white,
+.bg-emerald-500.text-white,
+button.bg-emerald-600,
+button.bg-emerald-500 {
+  color: #000000 !important;
+  font-weight: 800;
+}
+
+.bg-emerald-600.text-white svg,
+.bg-emerald-500.text-white svg,
+button.bg-emerald-600 svg,
+button.bg-emerald-500 svg {
+  color: #000000 !important;
 }
 
 /* Page Transition Keyframes */
@@ -115,7 +131,7 @@
   animation: pageFadeSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Glowing top laser indicator on route transition (Emerald / Neon) */
+/* Glowing top laser indicator on route transition (Electric Yellow #FFF21A) */
 @keyframes routeLoadBar {
   0% {
     width: 0%;
@@ -137,8 +153,8 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #10B981 0%, #34D399 50%, #10B981 100%);
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.9), 0 0 4px rgba(16, 185, 129, 0.6);
+  background: linear-gradient(90deg, #FFF21A 0%, #FFF97A 50%, #FFF21A 100%);
+  box-shadow: 0 0 14px rgba(255, 242, 26, 0.95), 0 0 4px rgba(255, 242, 26, 0.7);
   z-index: 9999;
   animation: routeLoadBar 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: none;
@@ -196,8 +212,8 @@
 .chart-grid-stripes {
   background-image: repeating-linear-gradient(
     -45deg,
-    rgba(16, 185, 129, 0.035) 0,
-    rgba(16, 185, 129, 0.035) 2px,
+    rgba(255, 242, 26, 0.04) 0,
+    rgba(255, 242, 26, 0.04) 2px,
     transparent 0,
     transparent 16px
   );

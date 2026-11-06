@@ -181,7 +181,7 @@ export const Dashboard: React.FC = () => {
             title="Evolução de Vendas & Faturamento"
             subtitle="Faturamento diário consolidado das lojas"
             data={currentChartData}
-            color="#00E599"
+            color="#FFF21A"
             activePeriod={activePeriod}
             onPeriodChange={(days) => setActivePeriod(days)}
           />

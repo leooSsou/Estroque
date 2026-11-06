@@ -22,7 +22,7 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
   title = 'Evolução de Vendas & Faturamento',
   subtitle = 'Faturamento diário consolidado das lojas',
   data,
-  color = '#00E599',
+  color = '#FFF21A',
   onPeriodChange,
   activePeriod = 14,
   className = '',
