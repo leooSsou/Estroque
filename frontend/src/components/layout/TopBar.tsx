@@ -452,11 +452,11 @@ export const TopBar: React.FC<TopBarProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                  Senha Inicial (mín. 6)
+                  Senha Inicial (mín. 8)
                 </label>
                 <input
                   type="password"
-                  minLength={6}
+                  minLength={8}
                   required
                   value={userSenha}
                   onChange={(e) => setUserSenha(e.target.value)}

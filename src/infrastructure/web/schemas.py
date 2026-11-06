@@ -765,6 +765,26 @@ class CriarLojaSuperAdminRequest(BaseModel):
     endereco: str | None = Field(default=None, max_length=255, description="Endereço físico da filial.")
 
 
+class RedefinirSenhaUsuarioAdminRequest(BaseModel):
+    """
+    Schema para redefinição de senha de qualquer usuário pelo Super-Admin da plataforma.
+    """
+    nova_senha: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="Nova senha de acesso (mínimo 8 caracteres, contendo letras e números)."
+    )
+
+    @field_validator("nova_senha")
+    @classmethod
+    def validar_complexidade_senha(cls, v: str) -> str:
+        if not re.search(r"[A-Za-z]", v) or not re.search(r"\d", v):
+            raise ValueError("A nova senha deve conter pelo menos uma letra e pelo menos um número.")
+        return v
+
+
+
 
 
 

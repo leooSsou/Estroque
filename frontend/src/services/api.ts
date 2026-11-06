@@ -1213,6 +1213,16 @@ class ApiClient {
     if (res.isBackend && res.error) throw new Error(res.error);
     throw new Error('Falha ao cadastrar filial');
   }
+
+  async redefinirSenhaUsuarioAdmin(usuarioId: string, novaSenha: string): Promise<{ mensagem: string }> {
+    const res = await this.request<{ mensagem: string }>(`/admin/usuarios/${usuarioId}/redefinir-senha`, {
+      method: 'POST',
+      body: JSON.stringify({ nova_senha: novaSenha }),
+    });
+    if (res.data) return res.data;
+    if (res.isBackend && res.error) throw new Error(res.error);
+    return { mensagem: 'Senha redefinida com sucesso (modo demonstração).' };
+  }
 }
 
 export const api = new ApiClient();
