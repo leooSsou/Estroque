@@ -1,7 +1,8 @@
+import re
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class RegisterRequest(BaseModel):
@@ -13,7 +14,7 @@ class RegisterRequest(BaseModel):
     cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ (com ou sem pontuação).")
     dono_nome: str = Field(..., min_length=1, max_length=100, description="Nome completo do dono da conta.")
     dono_email: EmailStr = Field(..., description="E-mail de acesso do dono.")
-    dono_senha: str = Field(..., min_length=6, max_length=100, description="Senha de acesso do dono (mínimo 6 caracteres).")
+    dono_senha: str = Field(..., min_length=8, max_length=100, description="Senha de acesso do dono (mínimo 8 caracteres).")
 
 class RegisterResponse(BaseModel):
     """
@@ -40,6 +41,31 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+class AlterarSenhaRequest(BaseModel):
+    """
+    Schema para requisição de alteração de senha do usuário logado.
+    """
+    senha_atual: str = Field(..., min_length=1, description="Senha atual do usuário.")
+    nova_senha: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="Nova senha de acesso (mínimo 8 caracteres, contendo letras e números)."
+    )
+
+    @field_validator("nova_senha")
+    @classmethod
+    def validar_complexidade_senha(cls, v: str) -> str:
+        if not re.search(r"[A-Za-z]", v) or not re.search(r"\d", v):
+            raise ValueError("A nova senha deve conter pelo menos uma letra e pelo menos um número.")
+        return v
+
+class MensagemResponse(BaseModel):
+    """
+    Schema genérico de retorno de mensagem de confirmação.
+    """
+    mensagem: str
+
 class UserResponse(BaseModel):
     """
     Schema para retorno de dados do usuário autenticado.
@@ -62,7 +88,7 @@ class UsuarioCreateRequest(BaseModel):
     """
     nome: str = Field(..., min_length=1, max_length=100, description="Nome completo do colaborador.")
     email: EmailStr = Field(..., description="E-mail de acesso do colaborador.")
-    senha: str = Field(..., min_length=6, max_length=100, description="Senha inicial de acesso (mínimo 6 caracteres).")
+    senha: str = Field(..., min_length=8, max_length=100, description="Senha inicial de acesso (mínimo 8 caracteres).")
     role: str = Field(default="GERENTE", pattern="^(DONO|GERENTE|ADMIN_SAAS)$", description="Perfil de acesso: DONO, GERENTE ou ADMIN_SAAS.")
     loja_atribuida_id: UUID | None = Field(None, description="ID da loja física vinculada (obrigatório para GERENTE).")
 
@@ -737,6 +763,26 @@ class CriarLojaSuperAdminRequest(BaseModel):
     nome: str = Field(..., min_length=1, max_length=150, description="Nome da filial/loja.")
     cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ da filial.")
     endereco: str | None = Field(default=None, max_length=255, description="Endereço físico da filial.")
+
+
+class RedefinirSenhaUsuarioAdminRequest(BaseModel):
+    """
+    Schema para redefinição de senha de qualquer usuário pelo Super-Admin da plataforma.
+    """
+    nova_senha: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="Nova senha de acesso (mínimo 8 caracteres, contendo letras e números)."
+    )
+
+    @field_validator("nova_senha")
+    @classmethod
+    def validar_complexidade_senha(cls, v: str) -> str:
+        if not re.search(r"[A-Za-z]", v) or not re.search(r"\d", v):
+            raise ValueError("A nova senha deve conter pelo menos uma letra e pelo menos um número.")
+        return v
+
 
 
 

@@ -314,7 +314,82 @@ def test_brecha_7_swagger_docs_desabilitado_em_producao():
         assert dev_app.docs_url == "/docs"
 
 
-def test_brecha_8_cors_hardening_e_restricao_estrita():
+def test_brecha_8_troca_de_senha_fluxo_completo(client: TestClient):
+    """
+    Testa o fluxo de troca de senha autenticada (/auth/alterar-senha):
+    - Validação de complexidade (rejeita senhas curtas ou sem números)
+    - Rejeição de senha atual incorreta
+    - Rejeição de repetição da mesma senha
+    - Sucesso na alteração com validação de login novo e invalidação da senha antiga
+    """
+    prefix = random.randint(100000, 999999)
+    email_dono = f"dono_{prefix}@varejo.com"
+    senha_inicial = "senha_segura_123"
+
+    res_reg = client.post("/auth/register", json={
+        "nome_fantasia": f"Varejo {prefix}",
+        "razao_social": f"Varejo S/A {prefix}",
+        "cnpj": gerar_cnpj(),
+        "dono_nome": "Carlos Dono",
+        "dono_email": email_dono,
+        "dono_senha": senha_inicial,
+    })
+    assert res_reg.status_code == 201
+
+    res_login = client.post("/auth/login", json={"email": email_dono, "senha": senha_inicial})
+    token = res_login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Tenta alterar com senha atual incorreta -> 400
+    res_err_atual = client.post("/auth/alterar-senha", json={
+        "senha_atual": "senha_totalmente_errada_999",
+        "nova_senha": "NovaSenhaSegura123!",
+    }, headers=headers)
+    assert res_err_atual.status_code == 400
+    assert "senha atual informada está incorreta" in res_err_atual.json()["detail"]
+
+    # 2. Tenta alterar para a mesma senha atual -> 400
+    res_mesma = client.post("/auth/alterar-senha", json={
+        "senha_atual": senha_inicial,
+        "nova_senha": senha_inicial,
+    }, headers=headers)
+    assert res_mesma.status_code == 400
+    assert "diferente da senha atual" in res_mesma.json()["detail"]
+
+    # 3. Tenta alterar para senha sem números -> 422
+    res_sem_num = client.post("/auth/alterar-senha", json={
+        "senha_atual": senha_inicial,
+        "nova_senha": "senhasemapenasletras",
+    }, headers=headers)
+    assert res_sem_num.status_code == 422
+
+    # 4. Tenta alterar para senha com menos de 8 caracteres -> 422
+    res_curta = client.post("/auth/alterar-senha", json={
+        "senha_atual": senha_inicial,
+        "nova_senha": "Curta1!",
+    }, headers=headers)
+    assert res_curta.status_code == 422
+
+    # 5. Alteração bem-sucedida com nova senha complexa
+    nova_senha_valida = "NovaSenhaForte2026@"
+    res_ok = client.post("/auth/alterar-senha", json={
+        "senha_atual": senha_inicial,
+        "nova_senha": nova_senha_valida,
+    }, headers=headers)
+    assert res_ok.status_code == 200
+    assert res_ok.json()["mensagem"] == "Senha alterada com sucesso."
+
+    # 6. Tenta login com a senha antiga -> Deve falhar (401)
+    res_login_antiga = client.post("/auth/login", json={"email": email_dono, "senha": senha_inicial})
+    assert res_login_antiga.status_code == 401
+
+    # 7. Login com a nova senha -> Deve ter sucesso (200)
+    res_login_nova = client.post("/auth/login", json={"email": email_dono, "senha": nova_senha_valida})
+    assert res_login_nova.status_code == 200
+    assert "access_token" in res_login_nova.json()
+
+
+def test_brecha_9_cors_hardening_e_restricao_estrita():
     """
     Assegura que CORS falhe fechado em produção se CORS_ORIGINS não for definida,
     nunca aceite curinga '*' com credenciais, e restrinja estritamente a domínios
