@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3 overflow-hidden'}`}>
             <img
-              src="/favicon.png"
+              src="/favicon.png?v=yellow"
               alt="Estroque"
               width="36"
               height="36"

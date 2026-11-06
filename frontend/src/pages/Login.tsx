@@ -61,7 +61,7 @@ export const Login: React.FC = () => {
         {/* Top Brand */}
         <div className="flex items-center gap-3.5 z-10">
           <img
-            src="/favicon.png"
+            src="/favicon.png?v=yellow"
             alt="Estroque"
             width="48"
             height="48"
@@ -123,7 +123,7 @@ export const Login: React.FC = () => {
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-4 lg:hidden">
               <img
-                src="/favicon.png"
+                src="/favicon.png?v=yellow"
                 alt="Estroque"
                 className="w-9 h-9 object-contain drop-shadow-[0_0_15px_rgba(255,242,26,0.4)]"
               />
