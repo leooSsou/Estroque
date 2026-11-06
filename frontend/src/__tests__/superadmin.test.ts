@@ -184,6 +184,12 @@ async function run() {
     assert.ok(payloadFilial.cnpj.length >= 14);
   });
 
+  await testCase('5.9: Deve validar método de redefinição de senha de usuário pelo Super-Admin', async () => {
+    assert.ok(typeof api.redefinirSenhaUsuarioAdmin === 'function');
+    const res = await api.redefinirSenhaUsuarioAdmin('mock-user-id', 'NovaSenha123!');
+    assert.ok(res.mensagem.length > 0);
+  });
+
   console.log(`\nResultados: ${passed} passaram, ${failed} falharam.`);
   if (failed > 0) {
     process.exit(1);

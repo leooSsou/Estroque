@@ -33,9 +33,11 @@ from src.infrastructure.web.schemas import (
     AtualizarPlanoConfigRequest,
     CriarLojaSuperAdminRequest,
     CriarTenantSuperAdminRequest,
+    MensagemResponse,
     ModuloDetalheResponse,
     PlanoConfigResponse,
     PlataformaDashboardResponse,
+    RedefinirSenhaUsuarioAdminRequest,
     TenantAdminResponse,
     TenantDetalhesCompletosResponse,
     TenantLojaResumoResponse,
@@ -403,5 +405,43 @@ def atualizar_plano(
         return PlanoConfigResponse.model_validate(plano)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/usuarios/{usuario_id}/redefinir-senha", response_model=MensagemResponse)
+def redefinir_senha_usuario(
+    usuario_id: UUID,
+    request: RedefinirSenhaUsuarioAdminRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> MensagemResponse:
+    """
+    Permite ao Super-Admin (donos da plataforma) redefinir a senha de qualquer usuário/dono de tenant.
+    """
+    exigir_permissao(current_user, ["ADMIN_SAAS"])
+
+    db.info["ignore_tenant_filter"] = True
+    try:
+        usuario_repo = RepositorioUsuarioSQLAlchemy(db)
+        usuario = usuario_repo.obter_por_id(usuario_id)
+        if not usuario:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Usuário '{usuario_id}' não encontrado.",
+            )
+
+        servico_cripto = BcryptServicoCriptografia()
+        novo_hash = servico_cripto.gerar_hash(request.nova_senha)
+
+        from dataclasses import replace
+        usuario_atualizado = replace(usuario, senha_hash=novo_hash)
+        usuario_repo.salvar(usuario_atualizado)
+        db.commit()
+
+        return MensagemResponse(
+            mensagem=f"Senha do usuário '{usuario.email}' redefinida com sucesso."
+        )
+    finally:
+        db.info.pop("ignore_tenant_filter", None)
+
 
 

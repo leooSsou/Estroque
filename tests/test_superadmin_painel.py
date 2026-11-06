@@ -450,5 +450,93 @@ def test_superadmin_cadastrar_novo_tenant_e_lojas_filiais(
     assert loja_data["nome"] == "Filial Sul"
 
 
+def test_superadmin_redefinir_senha_usuario(client: TestClient, superadmin_setup):
+    """
+    Testa a redefinição de senha de qualquer usuário exclusivamente pelo Super-Admin:
+    - Somente ADMIN_SAAS pode acionar a rota
+    - Atualização imediata do hash no banco
+    - Invalidação da senha antiga e sucesso no login com a nova senha
+    """
+    admin_headers = superadmin_setup["admin_headers"]
+
+    prefix = random.randint(100000, 999999)
+    email_dono = f"lojista_{prefix}@varejo.com"
+    senha_inicial = "senhaInicial123!"
+
+    # Cadastra tenant com usuário Dono
+    res_tenant = client.post(
+        "/admin/tenants",
+        json={
+            "nome_fantasia": f"Varejo Redefinir {prefix}",
+            "cnpj": gerar_cnpj(),
+            "plano": "STARTER",
+            "dono_nome": "Lojista Alvo",
+            "dono_email": email_dono,
+            "dono_senha": senha_inicial,
+        },
+        headers=admin_headers,
+    )
+    assert res_tenant.status_code == status.HTTP_201_CREATED
+    tenant_id = res_tenant.json()["id"]
+
+    # Obtém detalhes completos do tenant para pegar o ID do usuário dono
+    res_detalhes = client.get(
+        f"/admin/tenants/{tenant_id}/detalhes",
+        headers=admin_headers,
+    )
+    assert res_detalhes.status_code == status.HTTP_200_OK
+    dono_id = res_detalhes.json()["usuarios"][0]["id"]
+
+    # 1. Usuário DONO comum tenta redefinir a senha de outro -> 403 Forbidden
+    res_login_dono = client.post(
+        "/auth/login",
+        json={"email": email_dono, "senha": senha_inicial},
+    )
+    assert res_login_dono.status_code == status.HTTP_200_OK
+    token_dono = res_login_dono.json()["access_token"]
+    headers_dono = {"Authorization": f"Bearer {token_dono}"}
+
+    res_hack = client.post(
+        f"/admin/usuarios/{dono_id}/redefinir-senha",
+        json={"nova_senha": "SenhaHacker123!"},
+        headers=headers_dono,
+    )
+    assert res_hack.status_code == status.HTTP_403_FORBIDDEN
+
+    # 2. Super-Admin tenta redefinir com senha inválida/curta -> 422
+    res_curta = client.post(
+        f"/admin/usuarios/{dono_id}/redefinir-senha",
+        json={"nova_senha": "1234"},
+        headers=admin_headers,
+    )
+    assert res_curta.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+    # 3. Super-Admin redefine a senha com sucesso
+    nova_senha_admin = "NovaSenhaForte2026@"
+    res_ok = client.post(
+        f"/admin/usuarios/{dono_id}/redefinir-senha",
+        json={"nova_senha": nova_senha_admin},
+        headers=admin_headers,
+    )
+    assert res_ok.status_code == status.HTTP_200_OK
+    assert "redefinida com sucesso" in res_ok.json()["mensagem"]
+
+    # 4. Login com senha antiga deve falhar (401)
+    res_antiga = client.post(
+        "/auth/login",
+        json={"email": email_dono, "senha": senha_inicial},
+    )
+    assert res_antiga.status_code == status.HTTP_401_UNAUTHORIZED
+
+    # 5. Login com a nova senha redefinida deve funcionar (200)
+    res_nova = client.post(
+        "/auth/login",
+        json={"email": email_dono, "senha": nova_senha_admin},
+    )
+    assert res_nova.status_code == status.HTTP_200_OK
+    assert "access_token" in res_nova.json()
+
+
+
 
 
