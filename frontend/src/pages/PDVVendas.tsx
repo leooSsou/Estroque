@@ -675,41 +675,112 @@ export const PDVVendas: React.FC = () => {
     }
   };
 
+  // Helper para calcular estoque exibido (se pai de grade, soma o estoque de todas as variações filhas ativas)
+  const getProductDisplayStock = (prod: Produto) => {
+    const variacoes = produtos.filter((p) => p.produto_pai_id === prod.id && p.ativo);
+    if (variacoes.length > 0) {
+      return variacoes.reduce((acc, v) => {
+        const s = activeLoja?.id
+          ? v.estoque_por_loja?.[activeLoja.id] ?? 0
+          : v.estoque_total ?? 0;
+        return acc + s;
+      }, 0);
+    }
+    return activeLoja?.id
+      ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
+      : prod.estoque_total ?? 0;
+  };
+
+  // Produtos principais exibidos na vitrine do PDV (produtos pai ou avulsos, sem variações filhas soltas)
+  const produtosVitrine = useMemo(() => {
+    return produtos.filter((p) => !p.produto_pai_id && p.ativo);
+  }, [produtos]);
+
   // Filter Catalog
   const counts = useMemo(() => {
     let disponivel = 0;
     let esgotado = 0;
-    for (const p of produtos) {
-      const stock = activeLoja?.id
-        ? p.estoque_por_loja?.[activeLoja.id] ?? 0
-        : p.estoque_total ?? 0;
+    for (const p of produtosVitrine) {
+      const stock = getProductDisplayStock(p);
       if (stock > 0) disponivel++;
       else esgotado++;
     }
     return {
-      todos: produtos.length,
+      todos: produtosVitrine.length,
       disponivel,
       esgotado,
     };
-  }, [produtos, activeLoja]);
+  }, [produtosVitrine, produtos, activeLoja]);
 
   const filteredProdutos = useMemo(() => {
-    return produtos.filter((p) => {
-      const q = search.toLowerCase();
-      const matchSearch =
+    const q = search.trim().toLowerCase();
+    return produtosVitrine.filter((p) => {
+      // 1. O próprio produto pai ou avulso combina com o termo de busca
+      const matchParent =
         p.nome.toLowerCase().includes(q) ||
         p.sku.toLowerCase().includes(q) ||
-        (p.codigo_barras && p.codigo_barras.includes(q));
+        (p.codigo_barras && p.codigo_barras.toLowerCase().includes(q));
 
-      const stock = activeLoja?.id
-        ? p.estoque_por_loja?.[activeLoja.id] ?? 0
-        : p.estoque_total ?? 0;
+      // 2. Se for produto pai, verifica se alguma de suas variações filhas combina com o termo
+      const variacoesFilhas = produtos.filter((child) => child.produto_pai_id === p.id && child.ativo);
+      const matchChild = variacoesFilhas.some(
+        (child) =>
+          child.nome.toLowerCase().includes(q) ||
+          child.sku.toLowerCase().includes(q) ||
+          (child.codigo_barras && child.codigo_barras.toLowerCase().includes(q)) ||
+          (child.variacoes &&
+            Object.values(child.variacoes).some((v) =>
+              String(v).toLowerCase().includes(q)
+            ))
+      );
+
+      const matchSearch = !q || matchParent || matchChild;
+
+      const stock = getProductDisplayStock(p);
 
       if (catalogFilter === 'DISPONIVEL') return matchSearch && stock > 0;
       if (catalogFilter === 'ESGOTADO') return matchSearch && stock === 0;
       return matchSearch;
     });
-  }, [produtos, search, catalogFilter, activeLoja]);
+  }, [produtosVitrine, produtos, search, catalogFilter, activeLoja]);
+
+  // Handler para leitor de código de barras ou busca ao pressionar Enter
+  const handleBarcodeOrSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const query = search.trim();
+      if (!query) return;
+
+      const queryLower = query.toLowerCase();
+
+      // 1. Tenta correspondência exata por código de barras ou SKU em todos os produtos (incluindo variações filhas!)
+      const exactMatch = produtos.find(
+        (p) =>
+          p.ativo &&
+          ((p.codigo_barras && p.codigo_barras.toLowerCase() === queryLower) ||
+            p.sku.toLowerCase() === queryLower)
+      );
+
+      if (exactMatch) {
+        const temFilhos = produtos.some((p) => p.produto_pai_id === exactMatch.id && p.ativo);
+        if (temFilhos) {
+          setSelectedPaiForPicker(exactMatch);
+          setVariacoesPickerOpen(true);
+        } else {
+          addItemDirectlyToCart(exactMatch);
+          toast.success(`Adicionado: ${exactMatch.nome}`);
+        }
+        setSearch('');
+        return;
+      }
+
+      // 2. Se a vitrine filtrada tiver exatamente 1 item resultante, adiciona/abre direto
+      if (filteredProdutos.length === 1) {
+        handleAddToCart(filteredProdutos[0]);
+        setSearch('');
+      }
+    }
+  };
 
   // Filter Sales History (Tab 3)
   const filteredHistorico = useMemo(() => {
@@ -867,13 +938,14 @@ export const PDVVendas: React.FC = () => {
             {/* Barcode Scanner & Search Bar */}
             <div className="p-4 rounded-3xl bg-[#000000] border border-white/[0.16] shadow-bento-dark space-y-3">
               <div className="relative group">
-                <Barcode className="w-5 h-5 text-slate-400 group-focus-within:text-emerald-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
+                <Barcode className="w-5 h-5 text-slate-400 group-focus-within:text-yellow-400 absolute left-4 top-3.5 transition-colors duration-200 pointer-events-none" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={handleBarcodeOrSearchSubmit}
                   placeholder="Bipar leitor de código de barras ou pesquisar item..."
-                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200"
+                  className="w-full pl-12 pr-10 py-3 rounded-2xl bg-[#000000] border border-white/[0.16] text-sm font-medium text-white placeholder-slate-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 focus:outline-none transition-all duration-200"
                 />
                 {search && (
                   <button
@@ -923,9 +995,9 @@ export const PDVVendas: React.FC = () => {
             {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
               {filteredProdutos.map((prod) => {
-                const stock = activeLoja?.id
-                  ? prod.estoque_por_loja?.[activeLoja.id] ?? 0
-                  : prod.estoque_total ?? 0;
+                const variacoes = produtos.filter((p) => p.produto_pai_id === prod.id && p.ativo);
+                const hasVariacoes = variacoes.length > 0;
+                const stock = getProductDisplayStock(prod);
 
                 return (
                   <div
@@ -934,26 +1006,37 @@ export const PDVVendas: React.FC = () => {
                     className={`bg-[#000000] border rounded-2xl p-4 flex flex-col justify-between cursor-pointer transition-all duration-250 group btn-press hover-lift ${
                       stock === 0
                         ? 'opacity-40 border-rose-500/20 pointer-events-none'
-                        : 'border-white/[0.16] hover:border-emerald-500/40 hover:bg-white/[0.04]'
+                        : 'border-white/[0.16] hover:border-yellow-400/50 hover:bg-white/[0.04]'
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-                        <span>{prod.sku}</span>
-                        <span className={stock === 0 ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}>
-                          {stock} un
-                        </span>
+                        <span className="font-mono">{prod.sku}</span>
+                        <div className="flex items-center gap-1.5">
+                          {hasVariacoes && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/25 text-[10px] font-bold">
+                              {variacoes.length} {variacoes.length === 1 ? 'variação' : 'variações'}
+                            </span>
+                          )}
+                          <span className={stock === 0 ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}>
+                            {stock} un
+                          </span>
+                        </div>
                       </div>
-                      <h4 className="text-sm font-bold text-white line-clamp-2 mb-2.5 group-hover:text-emerald-400 transition-colors">
+                      <h4 className="text-sm font-bold text-white line-clamp-2 mb-2.5 group-hover:text-yellow-400 transition-colors">
                         {prod.nome}
                       </h4>
                     </div>
 
                     <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.14]">
-                      <span className="text-base font-bold text-emerald-400">
+                      <span className="text-base font-bold text-yellow-400">
                         R$ {prod.preco_venda.toFixed(2)}
                       </span>
-                      <button className="w-8 h-8 rounded-xl bg-[#000000] border border-white/[0.16] group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600 flex items-center justify-center text-slate-300 transition-all group-hover:scale-110">
+                      <button
+                        type="button"
+                        aria-label="Adicionar item"
+                        className="w-8 h-8 rounded-xl bg-[#000000] border border-white/[0.16] group-hover:bg-yellow-400 group-hover:text-black group-hover:border-yellow-400 flex items-center justify-center text-slate-300 font-bold transition-all group-hover:scale-110"
+                      >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -2057,7 +2140,7 @@ export const PDVVendas: React.FC = () => {
                     }}
                     className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
                       stock > 0
-                        ? 'bg-[#000000] border-white/[0.16] hover:border-purple-500 hover:bg-purple-950/20 active:scale-95'
+                        ? 'bg-[#000000] border-white/[0.16] hover:border-yellow-400 hover:bg-yellow-400/10 active:scale-95'
                         : 'bg-white/[0.02] border-white/[0.08] opacity-50 cursor-not-allowed'
                     }`}
                   >
@@ -2066,7 +2149,7 @@ export const PDVVendas: React.FC = () => {
                       <span className="font-mono text-[10px] text-slate-400">{v.sku}</span>
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-white/[0.08]">
-                      <span className="text-xs font-bold text-emerald-400">
+                      <span className="text-xs font-bold text-yellow-400">
                         {v.preco_venda.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </span>
                       <span className={`text-[11px] font-bold ${stock > 0 ? 'text-slate-300' : 'text-rose-400'}`}>
