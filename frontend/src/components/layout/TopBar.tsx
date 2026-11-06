@@ -216,7 +216,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       {/* Center: Global Search Bar - Fluxo fluido centralizado sem colisão */}
-      <div className="hidden md:flex flex-1 items-center justify-center px-2 lg:px-6 min-w-0 max-w-xl mx-auto">
+      <div className="hidden md:flex flex-1 items-center justify-center px-2 lg:px-6 min-w-0 max-w-xl">
         <button
           onClick={onOpenSearch}
           className="h-10 sm:h-11 w-full max-w-sm lg:max-w-lg flex items-center justify-between px-3.5 sm:px-4 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-slate-400 hover:border-white/[0.30] hover:bg-white/[0.04] hover:text-white btn-press transition-all duration-200 group shadow-sm"

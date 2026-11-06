@@ -457,7 +457,7 @@ def test_superadmin_redefinir_senha_usuario(client: TestClient, superadmin_setup
     - Atualização imediata do hash no banco
     - Invalidação da senha antiga e sucesso no login com a nova senha
     """
-    admin_headers = superadmin_setup["headers"]
+    admin_headers = superadmin_setup["admin_headers"]
 
     prefix = random.randint(100000, 999999)
     email_dono = f"lojista_{prefix}@varejo.com"
