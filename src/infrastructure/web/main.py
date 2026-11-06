@@ -79,11 +79,17 @@ DEFAULT_DEV_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:8000",
+    "https://estroque-web.onrender.com",
+    "https://estroque.onrender.com",
 ]
 
-cors_origins_str = os.getenv("CORS_ORIGINS", "")
-if cors_origins_str and cors_origins_str != "*":
-    allow_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+cors_origins_str = os.getenv("CORS_ORIGINS", "").strip()
+if cors_origins_str:
+    allow_origins = [
+        origin.strip()
+        for origin in cors_origins_str.split(",")
+        if origin.strip() and origin.strip() != "*"
+    ]
 elif is_production:
     allow_origins = []
 else:

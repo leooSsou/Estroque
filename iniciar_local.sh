@@ -10,6 +10,9 @@ cd "$PROJECT_ROOT"
 
 echo "🚀 Iniciando Estroque em modo Local (Sem Docker)..."
 
+# Garantir chave JWT para ambiente local caso não esteja em .env
+export JWT_SECRET_KEY="${JWT_SECRET_KEY:-sua_chave_secreta_super_segura_local_12345}"
+
 # Ativar ambiente virtual
 if [ -d ".venv" ]; then
     PYTHON_BIN=".venv/bin/python"

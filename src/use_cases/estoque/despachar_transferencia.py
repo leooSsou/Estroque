@@ -68,7 +68,13 @@ class DespacharTransferencia:
             )
 
         # 5. Deduz do estoque da loja de origem
-        assert saldo_origem is not None
+        if saldo_origem is None:
+            raise EstoqueInsuficienteException(
+                produto_id=str(transferencia.produto_id),
+                loja_id=str(transferencia.loja_origem_id),
+                disponivel=0,
+                solicitado=transferencia.quantidade,
+            )
         saldo_origem_atualizado = EstoqueSaldo(
             id=saldo_origem.id,
             loja_id=saldo_origem.loja_id,
