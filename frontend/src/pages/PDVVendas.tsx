@@ -16,6 +16,7 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { Select } from '../components/common/Select';
 import { RelatorioVendasPDFModal } from '../components/pdv/RelatorioVendasPDFModal';
+import { printThermalReceipt, ThermalReceiptData } from '../services/receiptPrinter';
 import {
   ShoppingCart,
   Search,
@@ -797,13 +798,54 @@ export const PDVVendas: React.FC = () => {
     return { nome, sku, variacaoDesc };
   };
 
-  // Dispara impressão otimizada para cupom térmico não-fiscal (80mm)
+  // Dispara impressão de cupom térmico padrão (80mm) via iframe isolado de alta fidelidade
   const handlePrintReceipt = () => {
-    document.body.classList.add('print-mode-receipt');
-    window.print();
-    setTimeout(() => {
-      document.body.classList.remove('print-mode-receipt');
-    }, 1000);
+    if (!receiptSale) return;
+
+    const clienteVenda = clientes.find((c) => c.id === receiptSale.cliente_id);
+    const clienteNome = receiptSale.cliente_nome || clienteVenda?.nome || 'Consumidor Final (Sem CPF)';
+
+    const itensParaImprimir = (receiptSale.itens || []).map((it) => {
+      const details = getReceiptItemDetails(it);
+      return {
+        nome: details.nome,
+        variacaoDesc: details.variacaoDesc,
+        sku: details.sku,
+        quantidade: it.quantidade,
+        precoUnitario: it.preco_unitario,
+        total: it.quantidade * it.preco_unitario,
+      };
+    });
+
+    const pagamentosParaImprimir =
+      receiptSale.pagamentos && receiptSale.pagamentos.length > 0
+        ? receiptSale.pagamentos.map((p) => ({
+            forma: p.forma_pagamento,
+            valor: p.valor,
+          }))
+        : undefined;
+
+    const receiptData: ThermalReceiptData = {
+      lojaNome: activeLoja?.nome || 'Estroque Enterprise',
+      lojaEndereco: activeLoja?.endereco || 'Matriz Central',
+      lojaCnpj: activeLoja?.cnpj ? `CNPJ: ${activeLoja.cnpj}` : 'CNPJ: 12.345.678/0001-90',
+      dataHora: receiptSale.data_venda
+        ? new Date(receiptSale.data_venda).toLocaleString('pt-BR')
+        : new Date().toLocaleString('pt-BR'),
+      cupomId: receiptSale.id,
+      operadorNome: user?.nome || user?.email?.split('@')[0] || 'Operador de Caixa',
+      clienteNome,
+      itens: itensParaImprimir,
+      totalItens: receiptSale.itens?.reduce((acc, it) => acc + it.quantidade, 0) || 0,
+      subtotal: (receiptSale.valor_total || 0) + (receiptSale.desconto || 0),
+      desconto: receiptSale.desconto || 0,
+      totalPagar: receiptSale.valor_total || 0,
+      formaPagamento: receiptSale.forma_pagamento,
+      pagamentos: pagamentosParaImprimir,
+      status: receiptSale.status,
+    };
+
+    printThermalReceipt(receiptData);
   };
 
   // Filter Sales History (Tab 3)
