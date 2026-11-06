@@ -1,7 +1,11 @@
-from fastapi import FastAPI
+import os
+from collections.abc import Awaitable, Callable
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from starlette.responses import Response
 
 from src.infrastructure.web.admin import router as admin_router
 from src.infrastructure.web.analytics import router as analytics_router
@@ -18,15 +22,37 @@ from src.infrastructure.web.produtos import router as produtos_router
 from src.infrastructure.web.transferencias import router as transferencias_router
 from src.infrastructure.web.vendas import router as vendas_router
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
+is_production = ENVIRONMENT in {"production", "prod"}
+
 app = FastAPI(
     title="Estroque API",
     description="API de retaguarda multi-tenant para gerenciamento de lojas e estoque.",
     version="1.0.0",
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
 )
 
 # Configura o limiter na instância da aplicação
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+# Middleware global de cabeçalhos de segurança HTTP (Hardening OWASP)
+@app.middleware("http")
+async def add_security_headers(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    response: Response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+    if is_production:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 
 # Registra os roteadores da aplicação
@@ -45,27 +71,31 @@ app.include_router(analytics_router)
 app.include_router(admin_router)
 
 
-import os
+# Configuração segura de CORS (Restrição estrita a domínios autorizados)
+DEFAULT_DEV_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
+]
 
-# Configuração de CORS permissiva para desenvolvimento e nuvem (Render)
 cors_origins_str = os.getenv("CORS_ORIGINS", "")
 if cors_origins_str and cors_origins_str != "*":
     allow_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=allow_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+elif is_production:
+    allow_origins = []
 else:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origin_regex=r"^https?://.*",
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    allow_origins = DEFAULT_DEV_ORIGINS
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health", tags=["Monitoramento"])
 def health_check() -> dict[str, str]:

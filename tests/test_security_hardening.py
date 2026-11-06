@@ -266,3 +266,38 @@ def test_brecha_5_limite_tamanho_payload_xml(client: TestClient):
     res = client.post("/estoque/importar-xml", files=files, headers=headers_dono)
     assert res.status_code == 413
     assert "excede o tamanho máximo permitido" in res.json()["detail"]
+
+
+def test_brecha_6_headers_seguranca_http(client: TestClient):
+    """
+    Assegura que todas as respostas HTTP incluam os cabeçalhos de proteção OWASP.
+    """
+    res = client.get("/health")
+    assert res.status_code == 200
+    assert res.headers.get("X-Frame-Options") == "DENY"
+    assert res.headers.get("X-Content-Type-Options") == "nosniff"
+    assert res.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
+    assert "geolocation=()" in res.headers.get("Permissions-Policy", "")
+
+
+def test_brecha_7_swagger_docs_desabilitado_em_producao():
+    """
+    Em ambiente de produção, endpoints de documentação Swagger/OpenAPI não devem ser expostos publicamente.
+    """
+    import importlib
+
+    import src.infrastructure.web.main as main_module
+
+    with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
+        importlib.reload(main_module)
+        prod_app = main_module.app
+        assert prod_app.docs_url is None
+        assert prod_app.redoc_url is None
+        assert prod_app.openapi_url is None
+
+    # Restaura módulo em dev
+    with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
+        importlib.reload(main_module)
+        dev_app = main_module.app
+        assert dev_app.docs_url == "/docs"
+
