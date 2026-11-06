@@ -168,21 +168,42 @@ class StorageService {
     });
   }
 
-  // Auth & Lojas
+  // Auth & Lojas (Sessão temporária vinculada ao ciclo do navegador)
   getUser(): User | null {
-    return this.get<User | null>('user', DEFAULT_USER);
+    if (typeof sessionStorage !== 'undefined') {
+      const stored = sessionStorage.getItem(STORAGE_PREFIX + 'user');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          // Fallback se json inválido
+        }
+      }
+    }
+    return DEFAULT_USER;
   }
 
   setUser(user: User | null): void {
-    if (user) {
-      this.set('user', user);
-    } else {
+    if (typeof sessionStorage !== 'undefined') {
+      if (user) {
+        sessionStorage.setItem(STORAGE_PREFIX + 'user', JSON.stringify(user));
+      } else {
+        sessionStorage.removeItem(STORAGE_PREFIX + 'user');
+      }
+    }
+    // Remove qualquer resquício antigo persistente no localStorage
+    if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(STORAGE_PREFIX + 'user');
     }
   }
 
   clearUser(): void {
-    localStorage.removeItem(STORAGE_PREFIX + 'user');
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(STORAGE_PREFIX + 'user');
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(STORAGE_PREFIX + 'user');
+    }
   }
 
   getLojas(): Loja[] {

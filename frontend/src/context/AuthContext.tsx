@@ -45,6 +45,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // Interceptador de sessão: se o backend retornar 401 ou token expirar, reseta o estado imediatamente
+    api.setOnUnauthorized(() => {
+      setUser(null);
+      setToken(null);
+      setLojas([]);
+      setActiveLojaState(null);
+      storage.clearUser();
+    });
+
     const init = async () => {
       setIsLoading(true);
       try {
