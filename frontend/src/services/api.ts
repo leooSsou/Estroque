@@ -40,27 +40,77 @@ import { storage } from './storage';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Tempo máximo de validade contínua da sessão antes de exigir reautenticação (10 horas)
+const MAX_SESSION_DURATION_MS = 10 * 60 * 60 * 1000;
+
+function isJwtExpired(token: string): boolean {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.exp) return false;
+    return Date.now() >= payload.exp * 1000;
+  } catch {
+    return false;
+  }
+}
+
 class ApiClient {
   private token: string | null = null;
+  private onUnauthorizedCallback?: () => void;
 
   constructor() {
+    // 1. Limpa resquícios legados de tokens persistentes do localStorage
     if (typeof localStorage !== 'undefined') {
-      this.token = localStorage.getItem('estroque_access_token');
+      localStorage.removeItem('estroque_access_token');
     }
-  }
 
-  setToken(token: string | null) {
-    this.token = token;
-    if (typeof localStorage !== 'undefined') {
-      if (token) {
-        localStorage.setItem('estroque_access_token', token);
-      } else {
-        localStorage.removeItem('estroque_access_token');
+    // 2. Lê a sessão ativa a partir do sessionStorage (destruída automaticamente ao fechar o navegador)
+    if (typeof sessionStorage !== 'undefined') {
+      const storedToken = sessionStorage.getItem('estroque_access_token');
+      const sessionCreatedAt = Number(sessionStorage.getItem('estroque_session_created_at') || '0');
+
+      if (storedToken) {
+        const isTimeExpired = sessionCreatedAt > 0 && Date.now() - sessionCreatedAt > MAX_SESSION_DURATION_MS;
+        const isExpired = storedToken !== 'mock-demo-token-preview-estroque' && (isJwtExpired(storedToken) || isTimeExpired);
+
+        if (isExpired) {
+          sessionStorage.removeItem('estroque_access_token');
+          sessionStorage.removeItem('estroque_session_created_at');
+          this.token = null;
+        } else {
+          this.token = storedToken;
+        }
       }
     }
   }
 
+  setOnUnauthorized(callback: () => void) {
+    this.onUnauthorizedCallback = callback;
+  }
+
+  setToken(token: string | null) {
+    this.token = token;
+    if (typeof sessionStorage !== 'undefined') {
+      if (token) {
+        sessionStorage.setItem('estroque_access_token', token);
+        sessionStorage.setItem('estroque_session_created_at', String(Date.now()));
+      } else {
+        sessionStorage.removeItem('estroque_access_token');
+        sessionStorage.removeItem('estroque_session_created_at');
+      }
+    }
+    // Garante que o localStorage nunca mais mantenha token de acesso
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('estroque_access_token');
+    }
+  }
+
   getToken(): string | null {
+    if (this.token && this.token !== 'mock-demo-token-preview-estroque' && isJwtExpired(this.token)) {
+      this.logout();
+      return null;
+    }
     return this.token;
   }
 
@@ -90,11 +140,14 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       if (!res.ok) {
-        if (res.status === 401 && typeof window !== 'undefined') {
-          // Token expirado ou inválido: limpa o storage e redireciona para o login
+        if (res.status === 401) {
+          // Token expirado ou rejeitado pelo backend: encerra sessão imediatamente
           this.logout();
           storage.clearUser();
-          if (!window.location.pathname.includes('/login')) {
+          if (this.onUnauthorizedCallback) {
+            this.onUnauthorizedCallback();
+          }
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
             window.location.href = '/login';
           }
         }
@@ -207,21 +260,47 @@ class ApiClient {
   }
 
   async getMe(): Promise<User> {
+    if (this.token && this.token !== 'mock-demo-token-preview-estroque' && isJwtExpired(this.token)) {
+      this.logout();
+      if (this.onUnauthorizedCallback) this.onUnauthorizedCallback();
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+
     const res = await this.request<User>('/auth/me');
     if (res.data) {
       storage.setUser(res.data);
       return res.data;
     }
-    const localUser = storage.getUser();
-    if (localUser && this.token) {
-      return localUser;
+
+    // Se a requisição ao backend falhou (ex.: 401 ou erro), NUNCA manter autenticado com dados zumbis
+    if (res.isBackend && res.error) {
+      this.logout();
+      if (this.onUnauthorizedCallback) this.onUnauthorizedCallback();
+      throw new Error(res.error || 'Sessão expirada.');
     }
+
+    // Apenas em modo offline preview quando mock ativo dentro da sessão corrente
+    if (this.token === 'mock-demo-token-preview-estroque') {
+      const localUser = storage.getUser();
+      if (localUser) return localUser;
+    }
+
+    this.logout();
     throw new Error('Não autenticado');
   }
 
   logout() {
     this.setToken(null);
     storage.setUser(null);
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('estroque_access_token');
+      sessionStorage.removeItem('estroque_session_created_at');
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('estroque_access_token');
+      localStorage.removeItem('estroque_impersonator_backup');
+      localStorage.removeItem('estroque_impersonation_data');
+    }
   }
 
   // --- LOJAS ---
