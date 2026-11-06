@@ -1,4 +1,4 @@
-import React, { useState, useId, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useId, useMemo, useRef } from 'react';
 import { TrendingUp, BarChart2 } from 'lucide-react';
 
 export interface ChartDataPoint {
@@ -35,6 +35,10 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<number>(activePeriod);
 
+  useEffect(() => {
+    setSelectedPeriod(activePeriod);
+  }, [activePeriod]);
+
   const handleSelectPeriod = (days: number) => {
     setSelectedPeriod(days);
     if (onPeriodChange) onPeriodChange(days);
@@ -49,8 +53,11 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
 
   // Values calculation
   const values = useMemo(() => data.map((d) => d.value), [data]);
-  const minVal = useMemo(() => (values.length > 0 ? Math.min(...values) : 0), [values]);
-  const maxVal = useMemo(() => (values.length > 0 ? Math.max(...values) : 1), [values]);
+  const minVal = 0;
+  const maxVal = useMemo(() => {
+    const highest = Math.max(...values, 0);
+    return highest > 0 ? highest * 1.15 : 100;
+  }, [values]);
   const valRange = maxVal - minVal || 1;
 
   const totalPeriodo = useMemo(() => values.reduce((acc, curr) => acc + curr, 0), [values]);
