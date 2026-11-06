@@ -782,6 +782,30 @@ export const PDVVendas: React.FC = () => {
     }
   };
 
+  // Helper para resolver dados de itens no cupom de venda (nome, SKU e variação)
+  const getReceiptItemDetails = (it: { produto_id: string; produto_nome?: string; sku?: string }) => {
+    const prod = produtos.find((p) => p.id === it.produto_id);
+    const nome = it.produto_nome || prod?.nome || it.sku || prod?.sku || 'Item de Venda';
+    const sku = it.sku || prod?.sku || '';
+    let variacaoDesc = '';
+
+    if (prod?.variacoes && Object.keys(prod.variacoes).length > 0) {
+      variacaoDesc = Object.entries(prod.variacoes)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' | ');
+    }
+    return { nome, sku, variacaoDesc };
+  };
+
+  // Dispara impressão otimizada para cupom térmico não-fiscal (80mm)
+  const handlePrintReceipt = () => {
+    document.body.classList.add('print-mode-receipt');
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('print-mode-receipt');
+    }, 1000);
+  };
+
   // Filter Sales History (Tab 3)
   const filteredHistorico = useMemo(() => {
     return vendasHistorico.filter((v) => {
@@ -2621,85 +2645,175 @@ export const PDVVendas: React.FC = () => {
         onClose={() => setReceiptModalOpen(false)}
         title="Comprovante de Venda • Cupom Não-Fiscal"
         subtitle={`Transação #${receiptSale?.id.slice(0, 8)}`}
+        maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="p-6 rounded-2xl bg-[#000000] border border-white/[0.16] text-xs space-y-3">
-            <div className="text-center border-b border-white/[0.16] pb-3">
-              <div className="text-sm font-bold text-white">Estroque Enterprise</div>
-              <div className="text-[11px] text-slate-400">{activeLoja?.nome || 'Loja Matriz'}</div>
-              <div className="text-[10px] text-slate-500">{activeLoja?.cnpj || '12.345.678/0001-90'}</div>
-              <div className="text-[10px] text-slate-400 mt-1">
-                {receiptSale?.data_venda ? new Date(receiptSale.data_venda).toLocaleString('pt-BR') : ''}
+          {/* Caixa do Comprovante (Formatada para tela e para impressão térmica 80mm) */}
+          <div
+            id="printable-receipt"
+            className="p-5 sm:p-6 rounded-2xl bg-[#000000] border border-white/[0.16] text-xs space-y-3 font-mono print:bg-white print:border-none print:p-0 print:text-black"
+          >
+            {/* Cabeçalho da Empresa / Loja */}
+            <div className="text-center pb-2.5 border-b border-dashed border-white/[0.2] print:border-black receipt-dashed">
+              <div className="text-sm font-bold text-white uppercase tracking-wider print:text-black">
+                {activeLoja?.nome || 'Estroque Enterprise'}
+              </div>
+              <div className="text-[11px] text-slate-300 font-medium print:text-black">
+                {activeLoja?.endereco || 'Matriz Central'}
+              </div>
+              <div className="text-[11px] text-slate-400 print:text-black font-semibold mt-0.5">
+                {activeLoja?.cnpj ? `CNPJ: ${activeLoja.cnpj}` : 'CNPJ: 12.345.678/0001-90'}
+              </div>
+              <div className="text-[11px] font-bold text-yellow-400 uppercase tracking-widest mt-2 pt-1 border-t border-dashed border-white/[0.16] print:border-black print:text-black">
+                CUPOM NÃO-FISCAL
               </div>
             </div>
 
-            <div className="space-y-1 divide-y divide-white/[0.14]">
-              {receiptSale?.itens?.map((it) => (
-                <div key={it.id} className="pt-1.5 flex justify-between text-white">
-                  <span>
-                    {it.quantidade}x {it.produto_nome || it.sku}
-                  </span>
-                  <span className="text-emerald-400 font-bold">
-                    R$ {(it.quantidade * it.preco_unitario).toFixed(2)}
-                  </span>
-                </div>
-              ))}
+            {/* Metadados da Venda */}
+            <div className="text-[11px] space-y-1 text-slate-300 print:text-black py-1 border-b border-dashed border-white/[0.2] print:border-black receipt-dashed">
+              <div className="flex justify-between">
+                <span>Data/Hora:</span>
+                <span className="font-semibold text-white print:text-black">
+                  {receiptSale?.data_venda ? new Date(receiptSale.data_venda).toLocaleString('pt-BR') : new Date().toLocaleString('pt-BR')}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Cupom / Transação:</span>
+                <span className="font-bold text-white print:text-black">
+                  #{receiptSale?.id.slice(0, 8)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Operador:</span>
+                <span className="text-white print:text-black">
+                  {user?.nome || user?.email?.split('@')[0] || 'Operador de Caixa'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Cliente:</span>
+                <span className="text-white print:text-black font-medium">
+                  {(() => {
+                    const c = clientes.find((cli) => cli.id === receiptSale?.cliente_id);
+                    return receiptSale?.cliente_nome || c?.nome || 'Consumidor Final (Sem CPF)';
+                  })()}
+                </span>
+              </div>
             </div>
 
-            <div className="border-t border-white/[0.16] pt-2.5 space-y-1.5">
-              <div className="flex justify-between text-slate-300">
+            {/* Título da Seção de Itens */}
+            <div className="flex justify-between text-[11px] font-bold uppercase text-slate-400 print:text-black pt-1 border-b border-dashed border-white/[0.2] print:border-black pb-1">
+              <span>Item / Descrição</span>
+              <span>Total</span>
+            </div>
+
+            {/* Lista Detalhada de Itens com Resolução de Nome e Grade */}
+            <div className="space-y-2 py-1">
+              {receiptSale?.itens?.map((it, idx) => {
+                const details = getReceiptItemDetails(it);
+                const itemTotal = it.quantidade * it.preco_unitario;
+
+                return (
+                  <div key={it.id || idx} className="text-xs flex justify-between gap-3 text-white print:text-black">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-bold print:font-bold">
+                        {String(idx + 1).padStart(2, '0')}. {it.quantidade}x {details.nome}
+                      </span>
+                      {details.variacaoDesc && (
+                        <span className="text-[11px] text-yellow-400 font-medium print:text-black print:font-semibold">
+                          └ {details.variacaoDesc}
+                        </span>
+                      )}
+                      {details.sku && (
+                        <span className="text-[10px] text-slate-400 font-mono print:text-gray-700">
+                          SKU: {details.sku}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-yellow-400 font-bold print:text-black print:font-bold">
+                        R$ {itemTotal.toFixed(2)}
+                      </div>
+                      {it.quantidade > 1 && (
+                        <div className="text-[10px] text-slate-400 print:text-gray-600">
+                          ({it.quantidade}x {it.preco_unitario.toFixed(2)})
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Totais e Formas de Pagamento */}
+            <div className="border-t border-dashed border-white/[0.2] print:border-black pt-2 space-y-1.5 text-xs">
+              <div className="flex justify-between text-slate-300 print:text-black">
+                <span>Qtd. Total de Itens:</span>
+                <span className="font-semibold text-white print:text-black">
+                  {receiptSale?.itens?.reduce((acc, it) => acc + it.quantidade, 0) || 0} un
+                </span>
+              </div>
+
+              <div className="flex justify-between text-slate-300 print:text-black">
                 <span>Subtotal:</span>
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-white print:text-black">
                   R$ {((receiptSale?.valor_total || 0) + (receiptSale?.desconto || 0)).toFixed(2)}
                 </span>
               </div>
 
               {receiptSale?.desconto ? (
-                <div className="flex justify-between text-amber-400 font-medium">
-                  <span>Desconto Aplicado:</span>
+                <div className="flex justify-between text-amber-400 font-medium print:text-black print:font-semibold">
+                  <span>Desconto Concedido:</span>
                   <span>- R$ {receiptSale.desconto.toFixed(2)}</span>
                 </div>
               ) : null}
 
               {receiptSale?.pagamentos && receiptSale.pagamentos.length > 1 ? (
-                <div className="space-y-1 pt-1 border-t border-white/[0.12]">
-                  <span className="text-[11px] font-bold text-slate-300">Pagamentos Divididos:</span>
+                <div className="space-y-1 pt-1 border-t border-dashed border-white/[0.14] print:border-black">
+                  <span className="text-[11px] font-bold text-slate-300 print:text-black">Pagamento Dividido:</span>
                   {receiptSale.pagamentos.map((p, idx) => (
-                    <div key={idx} className="flex justify-between text-xs text-white">
-                      <span className="text-slate-400">• {p.forma_pagamento}:</span>
-                      <span className="font-semibold text-emerald-400">R$ {p.valor.toFixed(2)}</span>
+                    <div key={idx} className="flex justify-between text-xs text-white print:text-black">
+                      <span className="text-slate-400 print:text-black">• {p.forma_pagamento}:</span>
+                      <span className="font-semibold text-yellow-400 print:text-black">R$ {p.valor.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-slate-300 print:text-black">
                   <span>Forma de Pagamento:</span>
-                  <span className="font-bold text-white">{receiptSale?.forma_pagamento}</span>
+                  <span className="font-bold text-white print:text-black">{receiptSale?.forma_pagamento}</span>
                 </div>
               )}
 
-              <div className="flex justify-between text-sm font-bold text-white pt-1.5 border-t border-white/[0.16]">
-                <span>TOTAL:</span>
-                <span className="text-emerald-400 font-bold text-base">
+              {/* Total Final em Destaque */}
+              <div className="flex justify-between text-sm font-bold text-white print:text-black pt-2 border-t-2 border-dashed border-white/[0.25] print:border-black">
+                <span>TOTAL A PAGAR:</span>
+                <span className="text-yellow-400 font-extrabold text-base print:text-black">
                   R$ {receiptSale?.valor_total.toFixed(2)}
                 </span>
               </div>
             </div>
 
             {receiptSale?.forma_pagamento === 'CREDIARIO' && (
-              <div className="p-2 rounded bg-[#000000] text-[10px] text-slate-300 text-center border border-white/[0.14]">
+              <div className="p-2 rounded bg-white/[0.04] text-[10px] text-slate-300 text-center border border-white/[0.14] print:border-black print:text-black">
                 Venda registrada no crediário da loja. Saldo devedor do cliente atualizado.
               </div>
             )}
 
             {receiptSale?.status === 'CANCELADA' && (
-              <div className="p-2 rounded bg-rose-500/15 text-[10px] text-rose-400 text-center font-bold border border-rose-500/30">
+              <div className="p-2 rounded bg-rose-500/15 text-[10px] text-rose-400 text-center font-bold border border-rose-500/30 print:border-black print:text-black">
                 ⚠️ VENDA CANCELADA / ESTORNADA NO SISTEMA
               </div>
             )}
+
+            {/* Rodapé Fiscal do Cupom */}
+            <div className="text-center text-[10px] text-slate-400 print:text-black pt-2 border-t border-dashed border-white/[0.16] print:border-black space-y-0.5">
+              <p className="font-bold">*** NÃO É DOCUMENTO FISCAL ***</p>
+              <p>Sistema Estroque PDV • Obrigado pela preferência!</p>
+            </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+          {/* Botões de Ação do Modal (Ocultos na Impressão via .no-print) */}
+          <div className="no-print flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
             <button
               onClick={() => setReceiptModalOpen(false)}
               className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
@@ -2707,10 +2821,8 @@ export const PDVVendas: React.FC = () => {
               Fechar
             </button>
             <button
-              onClick={() => {
-                window.print();
-              }}
-              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all flex items-center gap-2"
+              onClick={handlePrintReceipt}
+              className="h-11 px-6 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black text-sm font-extrabold shadow-md shadow-yellow-400/20 active:scale-95 transition-all flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir Comprovante</span>
