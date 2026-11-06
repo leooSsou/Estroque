@@ -120,9 +120,9 @@ export const TopBar: React.FC<TopBarProps> = ({
   };
 
   return (
-    <header className="relative h-16 sm:h-20 bg-[#000000] sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between flex-shrink-0 border-b border-white/[0.08]">
+    <header className="relative h-16 sm:h-20 bg-[#000000] sticky top-0 z-30 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6 flex-shrink-0 border-b border-white/[0.08]">
       {/* Left: Mobile Toggle & Store Switcher */}
-      <div className="flex items-center gap-2 sm:gap-4 z-10 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3.5 z-10 flex-shrink-0 min-w-0">
         {/* Visible on mobile and tablet screens (< xl) */}
         <button
           onClick={onToggleMobileSidebar || onToggleSidebar}
@@ -215,14 +215,14 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
-      {/* Center: Global Search Bar - Mathematically Centered in TopBar */}
-      <div className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2 w-full max-w-md lg:max-w-lg pointer-events-none px-4">
+      {/* Center: Global Search Bar - Fluxo fluido centralizado sem colisão */}
+      <div className="hidden md:flex flex-1 items-center justify-center px-2 lg:px-6 min-w-0 max-w-xl mx-auto">
         <button
           onClick={onOpenSearch}
-          className="h-11 w-full pointer-events-auto flex items-center justify-between px-4 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-slate-400 hover:border-white/[0.30] hover:bg-white/[0.04] hover:text-white btn-press transition-all duration-300 group shadow-sm"
+          className="h-10 sm:h-11 w-full max-w-sm lg:max-w-lg flex items-center justify-between px-3.5 sm:px-4 rounded-xl bg-[#000000] border border-white/[0.16] text-xs text-slate-400 hover:border-white/[0.30] hover:bg-white/[0.04] hover:text-white btn-press transition-all duration-200 group shadow-sm"
           title={`Buscar em todo o sistema (${isMac ? '⌘K' : 'Ctrl+K'})`}
         >
-          <div className="flex items-center gap-2.5 truncate">
+          <div className="flex items-center gap-2.5 truncate min-w-0">
             <Search className="w-4 h-4 text-slate-400 group-hover:text-white group-hover:scale-110 transition-all duration-200 flex-shrink-0" />
             <span className="truncate">Buscar produtos, EAN, clientes, vendas...</span>
           </div>
