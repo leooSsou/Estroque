@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
@@ -22,8 +24,10 @@ from src.infrastructure.security.password import BcryptServicoCriptografia
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.limiter import limiter
 from src.infrastructure.web.schemas import (
+    AlterarSenhaRequest,
     LoginRequest,
     LoginResponse,
+    MensagemResponse,
     RegisterRequest,
     RegisterResponse,
     UserResponse,
@@ -170,6 +174,44 @@ def get_me(
         plano=plano,
         modulos_ativos=modulos_ativos,
     )
+
+
+@router.post("/alterar-senha", response_model=MensagemResponse)
+@limiter.limit("5/minute")
+def alterar_senha(
+    request: Request,
+    data: AlterarSenhaRequest,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+) -> MensagemResponse:
+    """
+    Permite ao usuário autenticado alterar sua própria senha de acesso.
+    Valida a senha atual e assegura a complexidade da nova senha.
+    """
+    servico_cripto = BcryptServicoCriptografia()
+
+    # Valida senha atual
+    if not servico_cripto.verificar_senha(data.senha_atual, current_user.senha_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A senha atual informada está incorreta.",
+        )
+
+    # Impede repetição imediata da mesma senha
+    if data.senha_atual == data.nova_senha:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A nova senha deve ser diferente da senha atual.",
+        )
+
+    usuario_repo = RepositorioUsuarioSQLAlchemy(db)
+    novo_hash = servico_cripto.gerar_hash(data.nova_senha)
+
+    usuario_atualizado = replace(current_user, senha_hash=novo_hash)
+    usuario_repo.salvar(usuario_atualizado)
+    db.commit()
+
+    return MensagemResponse(mensagem="Senha alterada com sucesso.")
 
 
 @router.get("/usuarios", response_model=list[UserResponse])

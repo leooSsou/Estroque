@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from src.domain.entities.usuario import Usuario
@@ -15,6 +15,7 @@ from src.infrastructure.database.repositorios_concrete import (
 from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.limiter import limiter
 from src.infrastructure.web.schemas import ImportarNFeResponse
 from src.use_cases.estoque.importar_nfe import ImportarEstoqueNFe, ImportarNFeInput
 
@@ -28,7 +29,9 @@ MAX_XML_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(verificar_modulo_ativo("nfe"))]
 )
+@limiter.limit("10/minute")
 def importar_xml_nfe(
+    request: Request,
     file: UploadFile = File(..., description="Arquivo XML da Nota Fiscal Eletrônica (NF-e v4.00)"),
     loja_id: UUID | None = Query(None, description="ID da loja física para registrar as entradas físicas de estoque"),
     markup_padrao: float = Query(0.5, ge=0.0, description="Markup padrão para cálculo de preço de novos produtos"),
