@@ -570,8 +570,14 @@ class ApiClient {
       params.append('loja_id', lojaId);
     }
 
+    const normalizedFile = file.name.toLowerCase().endsWith('.xml')
+      ? file
+      : new File([file], `${file.name.replace(/\.[^/.]+$/, '') || 'nfe_importada'}.xml`, {
+          type: 'text/xml',
+        });
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', normalizedFile);
 
     const res = await this.request<ImportarNFeResponse>(
       `/estoque/importar-xml?${params.toString()}`,

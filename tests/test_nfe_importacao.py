@@ -218,6 +218,33 @@ def test_api_importar_xml_nfe_endpoint(client: TestClient):
     assert prod_1["preco_venda"] == 60.0  # 40 * (1 + 0.5)
 
 
+def test_importar_xml_nfe_com_extensao_pdf_contendo_xml(client: TestClient):
+    """
+    Garante que arquivos com conteúdo XML válido sejam aceitos mesmo se salvos com extensão .pdf (ex: Mercado Livre).
+    """
+    email = f"dono_pdf_{random.randint(1000, 9999)}@varejo.com"
+    client.post("/auth/register", json={
+        "nome_fantasia": "Loja Teste PDF",
+        "razao_social": "Loja Teste PDF LTDA",
+        "cnpj": gerar_cnpj_valido(),
+        "dono_nome": "Carlos Dono",
+        "dono_email": email,
+        "dono_senha": "senha_segura_123"
+    })
+    res_login = client.post("/auth/login", json={"email": email, "senha": "senha_segura_123"})
+    token = res_login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    file_bytes = SAMPLE_NFE_XML.encode("utf-8")
+    response = client.post(
+        "/estoque/importar-xml",
+        files={"file": ("nfe_mercado_livre.pdf", file_bytes, "application/pdf")},
+        headers=headers
+    )
+    assert response.status_code == 200
+    assert response.json()["fornecedor"]["cnpj"] == "12345678000195"
+
+
 def test_parser_xml_nfe_vulnerabilidade_xml_bomb():
     """
     Garante que o parser rejeita XMLs contendo definições de entidades ou DOCTYPEs.

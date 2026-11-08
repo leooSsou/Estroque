@@ -42,12 +42,6 @@ def importar_xml_nfe(
     Realiza o upload e o processamento de um XML de NF-e.
     Auto-cadastra/atualiza Fornecedor e Produtos, recalculando Custo Médio e Preço de Venda.
     """
-    if not file.filename or not file.filename.lower().endswith(".xml"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="O arquivo enviado deve possuir a extensão .xml"
-        )
-
     try:
         xml_bytes = file.file.read(MAX_XML_SIZE_BYTES + 1)
         if len(xml_bytes) > MAX_XML_SIZE_BYTES:
@@ -61,6 +55,16 @@ def importar_xml_nfe(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Erro ao ler o arquivo enviado: {e!s}"
+        )
+
+    # Validação de formato: aceita extensão .xml ou conteúdo XML válido (mesmo se salvo com extensão .pdf ou outra)
+    is_xml_extension = bool(file.filename and file.filename.lower().endswith(".xml"))
+    is_xml_content = xml_bytes.lstrip().startswith(b"<")
+
+    if not is_xml_extension and not is_xml_content:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="O arquivo enviado deve possuir a extensão .xml"
         )
 
     fornecedor_repo = RepositorioFornecedorSQLAlchemy(db)
