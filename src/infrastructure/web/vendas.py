@@ -23,7 +23,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioVendaSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
-from src.infrastructure.web.authorization import exigir_acesso_loja
+from src.infrastructure.web.authorization import exigir_acesso_loja, verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     DevolucaoResponse,
@@ -46,7 +46,8 @@ from src.use_cases.estoque.registrar_venda import (
 
 router = APIRouter(
     prefix="/vendas",
-    tags=["Vendas Administrativas"]
+    tags=["Vendas Administrativas"],
+    dependencies=[Depends(verificar_modulo_ativo("pdv"))],
 )
 
 @router.post("", response_model=VendaResponse, status_code=status.HTTP_201_CREATED)
@@ -100,6 +101,7 @@ def registrar_venda(
         itens=itens_input,
         tenant_id=current_user.tenant_id,
         pagamentos=pagamentos_input,
+        usuario_role=current_user.role,
     )
 
     try:

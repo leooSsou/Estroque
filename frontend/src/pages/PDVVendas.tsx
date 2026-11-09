@@ -144,8 +144,8 @@ export const PDVVendas: React.FC = () => {
         api.getClientes(),
         api.getVendas(activeLoja?.id),
         api.getVendasEspera(),
-        api.getCaixaTurno(),
-        api.getHistoricoTurnos(),
+        api.getCaixaTurno(activeLoja?.id),
+        api.getHistoricoTurnos(activeLoja?.id),
       ]);
       setProdutos(prods);
       setClientes(clis);
@@ -603,7 +603,7 @@ export const PDVVendas: React.FC = () => {
     }
 
     try {
-      await api.registrarSangria(val, sangriaMotivo);
+      await api.registrarSangria(val, sangriaMotivo, activeLoja?.id);
       toast.success(`Sangria de R$ ${val.toFixed(2)} registrada no turno.`);
       setSangriaModalOpen(false);
       setSangriaValor('');
@@ -627,7 +627,7 @@ export const PDVVendas: React.FC = () => {
     }
 
     try {
-      await api.registrarSuprimento(val, suprimentoMotivo);
+      await api.registrarSuprimento(val, suprimentoMotivo, activeLoja?.id);
       toast.success(`Suprimento de R$ ${val.toFixed(2)} registrado no turno.`);
       setSuprimentoModalOpen(false);
       setSuprimentoValor('');
@@ -647,7 +647,7 @@ export const PDVVendas: React.FC = () => {
     }
 
     try {
-      await api.fecharCaixa(contado, fechamentoObservacao);
+      await api.fecharCaixa(contado, fechamentoObservacao, activeLoja?.id);
       toast.success('Turno de caixa encerrado com sucesso!');
       setFechamentoModalOpen(false);
       setSaldoContado('');
@@ -667,7 +667,7 @@ export const PDVVendas: React.FC = () => {
     }
 
     try {
-      await api.abrirCaixa(fundo);
+      await api.abrirCaixa(fundo, activeLoja?.id);
       toast.success('Novo turno de caixa aberto com sucesso!');
       setAberturaModalOpen(false);
       loadInitialData();

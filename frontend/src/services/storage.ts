@@ -853,6 +853,14 @@ class StorageService {
   }
 
   // Operações de Caixa (Turno)
+  setCaixaTurno(turno: CaixaTurno): void {
+    this.set('caixa_turno', turno);
+  }
+
+  setHistoricoTurnos(historico: TurnoFechadoHistorico[]): void {
+    this.set('turnos_historico', historico);
+  }
+
   getHistoricoTurnos(): TurnoFechadoHistorico[] {
     return this.get<TurnoFechadoHistorico[]>('turnos_historico', []);
   }

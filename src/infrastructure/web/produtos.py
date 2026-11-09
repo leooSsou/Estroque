@@ -254,8 +254,28 @@ def atualizar_produto(
 ) -> ProdutoResponse:
     """
     Atualiza dados de um produto existente (SKU e Tenant imutáveis).
+    Alteração de preços e margens de lucro exige perfil DONO ou ADMIN_SAAS.
     """
     repo = RepositorioProdutoSQLAlchemy(db)
+    prod_existente = repo.obter_por_id(produto_id, current_user.tenant_id)
+    if not prod_existente:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Produto não encontrado."
+        )
+
+    # SEC-06: Apenas DONO ou ADMIN_SAAS podem alterar preços e margens
+    if current_user.role not in {"DONO", "ADMIN_SAAS"}:
+        if (
+            request.preco_venda != prod_existente.preco_venda
+            or request.preco_custo != prod_existente.preco_custo
+            or request.markup != prod_existente.markup
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acesso negado: Apenas o proprietário (DONO) pode alterar preços e margens de produtos.",
+            )
+
     use_case = AtualizarProduto(repo)
     
     input_data = AtualizarProdutoInput(
@@ -270,7 +290,6 @@ def atualizar_produto(
         tenant_id=current_user.tenant_id
     )
 
-    
     try:
         output = use_case.executar(input_data)
         return ProdutoResponse.model_validate(output.produto)

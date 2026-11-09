@@ -15,6 +15,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioProdutoSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
+from src.infrastructure.web.authorization import verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import AuditarEstoqueRequest, AuditarEstoqueResponse
 from src.use_cases.estoque.auditar_estoque import (
@@ -25,7 +26,8 @@ from src.use_cases.estoque.auditar_estoque import (
 
 router = APIRouter(
     prefix="/estoque",
-    tags=["Estoque - Auditoria Física"]
+    tags=["Estoque - Auditoria Física"],
+    dependencies=[Depends(verificar_modulo_ativo("auditoria"))],
 )
 
 @router.post("/auditar", response_model=AuditarEstoqueResponse, status_code=status.HTTP_201_CREATED)

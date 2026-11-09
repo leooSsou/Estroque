@@ -15,7 +15,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioLojaSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
-from src.infrastructure.web.authorization import exigir_acesso_loja
+from src.infrastructure.web.authorization import exigir_acesso_loja, verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     FinanceiroLancamentoResponse,
@@ -35,7 +35,8 @@ from src.use_cases.financeiro.registrar_despesa import (
 
 router = APIRouter(
     prefix="/financeiro",
-    tags=["Gestão Financeira & Caixa"]
+    tags=["Gestão Financeira & Caixa"],
+    dependencies=[Depends(verificar_modulo_ativo("financeiro"))],
 )
 
 @router.post("/despesas", response_model=FinanceiroLancamentoResponse, status_code=status.HTTP_201_CREATED)

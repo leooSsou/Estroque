@@ -18,6 +18,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioTransferenciaEstoqueSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
+from src.infrastructure.web.authorization import verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     TransferenciaEstoqueReceberRequest,
@@ -37,7 +38,11 @@ from src.use_cases.estoque.solicitar_transferencia import (
     SolicitarTransferenciaInput,
 )
 
-router = APIRouter(prefix="/estoque/transferencias", tags=["Transferências de Estoque"])
+router = APIRouter(
+    prefix="/estoque/transferencias",
+    tags=["Transferências de Estoque"],
+    dependencies=[Depends(verificar_modulo_ativo("transferencias"))],
+)
 
 @router.post("", response_model=TransferenciaEstoqueResponse, status_code=status.HTTP_201_CREATED)
 def solicitar_transferencia(

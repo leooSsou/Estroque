@@ -57,6 +57,16 @@ def get_current_user(
     # Configura o tenant_id ativo na sessão atual para a query e para futuras operações
     db.info["tenant_id"] = tenant_id
 
+    # SEC-07: Configura variáveis de sessão no PostgreSQL para alimentar as policies nativas de RLS
+    if db.bind and db.bind.dialect.name == "postgresql":
+        from sqlalchemy import text
+        is_admin = "true" if payload.get("role") == "ADMIN_SAAS" else "false"
+        try:
+            db.execute(text(f"SET LOCAL app.current_tenant_id = '{tenant_id}';"))
+            db.execute(text(f"SET LOCAL app.is_admin_saas = '{is_admin}';"))
+        except Exception:
+            pass
+
     usuario_repo = RepositorioUsuarioSQLAlchemy(db)
     usuario = usuario_repo.obter_por_id(usuario_id)
 

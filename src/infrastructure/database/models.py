@@ -248,7 +248,7 @@ class VendaModel(HasTenant, Base):
     devolucoes = relationship("DevolucaoModel", back_populates="venda", cascade="all, delete-orphan")
 
 
-class PagamentoVendaModel(Base):
+class PagamentoVendaModel(HasTenant, Base):
     """
     Representação física da tabela pagamentos_venda (Split Payment).
     """
@@ -258,12 +258,11 @@ class PagamentoVendaModel(Base):
     venda_id: Mapped[UUID] = mapped_column(ForeignKey("vendas.id", ondelete="CASCADE"), nullable=False)
     forma_pagamento: Mapped[str] = mapped_column(String(20), nullable=False)
     valor: Mapped[float] = mapped_column(Float, nullable=False)
-    tenant_id: Mapped[UUID] = mapped_column(nullable=False)
 
     venda = relationship("VendaModel", back_populates="pagamentos")
 
 
-class ItemVendaModel(Base):
+class ItemVendaModel(HasTenant, Base):
     """
     Representação física da tabela itens_venda.
     """
@@ -274,7 +273,6 @@ class ItemVendaModel(Base):
     produto_id: Mapped[UUID] = mapped_column(ForeignKey("produtos.id", ondelete="RESTRICT"), nullable=False)
     quantidade: Mapped[int] = mapped_column(nullable=False)
     preco_unitario: Mapped[float] = mapped_column(Float, nullable=False)
-    tenant_id: Mapped[UUID] = mapped_column(nullable=False)
 
     venda = relationship("VendaModel", back_populates="itens")
 
@@ -326,7 +324,7 @@ class DevolucaoModel(HasTenant, Base):
     itens = relationship("ItemDevolucaoModel", back_populates="devolucao", cascade="all, delete-orphan")
 
 
-class ItemDevolucaoModel(Base):
+class ItemDevolucaoModel(HasTenant, Base):
     """
     Representação física da tabela itens_devolucao.
     """
@@ -341,7 +339,6 @@ class ItemDevolucaoModel(Base):
     valor_total: Mapped[float] = mapped_column(Float, nullable=False)
     retornar_ao_estoque: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     condicao: Mapped[str] = mapped_column(String(20), default="PERFEITO", nullable=False)
-    tenant_id: Mapped[UUID] = mapped_column(nullable=False)
 
     devolucao = relationship("DevolucaoModel", back_populates="itens")
     item_venda = relationship("ItemVendaModel")
@@ -363,6 +360,61 @@ class PlanoConfigModel(Base):
     recursos: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     badge_variant: Mapped[str] = mapped_column(String(20), nullable=False, default="neutral")
     destaque: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+class CaixaTurnoModel(HasTenant, Base):
+    """
+    Representação física da tabela caixa_turnos para auditoria de frente de caixa.
+    """
+    __tablename__ = "caixa_turnos"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False, index=True)
+    usuario_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    operador_nome: Mapped[str] = mapped_column(String(100), nullable=False)
+    aberto: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    fundo_inicial: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    data_abertura: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+    data_fechamento: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    total_vendas_dinheiro: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    total_suprimentos: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    total_sangrias: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    saldo_esperado: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    saldo_informado: Mapped[float | None] = mapped_column(Float, nullable=True)
+    diferenca: Mapped[float | None] = mapped_column(Float, nullable=True)
+    observacao: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    loja = relationship("LojaModel")
+    usuario = relationship("UsuarioModel")
+    operacoes = relationship("CaixaOperacaoModel", back_populates="turno", cascade="all, delete-orphan", order_by="desc(CaixaOperacaoModel.data_hora)")
+
+
+class CaixaOperacaoModel(HasTenant, Base):
+    """
+    Representação física da tabela caixa_operacoes (sangrias, suprimentos, aberturas).
+    """
+    __tablename__ = "caixa_operacoes"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    turno_id: Mapped[UUID] = mapped_column(ForeignKey("caixa_turnos.id", ondelete="CASCADE"), nullable=False, index=True)
+    loja_id: Mapped[UUID] = mapped_column(ForeignKey("lojas.id", ondelete="RESTRICT"), nullable=False)
+    usuario_id: Mapped[UUID] = mapped_column(ForeignKey("usuarios.id", ondelete="RESTRICT"), nullable=False)
+    tipo: Mapped[str] = mapped_column(String(20), nullable=False)  # ABERTURA, SANGRIA, SUPRIMENTO, FECHAMENTO
+    valor: Mapped[float] = mapped_column(Float, nullable=False)
+    motivo: Mapped[str] = mapped_column(String(255), nullable=False)
+    data_hora: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False
+    )
+    operador_nome: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    turno = relationship("CaixaTurnoModel", back_populates="operacoes")
+
 
 
 

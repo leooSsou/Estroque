@@ -7,13 +7,17 @@ from sqlalchemy.orm import Session
 
 from src.domain.entities.usuario import Usuario
 from src.infrastructure.database.session import get_db
-from src.infrastructure.web.authorization import exigir_acesso_loja
+from src.infrastructure.web.authorization import exigir_acesso_loja, verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import CurvaABCOResponse, DashboardAnalyticsResponse
 from src.use_cases.analytics.gerar_curva_abc import CurvaABCInput, GerarCurvaABC
 from src.use_cases.analytics.gerar_dashboard import DashboardAnalyticsInput, GerarDashboardAnalytics
 
-router = APIRouter(prefix="/analytics", tags=["Business Intelligence & Analytics"])
+router = APIRouter(
+    prefix="/analytics",
+    tags=["Business Intelligence & Analytics"],
+    dependencies=[Depends(verificar_modulo_ativo("analytics"))],
+)
 
 @router.get("/dashboard", response_model=DashboardAnalyticsResponse, status_code=status.HTTP_200_OK)
 def obter_dashboard(
