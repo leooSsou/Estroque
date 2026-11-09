@@ -60,17 +60,18 @@ async def receber_webhook_stripe(
 
     # 3. Tenta registrar o ID do evento atomicamente com chave única
     try:
-        evento_db = WebhookEventModel(
-            event_id=str(event_id),
-            gateway="stripe",
-            tipo=str(event_type),
-            status="RECEBIDO",
-            payload=payload,
-        )
-        db.add(evento_db)
+        with db.begin_nested():
+            evento_db = WebhookEventModel(
+                event_id=str(event_id),
+                gateway="stripe",
+                tipo=str(event_type),
+                status="RECEBIDO",
+                payload=payload,
+            )
+            db.add(evento_db)
+            db.flush()
         db.commit()
     except IntegrityError:
-        db.rollback()
         logger.info(f"[WebhookStripe] Evento duplicado detectado ({event_id}). Respondendo 200 de forma idempotente.")
         return {
             "status": "ignored",

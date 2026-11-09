@@ -369,6 +369,7 @@ def test_venda_endpoint_idempotencia_concorrente():
 
     def tentar_salvar():
         session = ConcSession()
+        session.info["tenant_id"] = tenant_id
         try:
             return salvar_idempotencia_depois(
                 db=session,
@@ -390,6 +391,7 @@ def test_venda_endpoint_idempotencia_concorrente():
     assert respostas[1]["id"] == response_body["id"]
 
     check = ConcSession()
+    check.info["tenant_id"] = tenant_id
     count = check.query(IdempotencyKeyModel).filter(
         IdempotencyKeyModel.tenant_id == tenant_id,
         IdempotencyKeyModel.rota == rota,

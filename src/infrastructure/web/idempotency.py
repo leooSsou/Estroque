@@ -28,6 +28,7 @@ def processar_idempotencia_antes(
     if not chave or not chave.strip():
         return None
 
+    db.info["tenant_id"] = tenant_id
     chave_limpa = chave.strip()
     request_hash = hashlib.sha256(
         json.dumps(corpo_requisicao, sort_keys=True, default=str).encode("utf-8")
@@ -75,26 +76,29 @@ def salvar_idempotencia_depois(
     if not chave or not chave.strip():
         return response_body
 
+    db.info["tenant_id"] = tenant_id
     chave_limpa = chave.strip()
     request_hash = hashlib.sha256(
         json.dumps(corpo_requisicao, sort_keys=True, default=str).encode("utf-8")
     ).hexdigest()
 
     try:
-        novo_registro = IdempotencyKeyModel(
-            tenant_id=tenant_id,
-            chave=chave_limpa,
-            rota=rota,
-            request_hash=request_hash,
-            status_code=status_code,
-            response_body=response_body,
-        )
-        db.add(novo_registro)
+        with db.begin_nested():
+            novo_registro = IdempotencyKeyModel(
+                tenant_id=tenant_id,
+                chave=chave_limpa,
+                rota=rota,
+                request_hash=request_hash,
+                status_code=status_code,
+                response_body=response_body,
+            )
+            db.add(novo_registro)
+            db.flush()
         db.commit()
         return response_body
     except IntegrityError:
-        db.rollback()
         # Colisão por concorrência simultânea: busca a resposta gravada pela transação vencedora
+        db.info["tenant_id"] = tenant_id
         existente = (
             db.query(IdempotencyKeyModel)
             .filter(
