@@ -89,12 +89,11 @@ def setup_pg_concorrencia_completo():
 
     tenant_model = TenantModel(
         nome_fantasia="SaaS Race Condition Test",
-        razao_social="SaaS Race Condition Test Ltda",
+        razao_social=f"SaaS Race Condition Test Ltda {uuid4().hex[:8]}",
         cnpj=cnpj_tenant,
         limite_usuarios=2,
         limite_lojas=2,
         plano="PRO",
-        modulos=["MOD_CATALOGO", "MOD_ESTOQUE", "MOD_PDV_VENDAS", "MOD_FINANCEIRO"],
     )
     session.add(tenant_model)
     session.flush()

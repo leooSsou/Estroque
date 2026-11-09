@@ -28,11 +28,11 @@ class TenantRepository(ABC):
         Busca um Tenant cadastrado pelo ID.
         """
 
-    @abstractmethod
     def obter_por_id_com_lock(self, id: UUID) -> Tenant | None:
         """
         Busca um Tenant cadastrado pelo ID aplicando trava pessimista (SELECT ... FOR UPDATE).
         """
+        return self.obter_por_id(id)
 
     @abstractmethod
     def listar_todos(self, busca: str | None = None, apenas_ativos: bool | None = None) -> list[Tenant]:
