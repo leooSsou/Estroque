@@ -29,7 +29,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioClienteSQLAlchemy,
     RepositorioEstoqueMovimentacaoSQLAlchemy,
     RepositorioEstoqueSaldoSQLAlchemy,
-    RepositorioFinanceiroSQLAlchemy,
+    RepositorioFinanceiroLancamentoSQLAlchemy,
     RepositorioLojaSQLAlchemy,
     RepositorioProdutoSQLAlchemy,
     RepositorioUsuarioSQLAlchemy,
@@ -46,10 +46,10 @@ from src.infrastructure.web.caixa import (
 )
 from src.use_cases.estoque.estornar_venda import EstornarVenda, EstornarVendaInput
 from src.use_cases.estoque.registrar_venda import (
-    ItemVendaInput,
-    PagamentoVendaInput,
+    RegistrarVendaAdministrativa,
     RegistrarVendaAdministrativaInput,
-    RegistrarVendaAdministrativaUseCase,
+    RegistrarVendaItemInput,
+    RegistrarVendaPagamentoInput,
 )
 
 # Conexão com o banco de dados PostgreSQL real para suportar locks pessimistas e índices parciais
@@ -368,6 +368,7 @@ def test_concorrencia_venda_limite_crediario(setup_pg_concorrencia_completo):
     ctx = setup_pg_concorrencia_completo
     loja_id = ctx["loja_id"]
     tenant_id = ctx["tenant_id"]
+    dono_id = ctx["dono_id"]
     produto_id = ctx["produto_id"]
 
     # Cria cliente com limite R$ 100,00 e saldo devedor R$ 0,00
@@ -395,14 +396,14 @@ def test_concorrencia_venda_limite_crediario(setup_pg_concorrencia_completo):
         thread_session.info["tenant_id"] = tenant_id
         try:
             v_repo = RepositorioVendaSQLAlchemy(thread_session)
-            f_repo = RepositorioFinanceiroSQLAlchemy(thread_session)
+            f_repo = RepositorioFinanceiroLancamentoSQLAlchemy(thread_session)
             l_repo = RepositorioLojaSQLAlchemy(thread_session)
             c_repo = RepositorioClienteSQLAlchemy(thread_session)
             p_repo = RepositorioProdutoSQLAlchemy(thread_session)
             s_repo = RepositorioEstoqueSaldoSQLAlchemy(thread_session)
             m_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(thread_session)
 
-            use_case = RegistrarVendaAdministrativaUseCase(
+            use_case = RegistrarVendaAdministrativa(
                 venda_repo=v_repo,
                 financeiro_repo=f_repo,
                 loja_repo=l_repo,
@@ -415,10 +416,11 @@ def test_concorrencia_venda_limite_crediario(setup_pg_concorrencia_completo):
             input_data = RegistrarVendaAdministrativaInput(
                 tenant_id=tenant_id,
                 loja_id=loja_id,
+                usuario_id=dono_id,
                 cliente_id=cliente_id,
-                itens=[ItemVendaInput(produto_id=produto_id, quantidade=1)],
+                itens=[RegistrarVendaItemInput(produto_id=produto_id, quantidade=1)],
                 desconto=20.0,  # Preço produto 100 - 20 = 80
-                pagamentos=[PagamentoVendaInput(forma_pagamento="CREDIARIO", valor=80.0)],
+                pagamentos=[RegistrarVendaPagamentoInput(forma_pagamento="CREDIARIO", valor=80.0)],
             )
             res = use_case.executar(input_data)
             thread_session.commit()
@@ -460,6 +462,7 @@ def test_concorrencia_venda_saldo_credito_loja(setup_pg_concorrencia_completo):
     ctx = setup_pg_concorrencia_completo
     loja_id = ctx["loja_id"]
     tenant_id = ctx["tenant_id"]
+    dono_id = ctx["dono_id"]
     produto_id = ctx["produto_id"]
 
     # Cria cliente com saldo de crédito R$ 100,00
@@ -487,14 +490,14 @@ def test_concorrencia_venda_saldo_credito_loja(setup_pg_concorrencia_completo):
         thread_session.info["tenant_id"] = tenant_id
         try:
             v_repo = RepositorioVendaSQLAlchemy(thread_session)
-            f_repo = RepositorioFinanceiroSQLAlchemy(thread_session)
+            f_repo = RepositorioFinanceiroLancamentoSQLAlchemy(thread_session)
             l_repo = RepositorioLojaSQLAlchemy(thread_session)
             c_repo = RepositorioClienteSQLAlchemy(thread_session)
             p_repo = RepositorioProdutoSQLAlchemy(thread_session)
             s_repo = RepositorioEstoqueSaldoSQLAlchemy(thread_session)
             m_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(thread_session)
 
-            use_case = RegistrarVendaAdministrativaUseCase(
+            use_case = RegistrarVendaAdministrativa(
                 venda_repo=v_repo,
                 financeiro_repo=f_repo,
                 loja_repo=l_repo,
@@ -507,10 +510,11 @@ def test_concorrencia_venda_saldo_credito_loja(setup_pg_concorrencia_completo):
             input_data = RegistrarVendaAdministrativaInput(
                 tenant_id=tenant_id,
                 loja_id=loja_id,
+                usuario_id=dono_id,
                 cliente_id=cliente_id,
-                itens=[ItemVendaInput(produto_id=produto_id, quantidade=1)],
+                itens=[RegistrarVendaItemInput(produto_id=produto_id, quantidade=1)],
                 desconto=40.0,  # Preço 100 - 40 = 60
-                pagamentos=[PagamentoVendaInput(forma_pagamento="CREDITO_LOJA", valor=60.0)],
+                pagamentos=[RegistrarVendaPagamentoInput(forma_pagamento="CREDITO_LOJA", valor=60.0)],
             )
             res = use_case.executar(input_data)
             thread_session.commit()
@@ -554,20 +558,21 @@ def test_concorrencia_estorno_duplo_venda(setup_pg_concorrencia_completo):
     ctx = setup_pg_concorrencia_completo
     loja_id = ctx["loja_id"]
     tenant_id = ctx["tenant_id"]
+    dono_id = ctx["dono_id"]
     produto_id = ctx["produto_id"]
 
     # 1. Cria uma venda de 5 unidades
     init_session = PgSessionLocal()
     init_session.info["tenant_id"] = tenant_id
     v_repo = RepositorioVendaSQLAlchemy(init_session)
-    f_repo = RepositorioFinanceiroSQLAlchemy(init_session)
+    f_repo = RepositorioFinanceiroLancamentoSQLAlchemy(init_session)
     l_repo = RepositorioLojaSQLAlchemy(init_session)
     c_repo = RepositorioClienteSQLAlchemy(init_session)
     p_repo = RepositorioProdutoSQLAlchemy(init_session)
     s_repo = RepositorioEstoqueSaldoSQLAlchemy(init_session)
     m_repo = RepositorioEstoqueMovimentacaoSQLAlchemy(init_session)
 
-    use_case = RegistrarVendaAdministrativaUseCase(
+    use_case = RegistrarVendaAdministrativa(
         venda_repo=v_repo,
         financeiro_repo=f_repo,
         loja_repo=l_repo,
@@ -581,7 +586,9 @@ def test_concorrencia_estorno_duplo_venda(setup_pg_concorrencia_completo):
         RegistrarVendaAdministrativaInput(
             tenant_id=tenant_id,
             loja_id=loja_id,
-            itens=[ItemVendaInput(produto_id=produto_id, quantidade=5)],
+            usuario_id=dono_id,
+            cliente_id=None,
+            itens=[RegistrarVendaItemInput(produto_id=produto_id, quantidade=5)],
             forma_pagamento="DINHEIRO",
         )
     )
@@ -601,7 +608,7 @@ def test_concorrencia_estorno_duplo_venda(setup_pg_concorrencia_completo):
         thread_session.info["tenant_id"] = tenant_id
         try:
             vr = RepositorioVendaSQLAlchemy(thread_session)
-            fr = RepositorioFinanceiroSQLAlchemy(thread_session)
+            fr = RepositorioFinanceiroLancamentoSQLAlchemy(thread_session)
             cr = RepositorioClienteSQLAlchemy(thread_session)
             sr = RepositorioEstoqueSaldoSQLAlchemy(thread_session)
             mr = RepositorioEstoqueMovimentacaoSQLAlchemy(thread_session)
