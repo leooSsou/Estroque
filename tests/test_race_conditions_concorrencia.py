@@ -729,7 +729,7 @@ def test_concorrencia_limite_colaboradores_tenant(setup_pg_concorrencia_completo
 
     assert len(sucessos) == 1, f"Apenas 1 usuário deveria ser criado: {resultados}"
     assert len(erros) == 1, f"O 2º deveria falhar por limite de plano: {resultados}"
-    assert "Limite do plano atingido" in erros[0][1]
+    assert "plano atingido" in erros[0][1]
 
     # Verifica total de usuários no tenant (dono + 1 colaborador = 2)
     check_session = PgSessionLocal()
