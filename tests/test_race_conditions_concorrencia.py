@@ -1,4 +1,5 @@
 import os
+import random
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
@@ -52,6 +53,37 @@ from src.use_cases.estoque.registrar_venda import (
     RegistrarVendaPagamentoInput,
 )
 
+
+def gerar_cnpj_valido() -> str:
+    """Gera um CNPJ matematicamente válido."""
+    base = [random.randint(0, 9) for _ in range(12)]
+    pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    s1 = sum(base[i] * pesos1[i] for i in range(12))
+    r1 = s1 % 11
+    d1 = 0 if r1 < 2 else 11 - r1
+    base.append(d1)
+    pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    s2 = sum(base[i] * pesos2[i] for i in range(13))
+    r2 = s2 % 11
+    d2 = 0 if r2 < 2 else 11 - r2
+    base.append(d2)
+    return "".join(map(str, base))
+
+
+def gerar_cpf_valido() -> str:
+    """Gera um CPF matematicamente válido."""
+    n = [random.randint(0, 9) for _ in range(9)]
+    soma1 = sum(n[i] * (10 - i) for i in range(9))
+    d1 = (soma1 * 10) % 11
+    if d1 == 10:
+        d1 = 0
+    soma2 = sum((n + [d1])[i] * (11 - i) for i in range(10))
+    d2 = (soma2 * 10) % 11
+    if d2 == 10:
+        d2 = 0
+    return "".join(map(str, n + [d1, d2]))
+
+
 # Conexão com o banco de dados PostgreSQL real para suportar locks pessimistas e índices parciais
 pg_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas")
 pg_engine = create_engine(pg_url)
@@ -86,8 +118,8 @@ def setup_pg_concorrencia_completo():
     session = PgSessionLocal()
     session.info["ignore_tenant_filter"] = True
 
-    cnpj_tenant = f"{uuid4().hex[:14]}"
-    cnpj_loja = f"{uuid4().hex[:14]}"
+    cnpj_tenant = gerar_cnpj_valido()
+    cnpj_loja = gerar_cnpj_valido()
 
     tenant_model = TenantModel(
         nome_fantasia="SaaS Race Condition Test",
@@ -265,7 +297,7 @@ def test_concorrencia_fechamento_turno_caixa(setup_pg_concorrencia_completo):
         thread_session = PgSessionLocal()
         thread_session.info["tenant_id"] = tenant_id
         try:
-            req = FecharCaixaRequest(loja_id=loja_id, saldo_contado=50.0, observacao="Fechamento concorrente")
+            req = FecharCaixaRequest(loja_id=loja_id, saldo_informado=50.0, observacao="Fechamento concorrente")
             res = fechar_caixa(request=req, db=thread_session, current_user=usuario_dono)
             return "SUCESSO", res
         except Exception as e:
@@ -376,7 +408,7 @@ def test_concorrencia_venda_limite_crediario(setup_pg_concorrencia_completo):
         Cliente(
             nome="Cliente Crediario Race",
             email="crediario_race@teste.com",
-            documento="12345678901",
+            documento=gerar_cpf_valido(),
             tenant_id=tenant_id,
             limite_credito=100.0,
             saldo_devedor_crediario=0.0,
@@ -470,7 +502,7 @@ def test_concorrencia_venda_saldo_credito_loja(setup_pg_concorrencia_completo):
         Cliente(
             nome="Cliente Credito Race",
             email="credito_race@teste.com",
-            documento="98765432100",
+            documento=gerar_cpf_valido(),
             tenant_id=tenant_id,
             limite_credito=0.0,
             saldo_devedor_crediario=0.0,
