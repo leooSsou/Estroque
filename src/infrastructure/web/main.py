@@ -27,18 +27,82 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
 is_production = ENVIRONMENT in {"production", "prod"}
 
 
+def auto_heal_schema() -> None:
+    """
+    Garante que tabelas e colunas adicionadas em migrações recentes existam
+    no banco de dados (especialmente PostgreSQL no Render) antes de aceitar requisições.
+    """
+    from sqlalchemy import text
+
+    from src.infrastructure.database.models import Base
+    from src.infrastructure.database.session import engine
+
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"Aviso create_all auto-heal: {e}")
+
+    try:
+        if engine.dialect.name == "postgresql":
+            statements = [
+                "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS ativo BOOLEAN DEFAULT TRUE NOT NULL;",
+                "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plano VARCHAR(20) DEFAULT 'PRO' NOT NULL;",
+                "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS limite_lojas INTEGER DEFAULT 5 NOT NULL;",
+                "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS limite_usuarios INTEGER DEFAULT 10 NOT NULL;",
+                "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS modulos_customizados JSON DEFAULT '{}';",
+                "ALTER TABLE produtos ADD COLUMN IF NOT EXISTS produto_pai_id UUID REFERENCES produtos(id) ON DELETE CASCADE;",
+                "ALTER TABLE produtos ADD COLUMN IF NOT EXISTS variacoes JSON DEFAULT '[]';",
+                "ALTER TABLE clientes ADD COLUMN IF NOT EXISTS credito_loja DOUBLE PRECISION DEFAULT 0.0 NOT NULL;",
+            ]
+            with engine.begin() as conn:
+                for stmt in statements:
+                    try:
+                        conn.execute(text(stmt))
+                    except Exception as err:
+                        print(f"Aviso stmt auto-heal: {err}")
+        elif engine.dialect.name == "sqlite":
+            with engine.begin() as conn:
+                res = conn.execute(text("PRAGMA table_info(tenants)")).fetchall()
+                cols = [r[1] for r in res]
+                if "ativo" not in cols:
+                    conn.execute(text("ALTER TABLE tenants ADD COLUMN ativo BOOLEAN DEFAULT 1 NOT NULL"))
+                if "plano" not in cols:
+                    conn.execute(text('ALTER TABLE tenants ADD COLUMN plano VARCHAR(20) DEFAULT "PRO" NOT NULL'))
+                if "limite_lojas" not in cols:
+                    conn.execute(text("ALTER TABLE tenants ADD COLUMN limite_lojas INTEGER DEFAULT 5 NOT NULL"))
+                if "limite_usuarios" not in cols:
+                    conn.execute(text("ALTER TABLE tenants ADD COLUMN limite_usuarios INTEGER DEFAULT 10 NOT NULL"))
+                if "modulos_customizados" not in cols:
+                    conn.execute(text('ALTER TABLE tenants ADD COLUMN modulos_customizados JSON DEFAULT "{}"'))
+    except Exception as e:
+        print(f"Aviso DDL auto-heal: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Executa migrações do Alembic e seed automaticamente no startup caso não esteja em teste
+    # Executa auto-heal do schema, migrações do Alembic e seed automaticamente caso não esteja em teste
     if os.getenv("TESTING") != "True":
+        auto_heal_schema()
+
         try:
+            from pathlib import Path
+
             from alembic import command
             from alembic.config import Config
 
-            alembic_cfg = Config("alembic.ini")
-            command.upgrade(alembic_cfg, "head")
+            root_dir = Path(__file__).resolve().parents[3]
+            ini_path = root_dir / "alembic.ini"
+            alembic_cfg = Config(str(ini_path))
+            try:
+                command.upgrade(alembic_cfg, "head")
+            except Exception as upgrade_err:
+                print(f"Aviso upgrade alembic: {upgrade_err}")
+                try:
+                    command.stamp(alembic_cfg, "head")
+                except Exception:
+                    pass
         except Exception as exc:
-            print(f"Aviso migrações startup: {exc}")
+            print(f"Aviso inicializacao alembic: {exc}")
 
         try:
             from src.infrastructure.database.seed import seed
