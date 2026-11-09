@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.domain.entities.financeiro_lancamento import FinanceiroLancamento
@@ -17,6 +17,10 @@ from src.infrastructure.database.repositorios_concrete import (
 from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import exigir_acesso_loja, verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.idempotency import (
+    processar_idempotencia_antes,
+    salvar_idempotencia_depois,
+)
 from src.infrastructure.web.schemas import (
     FinanceiroLancamentoResponse,
     RegistrarDespesaRequest,
@@ -43,14 +47,27 @@ router = APIRouter(
 def registrar_despesa(
     request: RegistrarDespesaRequest,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> FinanceiroLancamentoResponse:
     """
     Registra uma despesa operacional de forma manual para uma loja física.
     Aplica controles de BOLA/BFLA se o usuário for um gerente.
+    Suporta repetição idempotente segura via header 'Idempotency-Key'.
     """
     # Enforça isolamento de filial física para GERENTE
     exigir_acesso_loja(request.loja_id, current_user)
+
+    corpo_dict = request.model_dump(mode="json")
+    cache_response = processar_idempotencia_antes(
+        db=db,
+        tenant_id=current_user.tenant_id,
+        rota="/financeiro/despesas",
+        chave=idempotency_key,
+        corpo_requisicao=corpo_dict,
+    )
+    if cache_response is not None:
+        return FinanceiroLancamentoResponse.model_validate(cache_response)
 
     financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
     loja_repo = RepositorioLojaSQLAlchemy(db)
@@ -71,7 +88,17 @@ def registrar_despesa(
 
     try:
         output = use_case.executar(input_data)
-        return FinanceiroLancamentoResponse.model_validate(output.lancamento)
+        response_data = FinanceiroLancamentoResponse.model_validate(output.lancamento).model_dump(mode="json")
+        salvar_idempotencia_depois(
+            db=db,
+            tenant_id=current_user.tenant_id,
+            rota="/financeiro/despesas",
+            chave=idempotency_key,
+            corpo_requisicao=corpo_dict,
+            status_code=status.HTTP_201_CREATED,
+            response_body=response_data,
+        )
+        return FinanceiroLancamentoResponse.model_validate(response_data)
     except LojaNaoEncontradaException as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DomainException as e:
@@ -160,12 +187,25 @@ def listar_lancamentos(
 def quitar_lancamento(
     lancamento_id: UUID,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> FinanceiroLancamentoResponse:
     """
     Dá baixa em um lançamento financeiro pendente (PENDENTE -> PAGO),
     respeitando isolamento de tenant e filial (BOLA/BFLA).
+    Suporta repetição idempotente segura via header 'Idempotency-Key'.
     """
+    corpo_dict = {"lancamento_id": str(lancamento_id), "acao": "quitar"}
+    cache_response = processar_idempotencia_antes(
+        db=db,
+        tenant_id=current_user.tenant_id,
+        rota=f"/financeiro/lancamentos/{lancamento_id}/pagar",
+        chave=idempotency_key,
+        corpo_requisicao=corpo_dict,
+    )
+    if cache_response is not None:
+        return FinanceiroLancamentoResponse.model_validate(cache_response)
+
     financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
     lancamento = financeiro_repo.obter_por_id(lancamento_id, current_user.tenant_id)
     if not lancamento:
@@ -178,6 +218,16 @@ def quitar_lancamento(
         lancamento_id=lancamento_id,
         tenant_id=current_user.tenant_id,
     ))
-    return FinanceiroLancamentoResponse.model_validate(output.lancamento)
+    response_data = FinanceiroLancamentoResponse.model_validate(output.lancamento).model_dump(mode="json")
+    salvar_idempotencia_depois(
+        db=db,
+        tenant_id=current_user.tenant_id,
+        rota=f"/financeiro/lancamentos/{lancamento_id}/pagar",
+        chave=idempotency_key,
+        corpo_requisicao=corpo_dict,
+        status_code=status.HTTP_200_OK,
+        response_body=response_data,
+    )
+    return FinanceiroLancamentoResponse.model_validate(response_data)
 
 

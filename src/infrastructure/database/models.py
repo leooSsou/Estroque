@@ -421,5 +421,49 @@ class CaixaOperacaoModel(HasTenant, Base):
     turno = relationship("CaixaTurnoModel", back_populates="operacoes")
 
 
+class WebhookEventModel(Base):
+    """
+    Representação física da tabela webhook_events para absorção e idempotência de webhooks de gateways de pagamento.
+    """
+    __tablename__ = "webhook_events"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    event_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    gateway: Mapped[str] = mapped_column(String(50), default="stripe", nullable=False)
+    tipo: Mapped[str] = mapped_column(String(100), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="RECEBIDO", nullable=False)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False,
+    )
+    processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class IdempotencyKeyModel(HasTenant, Base):
+    """
+    Representação física da tabela idempotency_keys para garantir idempotência em endpoints de faturamento e pagamentos.
+    """
+    __tablename__ = "idempotency_keys"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    chave: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    rota: Mapped[str] = mapped_column(String(100), nullable=False)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status_code: Mapped[int] = mapped_column(nullable=False)
+    response_body: Mapped[dict] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=False,
+    )
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "rota", "chave", name="uq_idempotency_tenant_rota_chave"),
+    )
+
+
+
 
 

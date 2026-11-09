@@ -23,6 +23,7 @@ from src.infrastructure.web.lojas import router as lojas_router
 from src.infrastructure.web.produtos import router as produtos_router
 from src.infrastructure.web.transferencias import router as transferencias_router
 from src.infrastructure.web.vendas import router as vendas_router
+from src.infrastructure.web.webhooks import router as webhooks_router
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
 is_production = ENVIRONMENT in {"production", "prod"}
@@ -171,6 +172,7 @@ app.include_router(caixa_router)
 app.include_router(financeiro_router)
 app.include_router(analytics_router)
 app.include_router(admin_router)
+app.include_router(webhooks_router)
 
 
 # Configuração segura de CORS (Restrição estrita a domínios autorizados)

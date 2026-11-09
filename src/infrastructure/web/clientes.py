@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.domain.entities.usuario import Usuario
@@ -18,6 +18,10 @@ from src.infrastructure.database.repositorios_concrete import (
 from src.infrastructure.database.session import get_db
 from src.infrastructure.web.authorization import exigir_acesso_loja, verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.idempotency import (
+    processar_idempotencia_antes,
+    salvar_idempotencia_depois,
+)
 from src.infrastructure.web.schemas import (
     ClienteCreateRequest,
     ClienteResponse,
@@ -175,13 +179,26 @@ def receber_crediario(
     cliente_id: UUID,
     request: ReceberCrediarioRequest,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> ClienteResponse:
     """
     Registra o recebimento (total ou parcial) do saldo devedor de crediário de um cliente
     e lança automaticamente a receita paga no caixa da loja informada.
+    Suporta repetição idempotente segura via header 'Idempotency-Key'.
     """
     exigir_acesso_loja(request.loja_id, current_user)
+
+    corpo_dict = {"cliente_id": str(cliente_id), **request.model_dump(mode="json")}
+    cache_response = processar_idempotencia_antes(
+        db=db,
+        tenant_id=current_user.tenant_id,
+        rota=f"/clientes/{cliente_id}/receber-crediario",
+        chave=idempotency_key,
+        corpo_requisicao=corpo_dict,
+    )
+    if cache_response is not None:
+        return ClienteResponse.model_validate(cache_response)
 
     cliente_repo = RepositorioClienteSQLAlchemy(db)
     financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
@@ -202,7 +219,17 @@ def receber_crediario(
 
     try:
         output = use_case.executar(input_data)
-        return ClienteResponse.model_validate(output.cliente)
+        response_data = ClienteResponse.model_validate(output.cliente).model_dump(mode="json")
+        salvar_idempotencia_depois(
+            db=db,
+            tenant_id=current_user.tenant_id,
+            rota=f"/clientes/{cliente_id}/receber-crediario",
+            chave=idempotency_key,
+            corpo_requisicao=corpo_dict,
+            status_code=status.HTTP_200_OK,
+            response_body=response_data,
+        )
+        return ClienteResponse.model_validate(response_data)
     except (ClienteNaoEncontradoException, LojaNaoEncontradaException) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except DomainException as e:
