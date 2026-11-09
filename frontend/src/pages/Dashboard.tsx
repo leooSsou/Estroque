@@ -32,10 +32,11 @@ function buildChartData(vendas: Venda[], days: number): ChartDataPoint[] {
   const vendasPorDia = new Map<string, { total: number; count: number }>();
 
   for (const v of vendas) {
-    if (v.status === 'CANCELADA') continue;
+    if (v.status === 'CANCELADA' || v.status === 'CANCELADO') continue;
     if (!v.data_venda) continue;
 
-    const dt = new Date(v.data_venda);
+    const rawDate = typeof v.data_venda === 'string' ? v.data_venda.replace(' ', 'T') : v.data_venda;
+    const dt = new Date(rawDate);
     if (isNaN(dt.getTime())) continue;
 
     const y = dt.getFullYear();
@@ -117,7 +118,10 @@ export const Dashboard: React.FC = () => {
   const faturamentoLiquido = metrics?.faturamento_liquido ?? 0;
   const ticketMedio = metrics?.ticket_medio ?? 0;
   const margemLucro = metrics?.margem_lucro ?? 0;
-  const vendasConcluidas = useMemo(() => vendas.filter((v) => v.status !== 'CANCELADA'), [vendas]);
+  const vendasConcluidas = useMemo(
+    () => vendas.filter((v) => v.status !== 'CANCELADA' && v.status !== 'CANCELADO'),
+    [vendas]
+  );
   const vendasCount =
     vendasConcluidas.length ||
     (faturamentoLiquido > 0 && ticketMedio > 0 ? Math.round(faturamentoLiquido / ticketMedio) : 0);

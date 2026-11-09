@@ -157,7 +157,7 @@ export const NeonAreaChart: React.FC<NeonAreaChartProps> = ({
                   onClick={() => handleSelectPeriod(d)}
                   className={`px-2.5 py-0.5 rounded-md text-xs font-semibold transition-all ${
                     selectedPeriod === d
-                      ? 'bg-emerald-600 text-white shadow-sm'
+                      ? 'bg-[#FFF21A] text-black font-bold shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >

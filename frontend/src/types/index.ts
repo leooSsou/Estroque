@@ -220,7 +220,7 @@ export interface Venda {
   cliente_id?: string | null;
   cliente_nome?: string;
   usuario_id: string;
-  status: 'CONCLUIDA' | 'CANCELADA' | 'PAGO' | 'PENDENTE' | 'PARCIALMENTE_DEVOLVIDA' | 'DEVOLVIDA';
+  status: 'CONCLUIDA' | 'CANCELADA' | 'CANCELADO' | 'PAGO' | 'PENDENTE' | 'PARCIALMENTE_DEVOLVIDA' | 'DEVOLVIDA';
   forma_pagamento: FormaPagamento;
   valor_total: number;
   desconto: number;
