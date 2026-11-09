@@ -164,7 +164,10 @@ class RegistrarVendaAdministrativa:
             if not input_data.cliente_id:
                 raise ValueError("O cliente_id é obrigatório para vendas realizadas no crediário ou com crédito da loja.")
 
-            cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
+            if hasattr(self.cliente_repo, "obter_por_id_com_lock"):
+                cliente = self.cliente_repo.obter_por_id_com_lock(input_data.cliente_id, input_data.tenant_id)
+            else:
+                cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
             if not cliente or not cliente.ativo:
                 raise ClienteNaoEncontradoException(str(input_data.cliente_id))
 

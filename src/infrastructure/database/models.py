@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     String,
     UniqueConstraint,
     text,
@@ -391,6 +392,10 @@ class CaixaTurnoModel(HasTenant, Base):
     loja = relationship("LojaModel")
     usuario = relationship("UsuarioModel")
     operacoes = relationship("CaixaOperacaoModel", back_populates="turno", cascade="all, delete-orphan", order_by="desc(CaixaOperacaoModel.data_hora)")
+
+    __table_args__ = (
+        Index("uq_caixa_turno_aberto_por_loja", "loja_id", unique=True, postgresql_where=text("aberto = true")),
+    )
 
 
 class CaixaOperacaoModel(HasTenant, Base):

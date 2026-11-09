@@ -272,7 +272,7 @@ def criar_usuario_equipe(
     tenant_repo = RepositorioTenantSQLAlchemy(db)
     servico_cripto = BcryptServicoCriptografia()
 
-    tenant = tenant_repo.obter_por_id(current_user.tenant_id)
+    tenant = tenant_repo.obter_por_id_com_lock(current_user.tenant_id)
     if tenant:
         total_usuarios = len(usuario_repo.listar_por_tenant(current_user.tenant_id))
         if total_usuarios >= tenant.limite_usuarios:

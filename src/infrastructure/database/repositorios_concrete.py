@@ -132,6 +132,12 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
             return None
         return self._para_entidade(model)
 
+    def obter_por_id_com_lock(self, id: UUID) -> Tenant | None:
+        model = self.db.query(TenantModel).filter(TenantModel.id == id).with_for_update().first()
+        if not model:
+            return None
+        return self._para_entidade(model)
+
     def listar_todos(self, busca: str | None = None, apenas_ativos: bool | None = None) -> list[Tenant]:
         query = self.db.query(TenantModel)
         if apenas_ativos is not None:
@@ -478,6 +484,23 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
     def obter_por_id(self, id: UUID, tenant_id: UUID) -> Cliente | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(ClienteModel).filter(ClienteModel.id == id).first()
+        if not model:
+            return None
+        return Cliente(
+            id=model.id,
+            nome=model.nome,
+            email=model.email,
+            documento=model.documento,
+            tenant_id=model.tenant_id,
+            ativo=model.ativo,
+            limite_credito=model.limite_credito,
+            saldo_devedor_crediario=model.saldo_devedor_crediario,
+            credito_loja=getattr(model, "credito_loja", 0.0)
+        )
+
+    def obter_por_id_com_lock(self, id: UUID, tenant_id: UUID) -> Cliente | None:
+        self.db.info["tenant_id"] = tenant_id
+        model = self.db.query(ClienteModel).filter(ClienteModel.id == id).with_for_update().first()
         if not model:
             return None
         return Cliente(
@@ -1040,6 +1063,13 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
     def obter_por_id(self, id: UUID, tenant_id: UUID) -> Venda | None:
         self.db.info["tenant_id"] = tenant_id
         model = self.db.query(VendaModel).filter(VendaModel.id == id).first()
+        if not model:
+            return None
+        return self._to_entity(model)
+
+    def obter_por_id_com_lock(self, id: UUID, tenant_id: UUID) -> Venda | None:
+        self.db.info["tenant_id"] = tenant_id
+        model = self.db.query(VendaModel).filter(VendaModel.id == id).with_for_update().first()
         if not model:
             return None
         return self._to_entity(model)

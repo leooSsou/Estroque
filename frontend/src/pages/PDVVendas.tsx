@@ -43,6 +43,7 @@ import {
   ArrowUpRight,
   Wallet,
   FileText,
+  Loader2,
 } from 'lucide-react';
 
 interface CartItem {
@@ -112,6 +113,12 @@ export const PDVVendas: React.FC = () => {
   const [tipoResolucao, setTipoResolucao] = useState<'CREDITO_LOJA' | 'REEMBOLSO_CAIXA' | 'ABATIMENTO_CREDIARIO'>('CREDITO_LOJA');
   const [motivoDevolucao, setMotivoDevolucao] = useState('');
   const [isSubmittingDevolucao, setIsSubmittingDevolucao] = useState(false);
+  const [isFinalizingSale, setIsFinalizingSale] = useState(false);
+  const [isSubmittingEstorno, setIsSubmittingEstorno] = useState(false);
+  const [isSubmittingSangria, setIsSubmittingSangria] = useState(false);
+  const [isSubmittingSuprimento, setIsSubmittingSuprimento] = useState(false);
+  const [isSubmittingFechamento, setIsSubmittingFechamento] = useState(false);
+  const [isSubmittingAbertura, setIsSubmittingAbertura] = useState(false);
 
   // Variations Picker Modal State (PDV)
   const [variacoesPickerOpen, setVariacoesPickerOpen] = useState(false);
@@ -395,6 +402,7 @@ export const PDVVendas: React.FC = () => {
 
   // Finalize Sale
   const handleFinalizeSale = async () => {
+    if (isFinalizingSale) return;
     if (!caixaTurno?.aberto) {
       toast.error('Caixa fechado! É obrigatório abrir o turno na aba "Operações de Caixa" antes de realizar vendas.');
       setActiveTab('OPERACAO_CAIXA');
@@ -452,6 +460,7 @@ export const PDVVendas: React.FC = () => {
       }
     }
 
+    setIsFinalizingSale(true);
     try {
       let lojaId = activeLoja?.id;
       if (!lojaId) {
@@ -493,6 +502,8 @@ export const PDVVendas: React.FC = () => {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro ao registrar venda.';
       toast.error(msg);
+    } finally {
+      setIsFinalizingSale(false);
     }
   };
 
@@ -576,8 +587,9 @@ export const PDVVendas: React.FC = () => {
 
   // Estornar Venda (Tab 3)
   const handleConfirmarEstorno = async () => {
-    if (!vendaParaEstorno) return;
+    if (!vendaParaEstorno || isSubmittingEstorno) return;
 
+    setIsSubmittingEstorno(true);
     try {
       await api.estornarVenda(vendaParaEstorno.id);
       toast.success('Venda estornada com sucesso! Estoque devolvido e lançamentos compensados.');
@@ -586,12 +598,15 @@ export const PDVVendas: React.FC = () => {
       loadInitialData();
     } catch {
       toast.error('Erro ao estornar venda.');
+    } finally {
+      setIsSubmittingEstorno(false);
     }
   };
 
   // Operações de Caixa (Tab 4)
   const handleRegistrarSangria = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingSangria) return;
     const val = typeof sangriaValor === 'number' ? sangriaValor : parseFloat(String(sangriaValor));
     if (!val || val <= 0) {
       toast.error('Informe um valor válido para a sangria.');
@@ -602,6 +617,7 @@ export const PDVVendas: React.FC = () => {
       return;
     }
 
+    setIsSubmittingSangria(true);
     try {
       await api.registrarSangria(val, sangriaMotivo, activeLoja?.id);
       toast.success(`Sangria de R$ ${val.toFixed(2)} registrada no turno.`);
@@ -611,11 +627,14 @@ export const PDVVendas: React.FC = () => {
       loadInitialData();
     } catch {
       toast.error('Erro ao registrar sangria.');
+    } finally {
+      setIsSubmittingSangria(false);
     }
   };
 
   const handleRegistrarSuprimento = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingSuprimento) return;
     const val = typeof suprimentoValor === 'number' ? suprimentoValor : parseFloat(String(suprimentoValor));
     if (!val || val <= 0) {
       toast.error('Informe um valor válido para o suprimento.');
@@ -626,6 +645,7 @@ export const PDVVendas: React.FC = () => {
       return;
     }
 
+    setIsSubmittingSuprimento(true);
     try {
       await api.registrarSuprimento(val, suprimentoMotivo, activeLoja?.id);
       toast.success(`Suprimento de R$ ${val.toFixed(2)} registrado no turno.`);
@@ -635,17 +655,21 @@ export const PDVVendas: React.FC = () => {
       loadInitialData();
     } catch {
       toast.error('Erro ao registrar suprimento.');
+    } finally {
+      setIsSubmittingSuprimento(false);
     }
   };
 
   const handleFecharTurno = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingFechamento) return;
     const contado = typeof saldoContado === 'number' ? saldoContado : parseFloat(String(saldoContado));
     if (isNaN(contado) || contado < 0) {
       toast.error('Informe o valor físico contado na gaveta.');
       return;
     }
 
+    setIsSubmittingFechamento(true);
     try {
       await api.fecharCaixa(contado, fechamentoObservacao, activeLoja?.id);
       toast.success('Turno de caixa encerrado com sucesso!');
@@ -655,17 +679,21 @@ export const PDVVendas: React.FC = () => {
       loadInitialData();
     } catch {
       toast.error('Erro ao fechar o caixa.');
+    } finally {
+      setIsSubmittingFechamento(false);
     }
   };
 
   const handleAbrirTurno = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingAbertura) return;
     const fundo = typeof aberturaFundo === 'number' ? aberturaFundo : parseFloat(String(aberturaFundo));
     if (isNaN(fundo) || fundo < 0) {
       toast.error('Informe o valor do fundo inicial de troco.');
       return;
     }
 
+    setIsSubmittingAbertura(true);
     try {
       await api.abrirCaixa(fundo, activeLoja?.id);
       toast.success('Novo turno de caixa aberto com sucesso!');
@@ -673,6 +701,8 @@ export const PDVVendas: React.FC = () => {
       loadInitialData();
     } catch {
       toast.error('Erro ao abrir turno.');
+    } finally {
+      setIsSubmittingAbertura(false);
     }
   };
 
@@ -1504,6 +1534,7 @@ export const PDVVendas: React.FC = () => {
                   type="button"
                   onClick={handleFinalizeSale}
                   disabled={
+                    isFinalizingSale ||
                     !caixaTurno?.aberto ||
                     cart.length === 0 ||
                     (modoPagamento === 'SIMPLES' && (crediarioExcedido || Boolean(dinheiroInsuficiente))) ||
@@ -1515,7 +1546,12 @@ export const PDVVendas: React.FC = () => {
                       : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/25 disabled:opacity-40 disabled:pointer-events-none'
                   }`}
                 >
-                  {!caixaTurno?.aberto ? (
+                  {isFinalizingSale ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Processando Venda...</span>
+                    </>
+                  ) : !caixaTurno?.aberto ? (
                     <>
                       <Lock className="w-5 h-5 text-amber-200" />
                       <span>Caixa Fechado (Clique para Abrir)</span>
@@ -2162,10 +2198,20 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               onClick={handleConfirmarEstorno}
-              className="h-10 px-5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 flex items-center gap-1.5 active:scale-95"
+              disabled={isSubmittingEstorno}
+              className="h-10 px-5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
-              <RotateCcw className="w-4 h-4" />
-              <span>Confirmar Estorno</span>
+              {isSubmittingEstorno ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Estornando...</span>
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Confirmar Estorno</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -2496,10 +2542,20 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold shadow-md shadow-amber-500/25 flex items-center gap-1.5 active:scale-95"
+              disabled={isSubmittingSangria}
+              className="h-10 px-5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold shadow-md shadow-amber-500/25 flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
-              <ArrowDownRight className="w-4 h-4" />
-              <span>Registrar Sangria</span>
+              {isSubmittingSangria ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Registrando...</span>
+                </>
+              ) : (
+                <>
+                  <ArrowDownRight className="w-4 h-4" />
+                  <span>Registrar Sangria</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -2549,10 +2605,20 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 active:scale-95"
+              disabled={isSubmittingSuprimento}
+              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
-              <ArrowUpRight className="w-4 h-4" />
-              <span>Registrar Suprimento</span>
+              {isSubmittingSuprimento ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Registrando...</span>
+                </>
+              ) : (
+                <>
+                  <ArrowUpRight className="w-4 h-4" />
+                  <span>Registrar Suprimento</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -2632,10 +2698,20 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 flex items-center gap-1.5 active:scale-95"
+              disabled={isSubmittingFechamento}
+              className="h-10 px-5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/25 flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
-              <Lock className="w-4 h-4" />
-              <span>Confirmar Fechamento</span>
+              {isSubmittingFechamento ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Fechando...</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>Confirmar Fechamento</span>
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -2672,10 +2748,20 @@ export const PDVVendas: React.FC = () => {
             </button>
             <button
               type="submit"
-              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 active:scale-95"
+              disabled={isSubmittingAbertura}
+              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
-              <Unlock className="w-4 h-4" />
-              <span>Abrir Caixa</span>
+              {isSubmittingAbertura ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Abrindo...</span>
+                </>
+              ) : (
+                <>
+                  <Unlock className="w-4 h-4" />
+                  <span>Abrir Caixa</span>
+                </>
+              )}
             </button>
           </div>
         </form>

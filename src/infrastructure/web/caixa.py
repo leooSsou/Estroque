@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.domain.entities.usuario import Usuario
@@ -129,7 +130,14 @@ def abrir_caixa(
         operador_nome=current_user.nome,
     )
     db.add(op_abertura)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Já existe um turno de caixa aberto para esta loja física. Encerre o turno atual antes de abrir outro.",
+        )
     db.refresh(novo_turno)
 
     return CaixaTurnoResponse(
@@ -167,9 +175,10 @@ def registrar_operacao_caixa(
             CaixaTurnoModel.loja_id == loja_id,
             CaixaTurnoModel.aberto.is_(True),
         )
+        .with_for_update()
         .first()
     )
-    if not turno:
+    if not turno or not turno.aberto:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Não há turno de caixa aberto para esta loja física. Abra o turno antes de realizar movimentações.",
@@ -238,9 +247,10 @@ def fechar_caixa(
             CaixaTurnoModel.loja_id == request.loja_id,
             CaixaTurnoModel.aberto.is_(True),
         )
+        .with_for_update()
         .first()
     )
-    if not turno:
+    if not turno or not turno.aberto:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Não há turno de caixa aberto para encerramento nesta loja física.",

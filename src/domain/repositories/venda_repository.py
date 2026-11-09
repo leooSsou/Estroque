@@ -18,6 +18,10 @@ class VendaRepository(ABC):
         """Obtém uma venda pelo seu ID e tenant_id."""
 
     @abstractmethod
+    def obter_por_id_com_lock(self, id: UUID, tenant_id: UUID) -> Venda | None:
+        """Obtém uma venda pelo seu ID e tenant_id aplicando trava pessimista (SELECT ... FOR UPDATE)."""
+
+    @abstractmethod
     def listar_todas(
         self,
         tenant_id: UUID,
