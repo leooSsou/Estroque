@@ -23,7 +23,7 @@ class LojaRepository(ABC):
         """
 
     @abstractmethod
-    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Loja | None:
+    def obter_por_cnpj(self, cnpj: str | None, tenant_id: UUID) -> Loja | None:
         """
         Busca uma Loja cadastrada pelo CNPJ e tenant_id.
         """

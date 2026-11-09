@@ -100,7 +100,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     try {
       const nova = await api.createLoja({
         nome: lojaNome,
-        cnpj: lojaCnpj,
+        cnpj: lojaCnpj.trim() ? lojaCnpj.trim() : null,
         endereco: lojaEndereco,
         ativo: true,
       });
@@ -332,14 +332,13 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              CNPJ da Filial (14 dígitos válidos)
+              CNPJ da Filial (Opcional)
             </label>
             <input
               type="text"
-              required
               value={lojaCnpj}
               onChange={(e) => setLojaCnpj(e.target.value)}
-              placeholder="00.000.000/0002-00"
+              placeholder="00.000.000/0002-00 (Opcional)"
               className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all"
             />
           </div>

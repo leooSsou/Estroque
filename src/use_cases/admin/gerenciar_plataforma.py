@@ -609,11 +609,11 @@ class ObterDetalhesTenantSuperAdmin:
 class CadastrarTenantSuperAdminInput:
     nome_fantasia: str
     razao_social: str
-    cnpj: str
     plano: str
     dono_nome: str
     dono_email: str
     dono_senha_plana: str
+    cnpj: str | None = None
     limite_lojas: int | None = None
     limite_usuarios: int | None = None
     nome_loja: str | None = None
@@ -639,10 +639,11 @@ class CadastrarTenantSuperAdmin:
         self.db = db
 
     def executar(self, input_data: CadastrarTenantSuperAdminInput) -> Tenant:
-        # 1. Valida unicidade de CNPJ da empresa
-        cnpj_limpo = re.sub(r"\D", "", input_data.cnpj)
-        if self.tenant_repo.obter_por_cnpj(cnpj_limpo):
-            raise CnpjEmUsoException(cnpj_limpo)
+        # 1. Valida unicidade de CNPJ da empresa (se informado)
+        if input_data.cnpj and str(input_data.cnpj).strip():
+            cnpj_limpo = re.sub(r"\D", "", str(input_data.cnpj))
+            if cnpj_limpo and self.tenant_repo.obter_por_cnpj(cnpj_limpo):
+                raise CnpjEmUsoException(cnpj_limpo)
 
         # 2. Valida unicidade de e-mail do dono
         email_normalizado = input_data.dono_email.strip().lower()
@@ -717,7 +718,7 @@ class CadastrarLojaSuperAdmin:
         self.tenant_repo = tenant_repo
         self.loja_repo = loja_repo
 
-    def executar(self, tenant_id: UUID, nome: str, cnpj: str, endereco: str | None = None) -> Loja:
+    def executar(self, tenant_id: UUID, nome: str, cnpj: str | None = None, endereco: str | None = None) -> Loja:
         tenant = self.tenant_repo.obter_por_id(tenant_id)
         if not tenant:
             raise TenantNaoEncontradoException(str(tenant_id))
@@ -726,15 +727,16 @@ class CadastrarLojaSuperAdmin:
         if len(lojas_existentes) >= tenant.limite_lojas:
             raise LimitePlanoAtingidoException("lojas", tenant.limite_lojas)
 
-        loja_existente = self.loja_repo.obter_por_cnpj(cnpj, tenant_id)
-        if loja_existente:
-            raise CnpjLojaEmUsoException(cnpj)
+        if cnpj and str(cnpj).strip():
+            loja_existente = self.loja_repo.obter_por_cnpj(cnpj, tenant_id)
+            if loja_existente:
+                raise CnpjLojaEmUsoException(cnpj)
 
         loja = Loja(
             nome=nome,
-            cnpj=cnpj,
             endereco=endereco or "Endereço Filial",
             tenant_id=tenant_id,
+            cnpj=cnpj,
         )
         return self.loja_repo.salvar(loja)
 

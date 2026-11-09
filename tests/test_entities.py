@@ -165,6 +165,25 @@ def test_criar_loja_cnpj_invalido():
             tenant_id=uuid4()
         )
 
+def test_criar_tenant_sem_cnpj():
+    """
+    Garante que um Tenant possa ser instanciado sem CNPJ (None ou em branco).
+    """
+    tenant_none = Tenant(
+        nome_fantasia="Loja Sem CNPJ",
+        razao_social="Loja Sem CNPJ ME",
+        cnpj=None
+    )
+    assert tenant_none.cnpj is None
+
+    tenant_vazio = Tenant(
+        nome_fantasia="Loja Sem CNPJ 2",
+        razao_social="Loja Sem CNPJ 2 ME",
+        cnpj="   "
+    )
+    assert tenant_vazio.cnpj is None
+
+
 def test_criar_loja_nome_vazio():
     """
     Garante que criar uma Loja com nome vazio ou nulo levante ValueError.
@@ -176,6 +195,29 @@ def test_criar_loja_nome_vazio():
             endereco="Av. Central, 100",
             tenant_id=uuid4()
         )
+
+
+def test_criar_loja_sem_cnpj():
+    """
+    Garante que uma Loja possa ser instanciada sem CNPJ (None ou em branco).
+    """
+    tenant_id = uuid4()
+    loja_none = Loja(
+        nome="Filial Sem CNPJ",
+        endereco="Rua das Palmeiras, 50",
+        tenant_id=tenant_id,
+        cnpj=None
+    )
+    assert loja_none.cnpj is None
+
+    loja_vazia = Loja(
+        nome="Filial Sem CNPJ 2",
+        endereco="Rua das Palmeiras, 60",
+        tenant_id=tenant_id,
+        cnpj="   "
+    )
+    assert loja_vazia.cnpj is None
+
 
 def test_criar_produto_com_codigo_barras_e_fornecedor():
     """

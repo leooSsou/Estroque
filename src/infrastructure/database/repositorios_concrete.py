@@ -115,8 +115,13 @@ class RepositorioTenantSQLAlchemy(TenantRepository):
         
         return self._para_entidade(model)
 
-    def obter_por_cnpj(self, cnpj: str) -> Tenant | None:
-        model = self.db.query(TenantModel).filter(TenantModel.cnpj == cnpj).first()
+    def obter_por_cnpj(self, cnpj: str | None) -> Tenant | None:
+        if not cnpj or not str(cnpj).strip():
+            return None
+        cnpj_limpo = "".join(filter(str.isdigit, str(cnpj)))
+        if not cnpj_limpo:
+            return None
+        model = self.db.query(TenantModel).filter(TenantModel.cnpj == cnpj_limpo).first()
         if not model:
             return None
         return self._para_entidade(model)
@@ -259,9 +264,13 @@ class RepositorioLojaSQLAlchemy(LojaRepository):
             ativo=model.ativo
         )
 
-    def obter_por_cnpj(self, cnpj: str, tenant_id: UUID) -> Loja | None:
+    def obter_por_cnpj(self, cnpj: str | None, tenant_id: UUID) -> Loja | None:
+        if not cnpj or not str(cnpj).strip():
+            return None
         self.db.info["tenant_id"] = tenant_id
-        cnpj_limpo = "".join(filter(str.isdigit, cnpj))
+        cnpj_limpo = "".join(filter(str.isdigit, str(cnpj)))
+        if not cnpj_limpo:
+            return None
         model = self.db.query(LojaModel).filter(LojaModel.cnpj == cnpj_limpo).first()
         if not model:
             return None

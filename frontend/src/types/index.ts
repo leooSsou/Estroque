@@ -14,7 +14,7 @@ export interface User {
 export interface Loja {
   id: string;
   nome: string;
-  cnpj: string;
+  cnpj?: string | null;
   endereco: string;
   tenant_id: string;
   ativo: boolean;
@@ -355,7 +355,7 @@ export interface AuditarEstoqueResponse {
 export interface RegisterTenantPayload {
   nome_fantasia: string;
   razao_social: string;
-  cnpj: string;
+  cnpj?: string | null;
   endereco_loja?: string;
   dono_nome: string;
   dono_email: string;
@@ -386,7 +386,7 @@ export interface TenantAdmin {
   id: string;
   nome_fantasia: string;
   razao_social: string;
-  cnpj: string;
+  cnpj?: string | null;
   data_cadastro: string;
   ativo: boolean;
   plano: 'STARTER' | 'PRO' | 'ENTERPRISE';
@@ -420,7 +420,7 @@ export interface AlterarPlanoPayload {
 export interface TenantLojaResumo {
   id: string;
   nome: string;
-  cnpj: string;
+  cnpj?: string | null;
   endereco?: string | null;
 }
 
@@ -465,7 +465,7 @@ export interface AtualizarPlanoConfigPayload {
 export interface CadastrarTenantPayload {
   nome_fantasia: string;
   razao_social?: string;
-  cnpj: string;
+  cnpj?: string | null;
   plano: 'STARTER' | 'PRO' | 'ENTERPRISE';
   limite_lojas?: number;
   limite_usuarios?: number;
@@ -478,7 +478,7 @@ export interface CadastrarTenantPayload {
 
 export interface CadastrarLojaPayload {
   nome: string;
-  cnpj: string;
+  cnpj?: string | null;
   endereco?: string;
 }
 

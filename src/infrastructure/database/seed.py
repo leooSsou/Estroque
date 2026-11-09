@@ -17,11 +17,12 @@ def seed() -> None:
         session.info["ignore_tenant_filter"] = True
 
         # 1. Tenant padrão
-        tenant_cnpj = "12345678000199"
+        tenant_cnpj = "00000000000191"
         tenant = (
             session.query(TenantModel)
             .filter(
                 (TenantModel.cnpj == tenant_cnpj)
+                | (TenantModel.cnpj == "12345678000199")
                 | (TenantModel.razao_social == "Estroque Tecnologia Ltda")
             )
             .first()
@@ -37,16 +38,23 @@ def seed() -> None:
             session.flush()
             print(f"✓ Tenant criado: {tenant.nome_fantasia} ({tenant.id})")
         else:
+            if tenant.cnpj != tenant_cnpj:
+                tenant.cnpj = tenant_cnpj
+                session.flush()
             print(f"• Tenant já existente: {tenant.nome_fantasia} ({tenant.id})")
 
         # Configura tenant_id para as entidades vinculadas
         session.info["tenant_id"] = tenant.id
 
         # 2. Loja principal
-        loja_cnpj = "12345678000199"
+        loja_cnpj = "00000000000191"
         loja = (
             session.query(LojaModel)
-            .filter((LojaModel.cnpj == loja_cnpj) | (LojaModel.nome == "Matriz Central"))
+            .filter(
+                (LojaModel.cnpj == loja_cnpj)
+                | (LojaModel.cnpj == "12345678000199")
+                | (LojaModel.nome == "Matriz Central")
+            )
             .first()
         )
         if not loja:
@@ -62,6 +70,9 @@ def seed() -> None:
             session.flush()
             print(f"✓ Loja criada: {loja.nome} ({loja.id})")
         else:
+            if loja.cnpj != loja_cnpj:
+                loja.cnpj = loja_cnpj
+                session.flush()
             print(f"• Loja já existente: {loja.nome} ({loja.id})")
 
         # 3. Usuários demo

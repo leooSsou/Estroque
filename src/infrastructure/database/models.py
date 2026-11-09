@@ -30,7 +30,7 @@ class TenantModel(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     nome_fantasia: Mapped[str] = mapped_column(String(150), nullable=False)
     razao_social: Mapped[str] = mapped_column(String(150), unique=True, nullable=False)
-    cnpj: Mapped[str] = mapped_column(String(14), unique=True, nullable=False)
+    cnpj: Mapped[str | None] = mapped_column(String(14), unique=True, nullable=True)
     data_cadastro: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=text("CURRENT_TIMESTAMP"),
@@ -66,7 +66,7 @@ class LojaModel(HasTenant, Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     nome: Mapped[str] = mapped_column(String(100), nullable=False)
-    cnpj: Mapped[str] = mapped_column(String(14), unique=True, nullable=False)
+    cnpj: Mapped[str | None] = mapped_column(String(14), unique=True, nullable=True)
     endereco: Mapped[str] = mapped_column(String(255), nullable=False)
     ativo: Mapped[bool] = mapped_column(default=True, nullable=False)
 

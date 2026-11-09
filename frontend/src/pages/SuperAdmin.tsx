@@ -410,8 +410,8 @@ export const SuperAdmin: React.FC = () => {
 
   const handleSaveNovoTenant = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!novoTenantNomeFantasia.trim() || !novoTenantRazaoSocial.trim() || !novoTenantCnpj.trim()) {
-      toast.error('Preencha os dados da empresa (nome, razão e CNPJ).');
+    if (!novoTenantNomeFantasia.trim() || !novoTenantRazaoSocial.trim()) {
+      toast.error('Preencha os dados da empresa (nome fantasia e razão social).');
       return;
     }
     if (!novoLojaNome.trim()) {
@@ -432,7 +432,7 @@ export const SuperAdmin: React.FC = () => {
       await api.cadastrarAdminTenant({
         nome_fantasia: novoTenantNomeFantasia.trim(),
         razao_social: novoTenantRazaoSocial.trim(),
-        cnpj: novoTenantCnpj.replace(/\D/g, ''),
+        cnpj: novoTenantCnpj.trim() ? novoTenantCnpj.replace(/\D/g, '') : null,
         plano: novoTenantPlano,
         limite_lojas: Number(novoTenantLimiteLojas),
         limite_usuarios: Number(novoTenantLimiteUsuarios),
@@ -464,8 +464,8 @@ export const SuperAdmin: React.FC = () => {
   const handleSaveNovaFilial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!detalhesTenant) return;
-    if (!novaFilialNome.trim() || !novaFilialCnpj.trim()) {
-      toast.error('Informe o nome e CNPJ da filial.');
+    if (!novaFilialNome.trim()) {
+      toast.error('Informe o nome da filial.');
       return;
     }
 
@@ -473,7 +473,7 @@ export const SuperAdmin: React.FC = () => {
     try {
       await api.cadastrarAdminLoja(detalhesTenant.id, {
         nome: novaFilialNome.trim(),
-        cnpj: novaFilialCnpj.replace(/\D/g, ''),
+        cnpj: novaFilialCnpj.trim() ? novaFilialCnpj.replace(/\D/g, '') : null,
         endereco: novaFilialEndereco.trim() || undefined,
       });
 
@@ -1621,14 +1621,13 @@ export const SuperAdmin: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                      CNPJ da Empresa *
+                      CNPJ da Empresa (Opcional)
                     </label>
                     <input
                       type="text"
                       placeholder="Ex: 00.000.000/0001-91"
                       value={novoTenantCnpj}
                       onChange={(e) => setNovoTenantCnpj(e.target.value)}
-                      required
                       className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-purple-500"
                     />
                   </div>
@@ -1839,14 +1838,13 @@ export const SuperAdmin: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  CNPJ da Filial *
+                  CNPJ da Filial (Opcional)
                 </label>
                 <input
                   type="text"
                   placeholder="Ex: 00.000.000/0002-72"
                   value={novaFilialCnpj}
                   onChange={(e) => setNovaFilialCnpj(e.target.value)}
-                  required
                   className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.12] rounded-xl text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-purple-500"
                 />
               </div>

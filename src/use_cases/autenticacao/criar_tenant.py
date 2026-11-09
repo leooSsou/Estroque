@@ -13,10 +13,10 @@ from src.use_cases.autenticacao.autenticar_usuario import ServicoCriptografia
 class CriarTenantInput:
     nome_fantasia: str
     razao_social: str
-    cnpj: str
     dono_nome: str
     dono_email: str
     dono_senha_plana: str  # Senha em texto plano, para ser criptografada no Caso de Uso
+    cnpj: str | None = None
 
 
 @dataclass(frozen=True)
@@ -40,17 +40,18 @@ class CriarTenant:
         self.servico_cripto = servico_cripto
 
     def executar(self, input_data: CriarTenantInput) -> CriarTenantOutput:
-        # 1. Normaliza e valida se o CNPJ já está cadastrado
-        cnpj_limpo = re.sub(r"\D", "", input_data.cnpj)
-        if self.tenant_repo.obter_por_cnpj(cnpj_limpo):
-            raise CnpjEmUsoException(cnpj_limpo)
+        # 1. Normaliza e valida se o CNPJ já está cadastrado (se informado)
+        if input_data.cnpj and str(input_data.cnpj).strip():
+            cnpj_limpo = re.sub(r"\D", "", str(input_data.cnpj))
+            if cnpj_limpo and self.tenant_repo.obter_por_cnpj(cnpj_limpo):
+                raise CnpjEmUsoException(cnpj_limpo)
 
         # 2. Valida se o e-mail do proprietário já está em uso (e-mail normalizado)
         email_normalizado = input_data.dono_email.strip().lower()
         if self.usuario_repo.obter_por_email(email_normalizado):
             raise EmailEmUsoException(email_normalizado)
 
-        # 3. Cria a entidade pura Tenant (a própria entidade validará o CNPJ matematicamente)
+        # 3. Cria a entidade pura Tenant (a própria entidade validará o CNPJ matematicamente se fornecido)
         tenant = Tenant(
             nome_fantasia=input_data.nome_fantasia,
             razao_social=input_data.razao_social,

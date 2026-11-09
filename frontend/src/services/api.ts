@@ -205,7 +205,7 @@ class ApiClient {
       // Cria automaticamente a Loja Matriz inicial usando o CNPJ cadastrado
       await this.createLoja({
         nome: `Matriz - ${dados.nome_fantasia}`,
-        cnpj: dados.cnpj,
+        cnpj: dados.cnpj || null,
         endereco: dados.endereco_loja || 'Endereço Matriz Principal',
         ativo: true,
       }).catch(() => null);

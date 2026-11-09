@@ -45,6 +45,8 @@ def auto_heal_schema() -> None:
     try:
         if engine.dialect.name == "postgresql":
             statements = [
+                "ALTER TABLE tenants ALTER COLUMN cnpj DROP NOT NULL;",
+                "ALTER TABLE lojas ALTER COLUMN cnpj DROP NOT NULL;",
                 "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS ativo BOOLEAN DEFAULT TRUE NOT NULL;",
                 "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plano VARCHAR(20) DEFAULT 'PRO' NOT NULL;",
                 "ALTER TABLE tenants ADD COLUMN IF NOT EXISTS limite_lojas INTEGER DEFAULT 5 NOT NULL;",

@@ -11,7 +11,7 @@ class RegisterRequest(BaseModel):
     """
     nome_fantasia: str = Field(..., min_length=1, max_length=150, description="Nome comercial da rede de lojas.")
     razao_social: str = Field(..., min_length=1, max_length=150, description="Razão social jurídica oficial.")
-    cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ (com ou sem pontuação).")
+    cnpj: str | None = Field(default=None, description="CNPJ (com ou sem pontuação, opcional).")
     dono_nome: str = Field(..., min_length=1, max_length=100, description="Nome completo do dono da conta.")
     dono_email: EmailStr = Field(..., description="E-mail de acesso do dono.")
     dono_senha: str = Field(..., min_length=8, max_length=100, description="Senha de acesso do dono (mínimo 8 caracteres).")
@@ -99,7 +99,7 @@ class LojaCreateRequest(BaseModel):
     Schema para requisição de criação de uma nova Loja.
     """
     nome: str = Field(..., min_length=1, max_length=100, description="Nome da filial/loja.")
-    cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ da filial/loja.")
+    cnpj: str | None = Field(default=None, description="CNPJ da filial/loja (opcional).")
     endereco: str = Field(..., min_length=1, max_length=255, description="Endereço físico completo.")
 
 
@@ -118,7 +118,7 @@ class LojaResponse(BaseModel):
     """
     id: UUID
     nome: str
-    cnpj: str
+    cnpj: str | None = None
     endereco: str
     tenant_id: UUID
     ativo: bool
@@ -641,7 +641,7 @@ class TenantAdminResponse(BaseModel):
     id: UUID
     nome_fantasia: str
     razao_social: str
-    cnpj: str
+    cnpj: str | None = None
     data_cadastro: datetime
     ativo: bool
     plano: str
@@ -683,7 +683,7 @@ class PlataformaDashboardResponse(BaseModel):
 class TenantLojaResumoResponse(BaseModel):
     id: UUID
     nome: str
-    cnpj: str
+    cnpj: str | None = None
     endereco: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -704,7 +704,7 @@ class TenantDetalhesCompletosResponse(BaseModel):
     id: UUID
     nome_fantasia: str
     razao_social: str
-    cnpj: str
+    cnpj: str | None = None
     data_cadastro: datetime
     ativo: bool
     plano: str
@@ -748,7 +748,7 @@ class AtualizarPlanoConfigRequest(BaseModel):
 class CriarTenantSuperAdminRequest(BaseModel):
     nome_fantasia: str = Field(..., min_length=1, max_length=150, description="Nome comercial da rede/loja.")
     razao_social: str | None = Field(default=None, max_length=150, description="Razão social jurídica oficial.")
-    cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ da empresa (com ou sem pontuação).")
+    cnpj: str | None = Field(default=None, description="CNPJ da empresa (opcional, com ou sem pontuação).")
     plano: str = Field(default="PRO", pattern="^(STARTER|PRO|ENTERPRISE|starter|pro|enterprise)$")
     limite_lojas: int | None = Field(default=None, ge=1)
     limite_usuarios: int | None = Field(default=None, ge=1)
@@ -761,7 +761,7 @@ class CriarTenantSuperAdminRequest(BaseModel):
 
 class CriarLojaSuperAdminRequest(BaseModel):
     nome: str = Field(..., min_length=1, max_length=150, description="Nome da filial/loja.")
-    cnpj: str = Field(..., min_length=14, max_length=18, description="CNPJ da filial.")
+    cnpj: str | None = Field(default=None, description="CNPJ da filial (opcional).")
     endereco: str | None = Field(default=None, max_length=255, description="Endereço físico da filial.")
 
 

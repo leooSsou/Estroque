@@ -16,7 +16,7 @@ class Tenant:
     """
     nome_fantasia: str
     razao_social: str
-    cnpj: str
+    cnpj: str | None = None
     id: UUID = field(default_factory=uuid4)
     data_cadastro: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     ativo: bool = True
@@ -33,18 +33,18 @@ class Tenant:
         if not isinstance(self.razao_social, str) or not self.razao_social.strip():
             raise ValueError("A razão social deve ser uma string não vazia.")
 
-        if not isinstance(self.cnpj, str):
-            raise ValueError("O CNPJ deve ser uma string.")
-
-        # Remove qualquer caractere não numérico do CNPJ
-        cnpj_limpo = re.sub(r"\D", "", self.cnpj)
-        
-        # Como o dataclass é frozen, usamos object.__setattr__ para mutar o campo após inicialização
-        object.__setattr__(self, "cnpj", cnpj_limpo)
-        
-        # Validações matemáticas do CNPJ
-        if not validar_cnpj(cnpj_limpo):
-            raise ValueError("CNPJ inválido.")
+        if self.cnpj is not None and str(self.cnpj).strip():
+            if not isinstance(self.cnpj, str):
+                raise ValueError("O CNPJ deve ser uma string.")
+            cnpj_limpo = re.sub(r"\D", "", self.cnpj)
+            if not cnpj_limpo:
+                object.__setattr__(self, "cnpj", None)
+            else:
+                if not validar_cnpj(cnpj_limpo):
+                    raise ValueError("CNPJ inválido.")
+                object.__setattr__(self, "cnpj", cnpj_limpo)
+        else:
+            object.__setattr__(self, "cnpj", None)
 
         if not isinstance(self.ativo, bool):
             raise ValueError("O campo ativo deve ser um booleano.")

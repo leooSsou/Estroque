@@ -17,7 +17,7 @@ class TenantRepository(ABC):
         """
 
     @abstractmethod
-    def obter_por_cnpj(self, cnpj: str) -> Tenant | None:
+    def obter_por_cnpj(self, cnpj: str | None) -> Tenant | None:
         """
         Busca um Tenant cadastrado pelo CNPJ.
         """

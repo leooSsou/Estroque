@@ -14,9 +14,9 @@ from src.domain.repositories.tenant_repository import TenantRepository
 @dataclass(frozen=True)
 class CriarLojaInput:
     nome: str
-    cnpj: str
     endereco: str
     tenant_id: UUID
+    cnpj: str | None = None
 
 
 @dataclass(frozen=True)
@@ -41,17 +41,18 @@ class CriarLoja:
                 if len(lojas_existentes) >= tenant.limite_lojas:
                     raise LimitePlanoAtingidoException("lojas", tenant.limite_lojas)
 
-        # 1. Verifica se já existe outra loja com o mesmo CNPJ para o tenant
-        loja_existente = self.loja_repo.obter_por_cnpj(input_data.cnpj, input_data.tenant_id)
-        if loja_existente:
-            raise CnpjLojaEmUsoException(input_data.cnpj)
+        # 1. Verifica se já existe outra loja com o mesmo CNPJ para o tenant (se informado)
+        if input_data.cnpj and str(input_data.cnpj).strip():
+            loja_existente = self.loja_repo.obter_por_cnpj(input_data.cnpj, input_data.tenant_id)
+            if loja_existente:
+                raise CnpjLojaEmUsoException(input_data.cnpj)
 
         # 2. Instancia a entidade de domínio Loja (valida CNPJ e campos internamente)
         loja = Loja(
             nome=input_data.nome,
-            cnpj=input_data.cnpj,
             endereco=input_data.endereco,
-            tenant_id=input_data.tenant_id
+            tenant_id=input_data.tenant_id,
+            cnpj=input_data.cnpj,
         )
 
         # 3. Persiste a loja no banco

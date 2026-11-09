@@ -133,3 +133,35 @@ def test_isolamento_lojas_multi_tenant(client: TestClient):
     res_get_a = client.get(f"/lojas/{loja_a_id}", headers=headers_a)
     assert res_get_a.status_code == 200
     assert res_get_a.json()["nome"] == "Loja do Tenant A"
+
+
+def test_criar_loja_sem_cnpj_sucesso(client: TestClient):
+    """
+    Garante que uma loja pode ser criada com cnpj ausente ou nulo via API.
+    """
+    res_reg = client.post("/auth/register", json={
+        "nome_fantasia": "Boutique Sem CNPJ",
+        "razao_social": "Boutique Sem CNPJ Ltda",
+        "cnpj": None,
+        "dono_nome": "Ana",
+        "dono_email": "ana@boutique.com",
+        "dono_senha": "senha_segura_123"
+    })
+    assert res_reg.status_code == 201
+
+    res_login = client.post("/auth/login", json={
+        "email": "ana@boutique.com",
+        "senha": "senha_segura_123"
+    })
+    assert res_login.status_code == 200
+    token = res_login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    res_loja = client.post("/lojas/", json={
+        "nome": "Filial Sem Documento",
+        "endereco": "Rua Comercial, 12",
+        "cnpj": None
+    }, headers=headers)
+    assert res_loja.status_code == 201
+    assert res_loja.json()["cnpj"] is None
+    assert res_loja.json()["nome"] == "Filial Sem Documento"
