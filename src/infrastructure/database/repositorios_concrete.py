@@ -258,7 +258,7 @@ class RepositorioLojaSQLAlchemy(LojaRepository):
 
     def obter_por_id(self, id: UUID, tenant_id: UUID) -> Loja | None:
         self.db.info["tenant_id"] = tenant_id
-        model = self.db.query(LojaModel).filter(LojaModel.id == id).first()
+        model = self.db.query(LojaModel).filter(LojaModel.tenant_id == tenant_id, LojaModel.id == id).first()
         if not model:
             return None
         return Loja(
@@ -277,7 +277,7 @@ class RepositorioLojaSQLAlchemy(LojaRepository):
         cnpj_limpo = "".join(filter(str.isdigit, str(cnpj)))
         if not cnpj_limpo:
             return None
-        model = self.db.query(LojaModel).filter(LojaModel.cnpj == cnpj_limpo).first()
+        model = self.db.query(LojaModel).filter(LojaModel.tenant_id == tenant_id, LojaModel.cnpj == cnpj_limpo).first()
         if not model:
             return None
         return Loja(
@@ -291,7 +291,7 @@ class RepositorioLojaSQLAlchemy(LojaRepository):
 
     def listar_todas(self, tenant_id: UUID) -> list[Loja]:
         self.db.info["tenant_id"] = tenant_id
-        models = self.db.query(LojaModel).all()
+        models = self.db.query(LojaModel).filter(LojaModel.tenant_id == tenant_id).all()
         return [
             Loja(
                 id=m.id,
@@ -535,7 +535,7 @@ class RepositorioClienteSQLAlchemy(ClienteRepository):
 
     def listar_todos(self, tenant_id: UUID) -> list[Cliente]:
         self.db.info["tenant_id"] = tenant_id
-        models = self.db.query(ClienteModel).all()
+        models = self.db.query(ClienteModel).filter(ClienteModel.tenant_id == tenant_id).all()
         return [
             Cliente(
                 id=m.id,
@@ -621,7 +621,7 @@ class RepositorioFornecedorSQLAlchemy(FornecedorRepository):
 
     def listar_todos(self, tenant_id: UUID) -> list[Fornecedor]:
         self.db.info["tenant_id"] = tenant_id
-        models = self.db.query(FornecedorModel).all()
+        models = self.db.query(FornecedorModel).filter(FornecedorModel.tenant_id == tenant_id).all()
         return [
             Fornecedor(
                 id=m.id,
@@ -709,7 +709,7 @@ class RepositorioEstoqueSaldoSQLAlchemy(EstoqueSaldoRepository):
 
     def listar_todos(self, tenant_id: UUID) -> list[EstoqueSaldo]:
         self.db.info["tenant_id"] = tenant_id
-        models = self.db.query(EstoqueSaldoModel).all()
+        models = self.db.query(EstoqueSaldoModel).filter(EstoqueSaldoModel.tenant_id == tenant_id).all()
         return [
             EstoqueSaldo(
                 id=m.id,
@@ -777,7 +777,12 @@ class RepositorioEstoqueMovimentacaoSQLAlchemy(EstoqueMovimentacaoRepository):
 
     def listar_todas(self, tenant_id: UUID) -> list[EstoqueMovimentacao]:
         self.db.info["tenant_id"] = tenant_id
-        models = self.db.query(EstoqueMovimentacaoModel).order_by(EstoqueMovimentacaoModel.data_movimentacao.desc()).all()
+        models = (
+            self.db.query(EstoqueMovimentacaoModel)
+            .filter(EstoqueMovimentacaoModel.tenant_id == tenant_id)
+            .order_by(EstoqueMovimentacaoModel.data_movimentacao.desc())
+            .all()
+        )
         return [
             EstoqueMovimentacao(
                 id=m.id,
@@ -879,9 +884,12 @@ class RepositorioTransferenciaEstoqueSQLAlchemy(TransferenciaEstoqueRepository):
 
     def listar_todas(self, tenant_id: UUID) -> list[TransferenciaEstoque]:
         self.db.info["tenant_id"] = tenant_id
-        models = self.db.query(TransferenciaEstoqueModel).order_by(
-            TransferenciaEstoqueModel.criado_em.desc()
-        ).all()
+        models = (
+            self.db.query(TransferenciaEstoqueModel)
+            .filter(TransferenciaEstoqueModel.tenant_id == tenant_id)
+            .order_by(TransferenciaEstoqueModel.criado_em.desc())
+            .all()
+        )
         return [self._to_entity(m) for m in models]
 
 

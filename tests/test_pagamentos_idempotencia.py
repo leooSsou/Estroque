@@ -143,7 +143,11 @@ def auth_context():
 
     session.commit()
 
-    token = criar_token_acesso({"sub": str(usuario.id), "tenant_id": str(tenant.id), "role": "DONO"})
+    token = criar_token_acesso(
+        sub=str(usuario.id),
+        tenant_id=str(tenant.id),
+        role="DONO",
+    )
     headers = {"Authorization": f"Bearer {token}"}
 
     ctx = {
