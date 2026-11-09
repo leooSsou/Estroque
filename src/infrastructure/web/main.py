@@ -54,14 +54,15 @@ def auto_heal_schema() -> None:
                 "ALTER TABLE produtos ADD COLUMN IF NOT EXISTS variacoes JSON DEFAULT '[]';",
                 "ALTER TABLE clientes ADD COLUMN IF NOT EXISTS credito_loja DOUBLE PRECISION DEFAULT 0.0 NOT NULL;",
             ]
-            with engine.begin() as conn:
+            with engine.connect() as conn:
+                conn.execution_options(isolation_level="AUTOCOMMIT")
                 for stmt in statements:
                     try:
                         conn.execute(text(stmt))
                     except Exception as err:
                         print(f"Aviso stmt auto-heal: {err}")
         elif engine.dialect.name == "sqlite":
-            with engine.begin() as conn:
+            with engine.connect() as conn:
                 res = conn.execute(text("PRAGMA table_info(tenants)")).fetchall()
                 cols = [r[1] for r in res]
                 if "ativo" not in cols:
@@ -76,6 +77,14 @@ def auto_heal_schema() -> None:
                     conn.execute(text('ALTER TABLE tenants ADD COLUMN modulos_customizados JSON DEFAULT "{}"'))
     except Exception as e:
         print(f"Aviso DDL auto-heal: {e}")
+
+
+# Executa auto-heal no import do módulo para garantir colunas antes de qualquer requisição
+if os.getenv("TESTING") != "True":
+    try:
+        auto_heal_schema()
+    except Exception as _err:
+        print(f"Aviso auto-heal no import: {_err}")
 
 
 @asynccontextmanager
@@ -202,6 +211,22 @@ def health_check() -> dict[str, str]:
         "message": "Estroque API operacional",
         "version": "1.0.3-dono-fix",
     }
+
+
+@app.get("/setup-db", tags=["Monitoramento"])
+@app.get("/api/setup-db", tags=["Monitoramento"])
+def setup_database_endpoint() -> dict[str, str]:
+    """
+    Endpoint para forçar auto-heal do schema e seed via requisição HTTP (sem precisar de shell).
+    """
+    auto_heal_schema()
+    try:
+        from src.infrastructure.database.seed import seed
+
+        seed()
+    except Exception as exc:
+        print(f"Aviso seed endpoint: {exc}")
+    return {"status": "ok", "message": "Schema e usuários padrão inicializados com sucesso!"}
 
 if __name__ == "__main__":
     import uvicorn

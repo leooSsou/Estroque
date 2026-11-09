@@ -136,6 +136,24 @@ def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)) -
         except HTTPException:
             raise
         except Exception as err:
+            err_str = str(err).lower()
+            if any(term in err_str for term in ("does not exist", "undefinedcolumn", "no such column")):
+                try:
+                    from src.infrastructure.web.main import auto_heal_schema
+
+                    auto_heal_schema()
+                    db.rollback()
+                    db.info["ignore_tenant_filter"] = True
+                    output = use_case.executar(input_data)
+                    access_token = criar_token_acesso(
+                        sub=str(output.usuario.id),
+                        tenant_id=str(output.usuario.tenant_id),
+                        role=output.usuario.role
+                    )
+                    return LoginResponse(access_token=access_token)
+                except Exception as retry_err:
+                    print(f"Falha no auto-heal retry login: {retry_err}")
+
             import traceback
             traceback.print_exc()
             raise HTTPException(
