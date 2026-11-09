@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "jiti src/__tests__/pdv_fluxos.test.ts",
+    "test": "jiti src/__tests__/pdv_fluxos.test.ts && jiti src/__tests__/devolucao_fluxos.test.ts && jiti src/__tests__/pdv_characterization.test.ts && jiti src/__tests__/e2e_smoke_onboarding_checkout.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

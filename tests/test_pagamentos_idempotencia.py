@@ -214,7 +214,7 @@ def test_webhook_stripe_duplicata_concorrente():
 
     db_url = os.getenv(
         "DATABASE_TEST_URL",
-        os.getenv("DATABASE_URL", "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas_test"),
+        "sqlite:///./gerenciador_saas_test.db",
     )
     conc_engine = create_engine(db_url)
     ConcSession = sessionmaker(autocommit=False, autoflush=False, bind=conc_engine)
@@ -347,7 +347,7 @@ def test_venda_endpoint_idempotencia_concorrente():
 
     db_url = os.getenv(
         "DATABASE_TEST_URL",
-        os.getenv("DATABASE_URL", "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas_test"),
+        "sqlite:///./gerenciador_saas_test.db",
     )
     conc_engine = create_engine(db_url)
     ConcSession = sessionmaker(autocommit=False, autoflush=False, bind=conc_engine)
