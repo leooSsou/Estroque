@@ -1025,7 +1025,7 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
                 valor_total=venda.valor_total,
                 desconto=venda.desconto,
                 tenant_id=venda.tenant_id,
-                data_venda=venda.data_venda
+                data_venda=venda.data_venda or datetime.now(timezone.utc)
             )
             for item in venda.itens:
                 item_model = ItemVendaModel(

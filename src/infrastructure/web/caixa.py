@@ -261,7 +261,7 @@ def fechar_caixa(
         db.query(VendaModel)
         .filter(
             VendaModel.loja_id == request.loja_id,
-            VendaModel.status == "CONCLUIDA",
+            VendaModel.status.in_(["PAGO", "CONCLUIDA"]),
             VendaModel.data_venda >= turno.data_abertura,
         )
         .all()

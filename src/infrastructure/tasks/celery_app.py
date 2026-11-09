@@ -14,12 +14,16 @@ celery_app = Celery(
     backend=redis_url
 )
 
+is_eager = os.getenv("CELERY_TASK_ALWAYS_EAGER", "False").lower() in ("true", "1")
+
 celery_app.conf.update(
     timezone="America/Sao_Paulo",
     enable_utc=True,
     task_serializer="json",
     result_serializer="json",
     accept_content=["json"],
+    task_always_eager=is_eager,
+    task_eager_propagates=is_eager,
 )
 
 # Agenda Celery Beat: Fechamento diário às 23:59
