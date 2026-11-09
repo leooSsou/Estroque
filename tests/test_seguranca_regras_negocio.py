@@ -25,6 +25,19 @@ def gerar_cnpj() -> str:
     return "".join(map(str, n + [d1, d2]))
 
 
+def gerar_cpf() -> str:
+    n = [random.randint(0, 9) for _ in range(9)]
+    soma1 = sum(n[i] * (10 - i) for i in range(9))
+    d1 = (soma1 * 10) % 11
+    if d1 == 10:
+        d1 = 0
+    soma2 = sum((n + [d1])[i] * (11 - i) for i in range(10))
+    d2 = (soma2 * 10) % 11
+    if d2 == 10:
+        d2 = 0
+    return "".join(map(str, n + [d1, d2]))
+
+
 def test_has_tenant_em_modelos_filhos():
     """
     SEC-03: Garante que os modelos dependentes itens_venda, pagamentos_venda e itens_devolucao
@@ -221,8 +234,8 @@ def test_teto_desconto_pdv_gerente_vs_dono(client: TestClient):
     prod_id = res_prod.json()["id"]
 
     # Abastecer estoque
-    client.post(
-        "/estoque/movimentacoes",
+    res_mov = client.post(
+        "/estoque/movimentar",
         json={
             "loja_id": loja_id,
             "produto_id": prod_id,
@@ -232,6 +245,7 @@ def test_teto_desconto_pdv_gerente_vs_dono(client: TestClient):
         },
         headers=headers_dono,
     )
+    assert res_mov.status_code == 200
 
     # 1. Gerente tenta conceder R$ 50.00 de desconto em produto de R$ 100.00 (50% > 30%) -> 422
     res_venda_gerente_invalida = client.post(
@@ -328,7 +342,7 @@ def test_gerente_bloqueado_alterar_limite_credito(client: TestClient):
         json={
             "nome": "Cliente Alvo",
             "email": f"cli_{prefix}@teste.com",
-            "documento": f"111222333{random.randint(10, 99)}",
+            "documento": gerar_cpf(),
             "limite_credito": 500.0,
         },
         headers=headers_dono,

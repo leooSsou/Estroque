@@ -258,14 +258,9 @@ def atualizar_produto(
     """
     repo = RepositorioProdutoSQLAlchemy(db)
     prod_existente = repo.obter_por_id(produto_id, current_user.tenant_id)
-    if not prod_existente:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Produto não encontrado."
-        )
 
     # SEC-06: Apenas DONO ou ADMIN_SAAS podem alterar preços e margens
-    if current_user.role not in {"DONO", "ADMIN_SAAS"}:
+    if prod_existente and current_user.role not in {"DONO", "ADMIN_SAAS"}:
         if (
             request.preco_venda != prod_existente.preco_venda
             or request.preco_custo != prod_existente.preco_custo

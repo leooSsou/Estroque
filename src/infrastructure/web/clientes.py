@@ -127,18 +127,19 @@ def atualizar_cliente(
     """
     repo = RepositorioClienteSQLAlchemy(db)
     cliente_existente = repo.obter_por_id(cliente_id, current_user.tenant_id)
-    if not cliente_existente:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Cliente não encontrado."
-        )
 
     # SEC-05: Apenas DONO ou ADMIN_SAAS podem alterar limite de crédito
-    if request.limite_credito != cliente_existente.limite_credito and current_user.role not in {"DONO", "ADMIN_SAAS"}:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acesso negado: Apenas o proprietário (DONO) pode alterar o limite de crédito de clientes.",
-        )
+    if cliente_existente:
+        if request.limite_credito != cliente_existente.limite_credito and current_user.role not in {"DONO", "ADMIN_SAAS"}:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Acesso negado: Apenas o proprietário (DONO) pode alterar o limite de crédito de clientes.",
+            )
+        saldo_devedor = cliente_existente.saldo_devedor_crediario
+        credito_loja = cliente_existente.credito_loja
+    else:
+        saldo_devedor = 0.0
+        credito_loja = 0.0
 
     use_case = AtualizarCliente(repo)
 
@@ -150,8 +151,8 @@ def atualizar_cliente(
         ativo=request.ativo,
         tenant_id=current_user.tenant_id,
         limite_credito=request.limite_credito,
-        saldo_devedor_crediario=cliente_existente.saldo_devedor_crediario,
-        credito_loja=cliente_existente.credito_loja,
+        saldo_devedor_crediario=saldo_devedor,
+        credito_loja=credito_loja,
     )
 
     try:
