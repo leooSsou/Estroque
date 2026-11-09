@@ -1,5 +1,6 @@
 import os
 from collections.abc import Awaitable, Callable
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +26,29 @@ from src.infrastructure.web.vendas import router as vendas_router
 ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("ENV", "development")).lower()
 is_production = ENVIRONMENT in {"production", "prod"}
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Executa migrações do Alembic e seed automaticamente no startup caso não esteja em teste
+    if os.getenv("TESTING") != "True":
+        try:
+            from alembic import command
+            from alembic.config import Config
+
+            alembic_cfg = Config("alembic.ini")
+            command.upgrade(alembic_cfg, "head")
+        except Exception as exc:
+            print(f"Aviso migrações startup: {exc}")
+
+        try:
+            from src.infrastructure.database.seed import seed
+
+            seed()
+        except Exception as exc:
+            print(f"Aviso seed startup: {exc}")
+    yield
+
+
 app = FastAPI(
     title="Estroque API",
     description="API de retaguarda multi-tenant para gerenciamento de lojas e estoque.",
@@ -32,6 +56,7 @@ app = FastAPI(
     docs_url=None if is_production else "/docs",
     redoc_url=None if is_production else "/redoc",
     openapi_url=None if is_production else "/openapi.json",
+    lifespan=lifespan,
 )
 
 # Configura o limiter na instância da aplicação

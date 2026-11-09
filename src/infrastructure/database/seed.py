@@ -18,7 +18,14 @@ def seed() -> None:
 
         # 1. Tenant padrão
         tenant_cnpj = "12345678000199"
-        tenant = session.query(TenantModel).filter_by(cnpj=tenant_cnpj).first()
+        tenant = (
+            session.query(TenantModel)
+            .filter(
+                (TenantModel.cnpj == tenant_cnpj)
+                | (TenantModel.razao_social == "Estroque Tecnologia Ltda")
+            )
+            .first()
+        )
         if not tenant:
             tenant = TenantModel(
                 id=uuid4(),
@@ -37,7 +44,11 @@ def seed() -> None:
 
         # 2. Loja principal
         loja_cnpj = "12345678000199"
-        loja = session.query(LojaModel).filter_by(cnpj=loja_cnpj).first()
+        loja = (
+            session.query(LojaModel)
+            .filter((LojaModel.cnpj == loja_cnpj) | (LojaModel.nome == "Matriz Central"))
+            .first()
+        )
         if not loja:
             loja = LojaModel(
                 id=uuid4(),
