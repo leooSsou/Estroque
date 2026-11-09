@@ -313,6 +313,7 @@ def criar_usuario_equipe(
             loja_atribuida_id=data.loja_atribuida_id if data.role == "GERENTE" else None,
         )
         salvo = usuario_repo.salvar(novo_usuario)
+        db.commit()
         return UserResponse.model_validate(salvo)
     except ValueError as e:
         raise HTTPException(

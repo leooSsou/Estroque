@@ -115,22 +115,22 @@ def abrir_caixa(
         fundo_inicial=request.fundo_inicial,
         data_abertura=datetime.now(timezone.utc),
     )
-    db.add(novo_turno)
-    db.flush()
-
-    op_abertura = CaixaOperacaoModel(
-        turno_id=novo_turno.id,
-        tenant_id=current_user.tenant_id,
-        loja_id=request.loja_id,
-        usuario_id=current_user.id,
-        tipo="ABERTURA",
-        valor=request.fundo_inicial,
-        motivo="Abertura de caixa e fundo de troco inicial",
-        data_hora=datetime.now(timezone.utc),
-        operador_nome=current_user.nome,
-    )
-    db.add(op_abertura)
     try:
+        db.add(novo_turno)
+        db.flush()
+
+        op_abertura = CaixaOperacaoModel(
+            turno_id=novo_turno.id,
+            tenant_id=current_user.tenant_id,
+            loja_id=request.loja_id,
+            usuario_id=current_user.id,
+            tipo="ABERTURA",
+            valor=request.fundo_inicial,
+            motivo="Abertura de caixa e fundo de troco inicial",
+            data_hora=datetime.now(timezone.utc),
+            operador_nome=current_user.nome,
+        )
+        db.add(op_abertura)
         db.commit()
     except IntegrityError:
         db.rollback()

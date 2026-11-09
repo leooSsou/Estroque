@@ -56,6 +56,7 @@ def criar_loja(
     
     try:
         output = use_case.executar(input_data)
+        db.commit()
         return LojaResponse.model_validate(output.loja)
     except (CnpjLojaEmUsoException, LimitePlanoAtingidoException) as e:
         raise HTTPException(
@@ -133,6 +134,7 @@ def atualizar_loja(
     
     try:
         output = use_case.executar(input_data)
+        db.commit()
         return LojaResponse.model_validate(output.loja)
     except LojaNaoEncontradaException as e:
         raise HTTPException(
