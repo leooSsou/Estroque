@@ -47,7 +47,10 @@ class EstornarVenda:
         self.movimentacao_repo = movimentacao_repo
 
     def executar(self, input_data: EstornarVendaInput) -> EstornarVendaOutput:
-        venda = self.venda_repo.obter_por_id(input_data.venda_id, input_data.tenant_id)
+        if hasattr(self.venda_repo, "obter_por_id_com_lock"):
+            venda = self.venda_repo.obter_por_id_com_lock(input_data.venda_id, input_data.tenant_id)
+        else:
+            venda = self.venda_repo.obter_por_id(input_data.venda_id, input_data.tenant_id)
         if not venda:
             raise ValueError(f"Venda com ID {input_data.venda_id} não encontrada.")
 

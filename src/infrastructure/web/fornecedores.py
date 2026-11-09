@@ -12,6 +12,7 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioFornecedorSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
+from src.infrastructure.web.authorization import verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
 from src.infrastructure.web.schemas import (
     FornecedorCreateRequest,
@@ -27,7 +28,11 @@ from src.use_cases.catalogo.gerenciar_fornecedor import (
     ObterFornecedor,
 )
 
-router = APIRouter(prefix="/fornecedores", tags=["Fornecedores"])
+router = APIRouter(
+    prefix="/fornecedores",
+    tags=["Fornecedores"],
+    dependencies=[Depends(verificar_modulo_ativo("contatos"))],
+)
 
 @router.post("/", response_model=FornecedorResponse, status_code=status.HTTP_201_CREATED)
 def criar_fornecedor(

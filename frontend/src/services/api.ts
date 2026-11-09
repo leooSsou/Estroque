@@ -892,54 +892,93 @@ class ApiClient {
   }
 
   // --- OPERAÇÕES DE CAIXA (TURNO) ---
-  async getCaixaTurno(): Promise<CaixaTurno> {
+  async getCaixaTurno(lojaId?: string): Promise<CaixaTurno> {
+    const activeId =
+      lojaId ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
+      const res = await this.request<CaixaTurno>(`/caixa/turno-atual?loja_id=${activeId}`);
+      if (res.data) {
+        storage.setCaixaTurno(res.data);
+        return res.data;
+      }
+    }
     return storage.getCaixaTurno();
   }
 
-  async getHistoricoTurnos(): Promise<TurnoFechadoHistorico[]> {
+  async getHistoricoTurnos(lojaId?: string): Promise<TurnoFechadoHistorico[]> {
+    const activeId =
+      lojaId ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
+      const res = await this.request<TurnoFechadoHistorico[]>(`/caixa/historico?loja_id=${activeId}`);
+      if (res.data && Array.isArray(res.data)) {
+        storage.setHistoricoTurnos(res.data);
+        return res.data;
+      }
+    }
     return storage.getHistoricoTurnos();
   }
 
-  async abrirCaixa(fundoInicial: number): Promise<CaixaTurno> {
+  async abrirCaixa(fundoInicial: number, lojaId?: string): Promise<CaixaTurno> {
+    const activeId =
+      lojaId ||
+      (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
+      const res = await this.request<CaixaTurno>('/caixa/abrir', {
+        method: 'POST',
+        body: JSON.stringify({ loja_id: activeId, fundo_inicial: fundoInicial }),
+      });
+      if (res.data) {
+        storage.setCaixaTurno(res.data);
+        return res.data;
+      }
+    }
     return storage.abrirCaixa(fundoInicial);
   }
 
   async registrarSangria(valor: number, motivo: string, lojaId?: string): Promise<OperacaoCaixa> {
-    const op = storage.registrarSangria(valor, motivo);
     const activeId =
       lojaId ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
     if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
-      await this.request('/financeiro/despesas', {
+      const res = await this.request<OperacaoCaixa>('/caixa/operacoes', {
         method: 'POST',
         body: JSON.stringify({
-          loja_id: activeId,
+          tipo: 'SANGRIA',
           valor,
-          categoria: `Sangria de Caixa: ${motivo}`.slice(0, 50),
-          status_pagamento: 'PAGO',
+          motivo,
+          loja_id: activeId,
         }),
       });
+      if (res.data) {
+        storage.registrarSangria(valor, motivo);
+        return res.data;
+      }
     }
-    return op;
+    return storage.registrarSangria(valor, motivo);
   }
 
   async registrarSuprimento(valor: number, motivo: string, lojaId?: string): Promise<OperacaoCaixa> {
-    const op = storage.registrarSuprimento(valor, motivo);
     const activeId =
       lojaId ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
     if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
-      await this.request('/financeiro/receitas', {
+      const res = await this.request<OperacaoCaixa>('/caixa/operacoes', {
         method: 'POST',
         body: JSON.stringify({
-          loja_id: activeId,
+          tipo: 'SUPRIMENTO',
           valor,
-          categoria: `Suprimento de Caixa: ${motivo}`.slice(0, 50),
-          status_pagamento: 'PAGO',
+          motivo,
+          loja_id: activeId,
         }),
       });
+      if (res.data) {
+        storage.registrarSuprimento(valor, motivo);
+        return res.data;
+      }
     }
-    return op;
+    return storage.registrarSuprimento(valor, motivo);
   }
 
   async fecharCaixa(
@@ -947,34 +986,24 @@ class ApiClient {
     observacao?: string,
     lojaId?: string
   ): Promise<{ diferenca: number; resumo: CaixaTurno }> {
-    const res = storage.fecharCaixa(saldoInformado, observacao);
     const activeId =
       lojaId ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('estroque_active_loja_id') : null);
-    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-') && Math.abs(res.diferenca) >= 0.01) {
-      if (res.diferenca < 0) {
-        await this.request('/financeiro/despesas', {
-          method: 'POST',
-          body: JSON.stringify({
-            loja_id: activeId,
-            valor: Math.abs(res.diferenca),
-            categoria: 'Quebra de Caixa (Fechamento)',
-            status_pagamento: 'PAGO',
-          }),
-        });
-      } else {
-        await this.request('/financeiro/receitas', {
-          method: 'POST',
-          body: JSON.stringify({
-            loja_id: activeId,
-            valor: res.diferenca,
-            categoria: 'Sobra de Caixa (Fechamento)',
-            status_pagamento: 'PAGO',
-          }),
-        });
+    if (activeId && this.token && !this.token.startsWith('mock-jwt-token-')) {
+      const res = await this.request<{ diferenca: number; resumo: CaixaTurno }>('/caixa/fechar', {
+        method: 'POST',
+        body: JSON.stringify({
+          loja_id: activeId,
+          saldo_informado: saldoInformado,
+          observacao,
+        }),
+      });
+      if (res.data) {
+        storage.fecharCaixa(saldoInformado, observacao);
+        return res.data;
       }
     }
-    return res;
+    return storage.fecharCaixa(saldoInformado, observacao);
   }
 
 

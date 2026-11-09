@@ -184,7 +184,10 @@ class ReceberCrediarioCliente:
         if not loja:
             raise LojaNaoEncontradaException(str(input_data.loja_id))
 
-        cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
+        if hasattr(self.cliente_repo, "obter_por_id_com_lock"):
+            cliente = self.cliente_repo.obter_por_id_com_lock(input_data.cliente_id, input_data.tenant_id)
+        else:
+            cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
         if not cliente:
             raise ClienteNaoEncontradoException(str(input_data.cliente_id))
 

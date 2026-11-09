@@ -51,6 +51,7 @@ class RegistrarVendaAdministrativaInput:
     itens: list[RegistrarVendaItemInput] = field(default_factory=list)
     tenant_id: UUID = field(default_factory=UUID)
     pagamentos: list[RegistrarVendaPagamentoInput] | None = None
+    usuario_role: str | None = None
 
 
 @dataclass(frozen=True)
@@ -110,10 +111,19 @@ class RegistrarVendaAdministrativa:
                 )
             )
 
-        # 3. Calcula total líquido
-        valor_total_liquido = round(valor_total_bruto - input_data.desconto, 2)
-        if valor_total_liquido < 0:
+        # 3. Calcula total líquido e valida limites de desconto por perfil
+        if input_data.desconto > valor_total_bruto:
             raise ValueError("O desconto não pode ser maior que o valor total bruto dos produtos.")
+
+        if input_data.desconto > 0 and input_data.usuario_role == "GERENTE":
+            desconto_maximo_gerente = round(valor_total_bruto * 0.30, 2)
+            if input_data.desconto > desconto_maximo_gerente:
+                raise ValueError(
+                    f"Desconto de R$ {input_data.desconto:.2f} excede o limite permitido para o operador (máximo de 30% = R$ {desconto_maximo_gerente:.2f}). "
+                    "Descontos superiores exigem aprovação do Proprietário (DONO)."
+                )
+
+        valor_total_liquido = round(valor_total_bruto - input_data.desconto, 2)
 
         # 4. Processa formas de pagamento (Split Payment vs Pagamento Único)
         pagamentos_entidade: list[PagamentoVenda] = []
@@ -154,7 +164,10 @@ class RegistrarVendaAdministrativa:
             if not input_data.cliente_id:
                 raise ValueError("O cliente_id é obrigatório para vendas realizadas no crediário ou com crédito da loja.")
 
-            cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
+            if hasattr(self.cliente_repo, "obter_por_id_com_lock"):
+                cliente = self.cliente_repo.obter_por_id_com_lock(input_data.cliente_id, input_data.tenant_id)
+            else:
+                cliente = self.cliente_repo.obter_por_id(input_data.cliente_id, input_data.tenant_id)
             if not cliente or not cliente.ativo:
                 raise ClienteNaoEncontradoException(str(input_data.cliente_id))
 

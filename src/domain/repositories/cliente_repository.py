@@ -22,6 +22,12 @@ class ClienteRepository(ABC):
         Busca um Cliente cadastrado pelo ID e tenant_id.
         """
 
+    def obter_por_id_com_lock(self, id: UUID, tenant_id: UUID) -> Cliente | None:
+        """
+        Busca um Cliente cadastrado pelo ID e tenant_id aplicando trava pessimista (SELECT ... FOR UPDATE).
+        """
+        return self.obter_por_id(id, tenant_id)
+
     @abstractmethod
     def obter_por_documento(self, documento: str, tenant_id: UUID) -> Cliente | None:
         """

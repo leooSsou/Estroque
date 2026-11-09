@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.domain.entities.usuario import Usuario
@@ -23,8 +23,12 @@ from src.infrastructure.database.repositorios_concrete import (
     RepositorioVendaSQLAlchemy,
 )
 from src.infrastructure.database.session import get_db
-from src.infrastructure.web.authorization import exigir_acesso_loja
+from src.infrastructure.web.authorization import exigir_acesso_loja, verificar_modulo_ativo
 from src.infrastructure.web.dependencies import get_current_user
+from src.infrastructure.web.idempotency import (
+    processar_idempotencia_antes,
+    salvar_idempotencia_depois,
+)
 from src.infrastructure.web.schemas import (
     DevolucaoResponse,
     RegistrarDevolucaoRequest,
@@ -46,21 +50,35 @@ from src.use_cases.estoque.registrar_venda import (
 
 router = APIRouter(
     prefix="/vendas",
-    tags=["Vendas Administrativas"]
+    tags=["Vendas Administrativas"],
+    dependencies=[Depends(verificar_modulo_ativo("pdv"))],
 )
 
 @router.post("", response_model=VendaResponse, status_code=status.HTTP_201_CREATED)
 def registrar_venda(
     request: RegistrarVendaRequest,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> VendaResponse:
     """
     Registra uma nova venda administrativa na loja física do tenant.
     Deduz estoque físico e valida limites de crédito/crediário.
+    Suporta repetição idempotente segura via header 'Idempotency-Key'.
     """
     # Enforça isolamento de loja física para GERENTE
     exigir_acesso_loja(request.loja_id, current_user)
+
+    corpo_dict = request.model_dump(mode="json")
+    cache_response = processar_idempotencia_antes(
+        db=db,
+        tenant_id=current_user.tenant_id,
+        rota="/vendas",
+        chave=idempotency_key,
+        corpo_requisicao=corpo_dict,
+    )
+    if cache_response is not None:
+        return VendaResponse.model_validate(cache_response)
 
     venda_repo = RepositorioVendaSQLAlchemy(db)
     financeiro_repo = RepositorioFinanceiroLancamentoSQLAlchemy(db)
@@ -100,11 +118,22 @@ def registrar_venda(
         itens=itens_input,
         tenant_id=current_user.tenant_id,
         pagamentos=pagamentos_input,
+        usuario_role=current_user.role,
     )
 
     try:
         output = use_case.executar(input_data)
-        return VendaResponse.model_validate(output.venda)
+        response_data = VendaResponse.model_validate(output.venda).model_dump(mode="json")
+        salvar_idempotencia_depois(
+            db=db,
+            tenant_id=current_user.tenant_id,
+            rota="/vendas",
+            chave=idempotency_key,
+            corpo_requisicao=corpo_dict,
+            status_code=status.HTTP_201_CREATED,
+            response_body=response_data,
+        )
+        return VendaResponse.model_validate(response_data)
     except (LojaNaoEncontradaException, ClienteNaoEncontradoException, ProdutoNaoEncontradoException) as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except EstoqueInsuficienteException as e:
@@ -167,12 +196,25 @@ def estornar_venda(
     id: UUID,
     motivo: str = "Estorno no caixa",
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> VendaResponse:
     """
     Estorna uma venda realizada, cancelando o status, devolvendo produtos ao estoque
     com lock pessimista e recompondo saldo de crediário.
+    Suporta repetição idempotente segura via header 'Idempotency-Key'.
     """
+    corpo_dict = {"venda_id": str(id), "motivo": motivo}
+    cache_response = processar_idempotencia_antes(
+        db=db,
+        tenant_id=current_user.tenant_id,
+        rota=f"/vendas/{id}/estornar",
+        chave=idempotency_key,
+        corpo_requisicao=corpo_dict,
+    )
+    if cache_response is not None:
+        return VendaResponse.model_validate(cache_response)
+
     venda_repo = RepositorioVendaSQLAlchemy(db)
     venda = venda_repo.obter_por_id(id, current_user.tenant_id)
     if not venda:
@@ -195,7 +237,17 @@ def estornar_venda(
             tenant_id=current_user.tenant_id,
             motivo=motivo
         ))
-        return VendaResponse.model_validate(resultado.venda)
+        response_data = VendaResponse.model_validate(resultado.venda).model_dump(mode="json")
+        salvar_idempotencia_depois(
+            db=db,
+            tenant_id=current_user.tenant_id,
+            rota=f"/vendas/{id}/estornar",
+            chave=idempotency_key,
+            corpo_requisicao=corpo_dict,
+            status_code=status.HTTP_200_OK,
+            response_body=response_data,
+        )
+        return VendaResponse.model_validate(response_data)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -205,13 +257,26 @@ def registrar_devolucao_venda(
     id: UUID,
     request: RegistrarDevolucaoRequest,
     db: Session = Depends(get_db),
-    current_user: Usuario = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ) -> DevolucaoResponse:
     """
     Registra a devolução ou troca (parcial ou total) dos itens de uma venda realizada.
     Recompõe o estoque físico (se indicado), trata a resolução financeira (Vale-Crédito,
     Reembolso no Caixa ou Abatimento no Crediário) e atualiza o status da venda.
+    Suporta repetição idempotente segura via header 'Idempotency-Key'.
     """
+    corpo_dict = {"venda_id": str(id), **request.model_dump(mode="json")}
+    cache_response = processar_idempotencia_antes(
+        db=db,
+        tenant_id=current_user.tenant_id,
+        rota=f"/vendas/{id}/devolver",
+        chave=idempotency_key,
+        corpo_requisicao=corpo_dict,
+    )
+    if cache_response is not None:
+        return DevolucaoResponse.model_validate(cache_response)
+
     venda_repo = RepositorioVendaSQLAlchemy(db)
     venda = venda_repo.obter_por_id(id, current_user.tenant_id)
     if not venda:
@@ -248,7 +313,17 @@ def registrar_devolucao_venda(
             tenant_id=current_user.tenant_id,
             tipo=request.tipo,
         ))
-        return DevolucaoResponse.model_validate(resultado.devolucao)
+        response_data = DevolucaoResponse.model_validate(resultado.devolucao).model_dump(mode="json")
+        salvar_idempotencia_depois(
+            db=db,
+            tenant_id=current_user.tenant_id,
+            rota=f"/vendas/{id}/devolver",
+            chave=idempotency_key,
+            corpo_requisicao=corpo_dict,
+            status_code=status.HTTP_201_CREATED,
+            response_body=response_data,
+        )
+        return DevolucaoResponse.model_validate(response_data)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 

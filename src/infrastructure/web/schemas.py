@@ -784,6 +784,68 @@ class RedefinirSenhaUsuarioAdminRequest(BaseModel):
         return v
 
 
+class OperacaoCaixaRequest(BaseModel):
+    tipo: str = Field(..., pattern="^(SANGRIA|SUPRIMENTO)$", description="Tipo da operação de caixa.")
+    valor: float = Field(..., gt=0.0, description="Valor da movimentação.")
+    motivo: str = Field(..., min_length=1, max_length=255, description="Motivo ou justificativa da operação.")
+    loja_id: UUID | None = Field(default=None, description="ID da loja física vinculada.")
+
+
+class OperacaoCaixaResponse(BaseModel):
+    id: UUID
+    turno_id: UUID
+    tipo: str
+    valor: float
+    motivo: str
+    data_hora: datetime
+    operador_nome: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AbrirCaixaRequest(BaseModel):
+    loja_id: UUID = Field(..., description="ID da loja onde o turno será aberto.")
+    fundo_inicial: float = Field(default=0.0, ge=0.0, description="Fundo de troco inicial em dinheiro.")
+
+
+class FecharCaixaRequest(BaseModel):
+    loja_id: UUID = Field(..., description="ID da loja física do turno a ser encerrado.")
+    saldo_informado: float = Field(..., ge=0.0, description="Contagem física de dinheiro em caixa informada pelo operador.")
+    observacao: str | None = Field(default=None, max_length=255, description="Observação ou justificativa para quebra/sobra.")
+
+
+class CaixaTurnoResponse(BaseModel):
+    id: UUID | None = None
+    aberto: bool
+    operador_nome: str
+    data_abertura: datetime | None = None
+    fundo_inicial: float = 0.0
+    operacoes: list[OperacaoCaixaResponse] = Field(default_factory=list)
+    loja_id: UUID | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TurnoFechadoHistoricoResponse(BaseModel):
+    id: UUID
+    loja_id: UUID
+    operador_nome: str
+    data_abertura: datetime
+    data_fechamento: datetime | None
+    fundo_inicial: float
+    total_vendas_dinheiro: float
+    total_suprimentos: float
+    total_sangrias: float
+    saldo_esperado: float
+    saldo_informado: float | None
+    diferenca: float | None
+    observacao: str | None
+    operacoes: list[OperacaoCaixaResponse] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+
 
 
 

@@ -35,7 +35,10 @@ class CriarLoja:
     def executar(self, input_data: CriarLojaInput) -> CriarLojaOutput:
         # Validação de limite de lojas por plano do tenant
         if self.tenant_repo:
-            tenant = self.tenant_repo.obter_por_id(input_data.tenant_id)
+            if hasattr(self.tenant_repo, "obter_por_id_com_lock"):
+                tenant = self.tenant_repo.obter_por_id_com_lock(input_data.tenant_id)
+            else:
+                tenant = self.tenant_repo.obter_por_id(input_data.tenant_id)
             if tenant:
                 lojas_existentes = self.loja_repo.listar_todas(input_data.tenant_id)
                 if len(lojas_existentes) >= tenant.limite_lojas:
