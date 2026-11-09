@@ -53,10 +53,7 @@ from src.use_cases.estoque.registrar_venda import (
 )
 
 # Conexão com o banco de dados PostgreSQL real para suportar locks pessimistas e índices parciais
-pg_url = os.getenv(
-    "DATABASE_TEST_URL",
-    os.getenv("DATABASE_URL", "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas_test"),
-)
+pg_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas")
 pg_engine = create_engine(pg_url)
 PgSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=pg_engine)
 
@@ -73,14 +70,19 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+@pytest.fixture(scope="module", autouse=True)
+def setup_pg_concorrencia_tables():
+    """Garante que as tabelas existem no PostgreSQL real uma única vez por módulo de teste."""
+    if postgres_available:
+        Base.metadata.create_all(bind=pg_engine)
+
+
 @pytest.fixture
 def setup_pg_concorrencia_completo():
     """
     Cria estrutura base (Tenant, Loja, Usuário Dono, Produto com Saldo) no PostgreSQL real.
     Garante limpeza de todos os dados criados no final de cada teste.
     """
-    Base.metadata.create_all(bind=pg_engine)
-
     session = PgSessionLocal()
     session.info["ignore_tenant_filter"] = True
 
