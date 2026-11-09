@@ -106,7 +106,6 @@ def setup_pg_concorrencia_completo():
         email=f"dono_{uuid4().hex[:8]}@teste.com",
         senha_hash="$2b$12$DUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUMMYHASHDUMMYHA",
         role="DONO",
-        ativo=True,
     )
     session.add(dono_model)
     session.flush()
@@ -194,7 +193,6 @@ def test_concorrencia_abertura_turno_caixa(setup_pg_concorrencia_completo):
         email="dono@teste.com",
         senha_hash="dummy",
         role="DONO",
-        ativo=True,
     )
 
     def tentar_abrir():
@@ -251,7 +249,6 @@ def test_concorrencia_fechamento_turno_caixa(setup_pg_concorrencia_completo):
         email="dono@teste.com",
         senha_hash="dummy",
         role="DONO",
-        ativo=True,
     )
 
     # 1. Abre um turno primeiro
@@ -318,7 +315,6 @@ def test_concorrencia_sangria_suprimento_caixa(setup_pg_concorrencia_completo):
         email="dono@teste.com",
         senha_hash="dummy",
         role="DONO",
-        ativo=True,
     )
 
     # 1. Abre um turno
@@ -671,7 +667,6 @@ def test_concorrencia_limite_colaboradores_tenant(setup_pg_concorrencia_completo
         email="dono@teste.com",
         senha_hash="dummy",
         role="DONO",
-        ativo=True,
     )
 
     def tentar_criar_colaborador(idx: int):
