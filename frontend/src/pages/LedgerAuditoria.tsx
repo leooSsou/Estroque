@@ -6,8 +6,6 @@ import { MovimentacaoEstoque, Produto } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import {
-  ScrollText,
-  ShieldCheck,
   ArrowDownRight,
   ArrowUpRight,
   Download,

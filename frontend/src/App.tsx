@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { ShieldAlert } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -7,17 +7,26 @@ import { AppShell } from './components/layout/AppShell';
 
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
-import { Produtos } from './pages/Produtos';
-import { Estoque } from './pages/Estoque';
-import { LedgerAuditoria } from './pages/LedgerAuditoria';
-import { NFeImport } from './pages/NFeImport';
-import { Transferencias } from './pages/Transferencias';
-import { Auditoria } from './pages/Auditoria';
-import { PDVVendas } from './pages/PDVVendas';
-import { Financeiro } from './pages/Financeiro';
-import { Contatos } from './pages/Contatos';
-import { Analytics } from './pages/Analytics';
-import { SuperAdmin } from './pages/SuperAdmin';
+
+// Lazy loading sob demanda para otimizar carregamento inicial (code splitting)
+const Produtos = lazy(() => import('./pages/Produtos').then(m => ({ default: m.Produtos })));
+const Estoque = lazy(() => import('./pages/Estoque').then(m => ({ default: m.Estoque })));
+const LedgerAuditoria = lazy(() => import('./pages/LedgerAuditoria').then(m => ({ default: m.LedgerAuditoria })));
+const NFeImport = lazy(() => import('./pages/NFeImport').then(m => ({ default: m.NFeImport })));
+const Transferencias = lazy(() => import('./pages/Transferencias').then(m => ({ default: m.Transferencias })));
+const Auditoria = lazy(() => import('./pages/Auditoria').then(m => ({ default: m.Auditoria })));
+const PDVVendas = lazy(() => import('./pages/PDVVendas').then(m => ({ default: m.PDVVendas })));
+const Financeiro = lazy(() => import('./pages/Financeiro').then(m => ({ default: m.Financeiro })));
+const Contatos = lazy(() => import('./pages/Contatos').then(m => ({ default: m.Contatos })));
+const Analytics = lazy(() => import('./pages/Analytics').then(m => ({ default: m.Analytics })));
+const SuperAdmin = lazy(() => import('./pages/SuperAdmin').then(m => ({ default: m.SuperAdmin })));
+
+const PageLoader: React.FC = () => (
+  <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-emerald-500">
+    <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+    <span className="text-xs text-slate-400">Carregando tela...</span>
+  </div>
+);
 
 const ROUTE_TITLES: Record<string, string> = {
   '/': 'Visão Geral',
@@ -109,7 +118,8 @@ export const App: React.FC = () => {
       <PageTitleUpdater />
       <AuthProvider>
         <ToastProvider>
-          <Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
             <Route path="/login" element={<Login />} />
 
             <Route
@@ -192,6 +202,7 @@ export const App: React.FC = () => {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+        </Suspense>
         </ToastProvider>
       </AuthProvider>
     </BrowserRouter>

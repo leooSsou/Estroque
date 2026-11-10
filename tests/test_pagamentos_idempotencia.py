@@ -216,7 +216,8 @@ def test_webhook_stripe_duplicata_concorrente():
         "DATABASE_TEST_URL",
         "sqlite:///./gerenciador_saas_test.db",
     )
-    conc_engine = create_engine(db_url)
+    engine_kwargs = {"pool_size": 20, "max_overflow": 30, "pool_pre_ping": True} if not db_url.startswith("sqlite") else {}
+    conc_engine = create_engine(db_url, **engine_kwargs)
     ConcSession = sessionmaker(autocommit=False, autoflush=False, bind=conc_engine)
 
     def tentar_gravar():
@@ -349,7 +350,8 @@ def test_venda_endpoint_idempotencia_concorrente():
         "DATABASE_TEST_URL",
         "sqlite:///./gerenciador_saas_test.db",
     )
-    conc_engine = create_engine(db_url)
+    engine_kwargs = {"pool_size": 20, "max_overflow": 30, "pool_pre_ping": True} if not db_url.startswith("sqlite") else {}
+    conc_engine = create_engine(db_url, **engine_kwargs)
     ConcSession = sessionmaker(autocommit=False, autoflush=False, bind=conc_engine)
 
     # Cria tenant temporário no banco para satisfazer FK de idempotency_keys

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
@@ -79,7 +79,16 @@ export const AppShell: React.FC = () => {
 
         <main className="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full min-w-0 max-w-full">
           <div key={location.pathname} className="page-enter w-full">
-            <Outlet />
+            <Suspense
+              fallback={
+                <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3 text-emerald-500">
+                  <div className="w-8 h-8 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin" />
+                  <span className="text-xs text-slate-400">Carregando tela...</span>
+                </div>
+              }
+            >
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>

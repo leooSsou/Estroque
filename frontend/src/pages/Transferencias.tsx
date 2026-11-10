@@ -8,13 +8,11 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { Select } from '../components/common/Select';
 import {
-  ArrowLeftRight,
   Plus,
   Truck,
   CheckCircle2,
   AlertTriangle,
   Clock,
-  Building2,
   Package,
   Search,
   X,

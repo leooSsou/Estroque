@@ -13,7 +13,6 @@ import {
   BarChart3,
   PanelLeftClose,
   PanelLeftOpen,
-  ShieldCheck,
   Building2,
   Sliders,
   Store,
