@@ -5,8 +5,10 @@ from slowapi.util import get_remote_address
 
 # Detecta se estamos rodando na suíte de testes unitários ou integração
 is_testing = os.getenv("TESTING", "False").lower() in ("true", "1")
+database_url = os.getenv("DATABASE_URL", "")
+is_sqlite = database_url.startswith("sqlite")
 
-if is_testing:
+if is_testing or (is_sqlite and not os.getenv("REDIS_URL") and not os.getenv("REDIS_HOST")):
     storage_uri = "memory://"
 else:
     redis_url = os.getenv("REDIS_URL")
@@ -26,5 +28,5 @@ limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=storage_uri,
     storage_options={"socket_connect_timeout": 2},
-    enabled=not is_testing,
+    enabled=not is_testing and not is_sqlite,
 )

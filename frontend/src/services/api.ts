@@ -38,7 +38,20 @@ import {
 } from '../types';
 import { storage } from './storage';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const getApiBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      return `${window.location.protocol}//${host}:8000`;
+    }
+  }
+  return 'http://localhost:8000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Tempo máximo de validade contínua da sessão antes de exigir reautenticação (10 horas)
 const MAX_SESSION_DURATION_MS = 10 * 60 * 60 * 1000;
