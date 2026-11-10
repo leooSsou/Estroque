@@ -10,7 +10,6 @@ import {
   Copy,
   Sparkles,
   FileCode2,
-  Percent,
   Search,
   ClipboardPaste,
   Info,
@@ -104,7 +103,7 @@ export const NFeImport: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [markupPadrao, setMarkupPadrao] = useState<number>(50);
+  const markupPadrao = 50;
   const [parsed, setParsed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [inputChaveOuXml, setInputChaveOuXml] = useState('');
@@ -395,24 +394,6 @@ export const NFeImport: React.FC = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
-          <div className="flex items-center justify-between sm:justify-start gap-2 px-3.5 py-1.5 rounded-full bg-[#000000] border border-white/[0.16]">
-            <div className="flex items-center gap-1.5">
-              <Percent className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs text-slate-300 font-medium">Markup Novos Itens:</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                min="0"
-                max="500"
-                value={markupPadrao}
-                onChange={(e) => setMarkupPadrao(Math.max(0, Number(e.target.value)))}
-                className="w-14 bg-transparent text-xs font-bold text-emerald-400 text-center focus:outline-none border-b border-white/20 focus:border-emerald-400"
-              />
-              <span className="text-xs text-slate-400">%</span>
-            </div>
-          </div>
-
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -679,7 +660,7 @@ export const NFeImport: React.FC = () => {
                         {item.match_existente ? (
                           <Badge variant="emerald">Atualizar Custo Médio</Badge>
                         ) : (
-                          <Badge variant="emerald">+ Auto-cadastro ({markupPadrao}%)</Badge>
+                          <Badge variant="emerald">+ Novo Cadastro</Badge>
                         )}
                       </td>
                     </tr>

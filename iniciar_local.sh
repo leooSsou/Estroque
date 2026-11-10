@@ -10,8 +10,9 @@ cd "$PROJECT_ROOT"
 
 echo "🚀 Iniciando Estroque em modo Local (Sem Docker)..."
 
-# Garantir chave JWT para ambiente local caso não esteja em .env
+# Garantir chave JWT e DATABASE_URL para ambiente local caso não esteja em .env
 export JWT_SECRET_KEY="${JWT_SECRET_KEY:-sua_chave_secreta_super_segura_local_12345}"
+export DATABASE_URL="${DATABASE_URL:-sqlite:///./gerenciador_saas.db}"
 
 # Ativar ambiente virtual
 if [ -d ".venv" ]; then
@@ -28,6 +29,7 @@ fi
 echo "📦 Verificando migrações no banco local (SQLite)..."
 $ALEMBIC_BIN upgrade head 2>/dev/null || true
 $PYTHON_BIN -c "from src.infrastructure.database.models import Base; from sqlalchemy import create_engine; engine = create_engine('sqlite:///./gerenciador_saas.db'); Base.metadata.create_all(engine)" 2>/dev/null || true
+$PYTHON_BIN -m src.infrastructure.database.seed 2>/dev/null || true
 
 # Garantir que processos antigos sejam encerrados ao fechar o script
 cleanup() {
