@@ -322,6 +322,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             markup=model.markup,
             tenant_id=model.tenant_id,
             codigo_barras=model.codigo_barras,
+            imagem_url=model.imagem_url,
             fornecedor_id=model.fornecedor_id,
             produto_pai_id=model.produto_pai_id,
             variacoes=model.variacoes,
@@ -341,6 +342,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
                 preco_venda=produto.preco_venda,
                 markup=produto.markup,
                 codigo_barras=produto.codigo_barras,
+                imagem_url=produto.imagem_url,
                 fornecedor_id=produto.fornecedor_id,
                 produto_pai_id=produto.produto_pai_id,
                 variacoes=produto.variacoes,
@@ -355,6 +357,7 @@ class RepositorioProdutoSQLAlchemy(ProdutoRepository):
             model.preco_venda = produto.preco_venda
             model.markup = produto.markup
             model.codigo_barras = produto.codigo_barras
+            model.imagem_url = produto.imagem_url
             model.fornecedor_id = produto.fornecedor_id
             model.produto_pai_id = produto.produto_pai_id
             model.variacoes = produto.variacoes

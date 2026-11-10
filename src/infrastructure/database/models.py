@@ -9,6 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     String,
+    Text,
     UniqueConstraint,
     text,
 )
@@ -85,6 +86,7 @@ class ProdutoModel(HasTenant, Base):
     preco_venda: Mapped[float] = mapped_column(Float, nullable=False)
     markup: Mapped[float] = mapped_column(Float, nullable=False)
     codigo_barras: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    imagem_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     fornecedor_id: Mapped[UUID | None] = mapped_column(ForeignKey("fornecedores.id"), nullable=True)
     produto_pai_id: Mapped[UUID | None] = mapped_column(ForeignKey("produtos.id", ondelete="CASCADE"), nullable=True)
     variacoes: Mapped[dict | None] = mapped_column(JSON, nullable=True)

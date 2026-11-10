@@ -136,6 +136,7 @@ class ProdutoCreateRequest(BaseModel):
     preco_venda: float = Field(..., ge=0.0, description="Preço de venda.")
     markup: float = Field(..., description="Markup do produto.")
     codigo_barras: str | None = Field(None, max_length=50, description="Código de barras do produto.")
+    imagem_url: str | None = Field(None, description="URL ou dados da imagem do produto (opcional).")
     fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
 
 
@@ -148,6 +149,7 @@ class ProdutoUpdateRequest(BaseModel):
     preco_venda: float = Field(..., ge=0.0, description="Preço de venda.")
     markup: float = Field(..., description="Markup do produto.")
     codigo_barras: str | None = Field(None, max_length=50, description="Código de barras do produto.")
+    imagem_url: str | None = Field(None, description="URL ou dados da imagem do produto (opcional).")
     fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
     ativo: bool = Field(..., description="Status de atividade do produto.")
 
@@ -164,6 +166,7 @@ class ProdutoResponse(BaseModel):
     markup: float
     tenant_id: UUID
     codigo_barras: str | None = None
+    imagem_url: str | None = None
     fornecedor_id: UUID | None = None
     produto_pai_id: UUID | None = None
     variacoes: dict[str, str] | None = None
@@ -191,6 +194,7 @@ class ProdutoGradeCreateRequest(BaseModel):
     markup: float = Field(..., description="Markup do produto.")
     atributos: list[AtributoGradeSchema] = Field(..., min_length=1, description="Lista de atributos de variação.")
     codigo_barras_base: str | None = Field(None, max_length=50, description="Código de barras base.")
+    imagem_url: str | None = Field(None, description="URL ou dados da imagem do produto pai (opcional).")
     fornecedor_id: UUID | None = Field(None, description="ID do fornecedor associado.")
     loja_id: UUID | None = Field(None, description="ID da loja para estoque inicial.")
     estoque_inicial_por_variacao: int = Field(default=0, ge=0, description="Estoque inicial adicionado a cada variação.")
@@ -203,6 +207,7 @@ class AdicionarVariacaoRequest(BaseModel):
     variacoes: dict[str, str] = Field(..., description="Dicionário de variações (ex: {'Tamanho': 'GG', 'Cor': 'Azul'}).")
     sku: str | None = Field(None, max_length=50, description="SKU customizado para a variação (opcional).")
     codigo_barras: str | None = Field(None, max_length=50, description="Código de barras da variação.")
+    imagem_url: str | None = Field(None, description="URL ou dados da imagem da variação (opcional).")
     preco_custo: float | None = Field(None, ge=0.0, description="Preço de custo específico da variação.")
     preco_venda: float | None = Field(None, ge=0.0, description="Preço de venda específico da variação.")
     markup: float | None = Field(None, description="Markup específico da variação.")

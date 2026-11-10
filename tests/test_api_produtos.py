@@ -91,3 +91,50 @@ def test_criar_produto_sku_duplicado(client: TestClient):
     }, headers=headers)
     assert res_criar2.status_code == 400
     assert "sku" in res_criar2.json()["detail"].lower()
+
+
+def test_criar_e_atualizar_produto_com_foto_opcional(client: TestClient):
+    """
+    Garante que produtos possam ser criados com ou sem foto (imagem_url)
+    e que a foto possa ser atualizada via PUT.
+    """
+    token = setup_tenant_autenticado(client)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Cria produto COM foto (URL ou base64)
+    res_com_foto = client.post("/produtos/", json={
+        "nome": "Monitor Gamer 144Hz",
+        "sku": "MON-144-FOTO",
+        "preco_custo": 800.0,
+        "preco_venda": 1300.0,
+        "markup": 0.625,
+        "imagem_url": "https://cdn.loja.com/produtos/monitor144.png"
+    }, headers=headers)
+    assert res_com_foto.status_code == 201
+    prod_com_foto = res_com_foto.json()
+    assert prod_com_foto["imagem_url"] == "https://cdn.loja.com/produtos/monitor144.png"
+    prod_id = prod_com_foto["id"]
+
+    # 2. Cria produto SEM foto (campo opcional)
+    res_sem_foto = client.post("/produtos/", json={
+        "nome": "Cabo HDMI 2.1",
+        "sku": "CABO-HDMI-21",
+        "preco_custo": 20.0,
+        "preco_venda": 45.0,
+        "markup": 1.25
+    }, headers=headers)
+    assert res_sem_foto.status_code == 201
+    assert res_sem_foto.json()["imagem_url"] is None
+
+    # 3. Atualiza a foto do produto
+    res_att = client.put(f"/produtos/{prod_id}", json={
+        "nome": "Monitor Gamer 144Hz IPS",
+        "preco_custo": 800.0,
+        "preco_venda": 1300.0,
+        "markup": 0.625,
+        "imagem_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "ativo": True
+    }, headers=headers)
+    assert res_att.status_code == 200
+    assert "data:image/png;base64," in res_att.json()["imagem_url"]
+

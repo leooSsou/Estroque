@@ -10,19 +10,17 @@ import {
   Package,
   Search,
   Plus,
-  Sliders,
   Barcode,
-  ArrowUpDown,
   Calculator,
   Save,
-  Tag,
-  Boxes,
   X,
   Layers,
   ChevronDown,
   ChevronRight,
   Trash2,
-  Check,
+  Image as ImageIcon,
+  UploadCloud,
+  Link as LinkIcon,
 } from 'lucide-react';
 
 export const Produtos: React.FC = () => {
@@ -50,6 +48,8 @@ export const Produtos: React.FC = () => {
   const [newNome, setNewNome] = useState('');
   const [newSku, setNewSku] = useState('');
   const [newBarcode, setNewBarcode] = useState('');
+  const [newImagemUrl, setNewImagemUrl] = useState('');
+  const [modoEntradaImagem, setModoEntradaImagem] = useState<'ARQUIVO' | 'URL'>('ARQUIVO');
   const [newCategoria, setNewCategoria] = useState('Geral');
   const [newCusto, setNewCusto] = useState(50.0);
   const [newMarkup, setNewMarkup] = useState(60.0);
@@ -154,6 +154,57 @@ export const Produtos: React.FC = () => {
     }
   };
 
+  // Helper for Product Image Selection with Client-side Compression
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione um arquivo de imagem válido (PNG, JPG, WebP, etc.).');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('A imagem selecionada excede 10MB. Escolha uma foto menor.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const rawDataUrl = event.target?.result as string;
+      if (!rawDataUrl) return;
+
+      const img = new Image();
+      img.onload = () => {
+        const maxDimension = 800;
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+          setNewImagemUrl(compressed);
+        } else {
+          setNewImagemUrl(rawDataUrl);
+        }
+      };
+      img.src = rawDataUrl;
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Helper for Attribute Builder
   const handleAddAtributo = () => {
     if (!novoAtributoNome.trim()) return;
@@ -229,6 +280,7 @@ export const Produtos: React.FC = () => {
           nome: newNome,
           sku: newSku.toUpperCase(),
           codigo_barras: newBarcode || null,
+          imagem_url: newImagemUrl.trim() || null,
           categoria: newCategoria,
           preco_custo: newCusto,
           markup: newMarkup,
@@ -250,6 +302,7 @@ export const Produtos: React.FC = () => {
           nome: newNome,
           sku_base: newSku.toUpperCase(),
           codigo_barras_base: newBarcode || null,
+          imagem_url: newImagemUrl.trim() || null,
           categoria: newCategoria,
           preco_custo: newCusto,
           markup: newMarkup,
@@ -269,6 +322,7 @@ export const Produtos: React.FC = () => {
       setNewNome('');
       setNewSku('');
       setNewBarcode('');
+      setNewImagemUrl('');
       fetchProdutos();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro ao cadastrar produto.';
@@ -495,7 +549,7 @@ export const Produtos: React.FC = () => {
                       <tr className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
                         <td className="py-3.5 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-2.5">
-                            {temGrade ? (
+                            {temGrade && (
                               <button
                                 onClick={() => toggleExpand(prod.id)}
                                 className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 hover:bg-purple-500/20 transition-all flex-shrink-0"
@@ -503,11 +557,18 @@ export const Produtos: React.FC = () => {
                               >
                                 {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                               </button>
-                            ) : (
+                            )}
+                            {prod.imagem_url ? (
+                              <img
+                                src={prod.imagem_url}
+                                alt={prod.nome}
+                                className="w-8 h-8 rounded-lg object-cover border border-white/[0.16] flex-shrink-0 bg-black"
+                              />
+                            ) : !temGrade ? (
                               <div className="w-8 h-8 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
                                 <Package className="w-4 h-4" />
                               </div>
-                            )}
+                            ) : null}
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors">
@@ -662,10 +723,24 @@ export const Produtos: React.FC = () => {
         title="Simulador de Markup Inteligente"
       >
         <div className="space-y-4">
-          <p className="text-xs text-slate-400">
-            Ajuste a margem para recalcular instantaneamente o preço de venda de{' '}
-            <strong className="text-white">{selectedProduto?.nome}</strong>.
-          </p>
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.14]">
+            {selectedProduto?.imagem_url ? (
+              <img
+                src={selectedProduto.imagem_url}
+                alt={selectedProduto.nome}
+                className="w-12 h-12 rounded-lg object-cover border border-white/[0.2] bg-black flex-shrink-0"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
+                <Package className="w-6 h-6" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <span className="text-xs text-slate-400 block">Precificação do Item:</span>
+              <strong className="text-sm font-bold text-white block truncate">{selectedProduto?.nome}</strong>
+              <span className="text-[11px] font-mono text-slate-400">{selectedProduto?.sku}</span>
+            </div>
+          </div>
 
           <div className="space-y-3">
             <div>
@@ -818,6 +893,107 @@ export const Produtos: React.FC = () => {
                 className="w-full h-11 px-3.5 rounded-xl bg-[#000000] border border-white/[0.16] text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none font-mono"
               />
             </div>
+          </div>
+
+          {/* Foto do Produto (Opcional) */}
+          <div className="space-y-2 p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.14]">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Foto do Produto</span>
+                <span className="text-[10px] text-slate-400 font-normal normal-case">(opcional)</span>
+              </label>
+
+              <div className="flex rounded-lg bg-[#000000] border border-white/[0.14] p-0.5 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setModoEntradaImagem('ARQUIVO')}
+                  className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                    modoEntradaImagem === 'ARQUIVO'
+                      ? 'bg-emerald-600 text-white font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Arquivo / Câmera
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModoEntradaImagem('URL')}
+                  className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                    modoEntradaImagem === 'URL'
+                      ? 'bg-emerald-600 text-white font-bold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Link URL
+                </button>
+              </div>
+            </div>
+
+            {newImagemUrl ? (
+              <div className="p-3 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <img
+                    src={newImagemUrl}
+                    alt="Prévia do Produto"
+                    className="w-12 h-12 rounded-lg object-cover border border-white/[0.2] bg-black flex-shrink-0"
+                  />
+                  <div className="min-w-0 text-xs">
+                    <span className="text-emerald-400 font-bold block truncate">Foto Adicionada</span>
+                    <span className="text-[11px] text-slate-400 block truncate">
+                      {newImagemUrl.startsWith('data:') ? 'Imagem pronta para o cadastro' : newImagemUrl}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNewImagemUrl('')}
+                  className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 flex-shrink-0"
+                  title="Remover foto"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Remover</span>
+                </button>
+              </div>
+            ) : modoEntradaImagem === 'ARQUIVO' ? (
+              <label className="flex flex-col items-center justify-center p-3.5 rounded-lg border border-dashed border-white/[0.2] hover:border-emerald-500/50 hover:bg-white/[0.02] cursor-pointer transition-all group">
+                <UploadCloud className="w-6 h-6 text-slate-400 group-hover:text-emerald-400 transition-colors mb-1" />
+                <span className="text-xs font-semibold text-slate-200 group-hover:text-white text-center">
+                  Clique para anexar uma foto ou tirar foto pela câmera
+                </span>
+                <span className="text-[10px] text-slate-400 mt-0.5 text-center">
+                  PNG, JPG ou WebP até 10MB (compressão automática). Não obrigatório.
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
+                  <input
+                    type="url"
+                    value={newImagemUrl}
+                    onChange={(e) => setNewImagemUrl(e.target.value)}
+                    placeholder="Cole o link da foto: https://exemplo.com/foto.jpg"
+                    className="w-full h-10 pl-9 pr-3.5 rounded-lg bg-[#000000] border border-white/[0.16] text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                {newImagemUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setNewImagemUrl('')}
+                    className="h-10 px-3 rounded-lg bg-[#000000] border border-white/[0.16] text-slate-400 hover:text-white text-xs"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

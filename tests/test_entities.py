@@ -256,4 +256,48 @@ def test_criar_produto_codigo_barras_invalido():
         )
 
 
+def test_criar_produto_com_imagem_url():
+    """
+    Garante que a entidade Produto aceite imagem_url opcional (URL ou base64).
+    """
+    tenant_id = uuid4()
+    produto = Produto(
+        nome="Tênis Esportivo",
+        sku="TENIS-001",
+        preco_custo=100.0,
+        preco_venda=200.0,
+        markup=1.0,
+        tenant_id=tenant_id,
+        imagem_url="  https://example.com/foto.jpg  "
+    )
+    assert produto.imagem_url == "https://example.com/foto.jpg"
+
+    # Produto sem imagem_url
+    produto_sem_foto = Produto(
+        nome="Tênis Sem Foto",
+        sku="TENIS-002",
+        preco_custo=100.0,
+        preco_venda=200.0,
+        markup=1.0,
+        tenant_id=tenant_id
+    )
+    assert produto_sem_foto.imagem_url is None
+
+
+def test_criar_produto_imagem_url_invalida():
+    """
+    Garante que se imagem_url não for string levante ValueError.
+    """
+    with pytest.raises(ValueError, match="A imagem_url deve ser uma string"):
+        Produto(
+            nome="Tênis",
+            sku="TENIS-003",
+            preco_custo=100.0,
+            preco_venda=200.0,
+            markup=1.0,
+            tenant_id=uuid4(),
+            imagem_url=12345  # type: ignore
+        )
+
+
 

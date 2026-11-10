@@ -61,6 +61,7 @@ def criar_produto(
         markup=request.markup,
         tenant_id=current_user.tenant_id,
         codigo_barras=request.codigo_barras,
+        imagem_url=request.imagem_url,
         fornecedor_id=request.fornecedor_id
     )
 
@@ -114,6 +115,7 @@ def criar_produto_com_grade(
         tenant_id=current_user.tenant_id,
         atributos=atributos_input,
         codigo_barras_base=request.codigo_barras_base,
+        imagem_url=request.imagem_url,
         fornecedor_id=request.fornecedor_id,
         loja_id=request.loja_id,
         estoque_inicial_por_variacao=request.estoque_inicial_por_variacao
@@ -198,6 +200,7 @@ def adicionar_variacao_ao_produto(
         variacoes=request.variacoes,
         sku=request.sku,
         codigo_barras=request.codigo_barras,
+        imagem_url=request.imagem_url,
         preco_custo=request.preco_custo,
         preco_venda=request.preco_venda,
         markup=request.markup
@@ -280,6 +283,7 @@ def atualizar_produto(
         preco_venda=request.preco_venda,
         markup=request.markup,
         codigo_barras=request.codigo_barras,
+        imagem_url=request.imagem_url,
         fornecedor_id=request.fornecedor_id,
         ativo=request.ativo,
         tenant_id=current_user.tenant_id

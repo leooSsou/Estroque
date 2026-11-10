@@ -131,6 +131,7 @@ class ImportarEstoqueNFe:
                     markup=produto_existente.markup,
                     tenant_id=input_data.tenant_id,
                     codigo_barras=item.codigo_barras or produto_existente.codigo_barras,
+                    imagem_url=produto_existente.imagem_url,
                     fornecedor_id=fornecedor.id,
                     ativo=produto_existente.ativo
                 )
