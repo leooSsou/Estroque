@@ -119,9 +119,6 @@ export const Estoque: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Controle de Estoque
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Gestão multi-loja, controle de rupturas e valorização de inventário
-          </p>
         </div>
 
         <button

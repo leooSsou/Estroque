@@ -392,9 +392,6 @@ export const NFeImport: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Importação de NF-e
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Entrada automática de notas fiscais via XML SEFAZ v4.00 com cálculo de Custo Médio Ponderado
-          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">

@@ -151,9 +151,6 @@ export const Auditoria: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Auditoria & Inventário Físico
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Conferência cega por bipagem de código de barras e conciliação de saldos divergentes
-          </p>
         </div>
 
         <button

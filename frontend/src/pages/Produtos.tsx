@@ -365,9 +365,6 @@ export const Produtos: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">Catálogo & Precificação</h1>
             <Badge variant="emerald">Onda 2 Concluída</Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
-            Gestão unificada de SKUs, grades de variações (Tamanho/Cor/Voltagem) e precificação inteligente.
-          </p>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">

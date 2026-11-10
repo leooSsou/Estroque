@@ -175,9 +175,6 @@ export const Contatos: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Clientes & Fornecedores
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Gestão de carteira de clientes, limite de crediário e catálogo de fornecedores
-          </p>
         </div>
 
         <button
