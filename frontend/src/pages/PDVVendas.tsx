@@ -27,9 +27,6 @@ export const PDVVendas: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Ponto de Venda (PDV)
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Loja: <strong className="text-slate-200">{ctrl.activeLoja?.nome || 'Matriz'}</strong> • Operador: <strong className="text-slate-200">{ctrl.caixaTurno?.operador_nome || 'Operador'}</strong>
-          </p>
         </div>
 
         {/* Status Pill of Cash Shift */}

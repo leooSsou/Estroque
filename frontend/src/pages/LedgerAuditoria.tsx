@@ -102,9 +102,6 @@ export const LedgerAuditoria: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Livro-Razão & Auditoria
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Registro imutável de movimentações, trilha de auditoria e conciliação de saldos
-          </p>
         </div>
 
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">

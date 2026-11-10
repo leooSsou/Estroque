@@ -673,9 +673,6 @@ export const SuperAdmin: React.FC = () => {
             <h1 className="text-2xl font-bold text-white tracking-tight">Painel Super-Admin</h1>
             <Badge variant="purple">ADMIN_SAAS</Badge>
           </div>
-          <p className="text-sm text-slate-400 mt-0.5">
-            Console de comando central do SaaS: controle de receita recorrente, planos e inquilinos.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5">

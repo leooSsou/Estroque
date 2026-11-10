@@ -144,9 +144,6 @@ export const Financeiro: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Gestão Financeira
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Controle de fluxo de caixa, despesas operacionais e fechamentos automatizados
-          </p>
         </div>
 
         <button

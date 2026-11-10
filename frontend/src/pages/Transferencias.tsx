@@ -172,9 +172,6 @@ export const Transferencias: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Transferências entre Lojas
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Logística interfilial, despacho de cargas e conferência cega de recebimento
-          </p>
         </div>
 
         <button

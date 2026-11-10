@@ -50,9 +50,6 @@ export const Analytics: React.FC = () => {
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Curva ABC & Pareto
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Classificação inteligente de produtos por impacto de faturamento e giro
-          </p>
         </div>
       </div>
 
