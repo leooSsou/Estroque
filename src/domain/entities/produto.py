@@ -14,6 +14,7 @@ class Produto:
     markup: float
     tenant_id: UUID
     codigo_barras: str | None = None
+    imagem_url: str | None = None
     fornecedor_id: UUID | None = None
     produto_pai_id: UUID | None = None
     variacoes: dict[str, str] | None = None
@@ -45,6 +46,11 @@ class Produto:
             if not isinstance(self.codigo_barras, str):
                 raise ValueError("O código de barras deve ser uma string.")
             object.__setattr__(self, "codigo_barras", self.codigo_barras.strip())
+
+        if self.imagem_url is not None:
+            if not isinstance(self.imagem_url, str):
+                raise ValueError("A imagem_url deve ser uma string.")
+            object.__setattr__(self, "imagem_url", self.imagem_url.strip() or None)
 
         if self.fornecedor_id is not None and not isinstance(self.fornecedor_id, UUID):
             raise ValueError("O fornecedor_id deve ser um UUID válido.")

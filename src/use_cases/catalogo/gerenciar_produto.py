@@ -23,6 +23,7 @@ class CriarProdutoInput:
     markup: float
     tenant_id: UUID
     codigo_barras: str | None = None
+    imagem_url: str | None = None
     fornecedor_id: UUID | None = None
     produto_pai_id: UUID | None = None
     variacoes: dict[str, str] | None = None
@@ -55,6 +56,7 @@ class CriarProduto:
             markup=input_data.markup,
             tenant_id=input_data.tenant_id,
             codigo_barras=input_data.codigo_barras,
+            imagem_url=input_data.imagem_url,
             fornecedor_id=input_data.fornecedor_id,
             produto_pai_id=input_data.produto_pai_id,
             variacoes=input_data.variacoes
@@ -121,6 +123,7 @@ class AtualizarProdutoInput:
     ativo: bool
     tenant_id: UUID
     codigo_barras: str | None = None
+    imagem_url: str | None = None
     fornecedor_id: UUID | None = None
     variacoes: dict[str, str] | None = None
 
@@ -152,6 +155,7 @@ class AtualizarProduto:
             markup=input_data.markup,
             tenant_id=produto.tenant_id,
             codigo_barras=input_data.codigo_barras if input_data.codigo_barras is not None else produto.codigo_barras,
+            imagem_url=input_data.imagem_url if input_data.imagem_url is not None else produto.imagem_url,
             fornecedor_id=input_data.fornecedor_id if input_data.fornecedor_id is not None else produto.fornecedor_id,
             produto_pai_id=produto.produto_pai_id,
             variacoes=input_data.variacoes if input_data.variacoes is not None else produto.variacoes,
@@ -182,6 +186,7 @@ class CriarProdutoComGradeInput:
     atributos: list[AtributoGradeInput]
     fornecedor_id: UUID | None = None
     codigo_barras_base: str | None = None
+    imagem_url: str | None = None
     loja_id: UUID | None = None
     estoque_inicial_por_variacao: int = 0
 
@@ -262,6 +267,7 @@ class CriarProdutoComGrade:
             markup=input_data.markup,
             tenant_id=input_data.tenant_id,
             codigo_barras=input_data.codigo_barras_base,
+            imagem_url=input_data.imagem_url,
             fornecedor_id=input_data.fornecedor_id,
             produto_pai_id=None,
             variacoes=None
@@ -278,6 +284,7 @@ class CriarProdutoComGrade:
                 markup=input_data.markup,
                 tenant_id=input_data.tenant_id,
                 codigo_barras=barcode_f,
+                imagem_url=input_data.imagem_url,
                 fornecedor_id=input_data.fornecedor_id,
                 produto_pai_id=pai_salvo.id,
                 variacoes=var_dict
@@ -321,6 +328,7 @@ class AdicionarVariacaoInput:
     variacoes: dict[str, str]
     sku: str | None = None
     codigo_barras: str | None = None
+    imagem_url: str | None = None
     preco_custo: float | None = None
     preco_venda: float | None = None
     markup: float | None = None
@@ -367,6 +375,7 @@ class AdicionarVariacao:
             markup=markup,
             tenant_id=input_data.tenant_id,
             codigo_barras=input_data.codigo_barras,
+            imagem_url=input_data.imagem_url if input_data.imagem_url is not None else pai.imagem_url,
             fornecedor_id=pai.fornecedor_id,
             produto_pai_id=pai.id,
             variacoes=input_data.variacoes

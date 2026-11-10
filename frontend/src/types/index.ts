@@ -29,6 +29,7 @@ export interface Produto {
   markup: number; // e.g. 65.0 means 65%
   codigo_barras?: string | null;
   categoria?: string;
+  imagem_url?: string | null;
   fornecedor_id?: string | null;
   produto_pai_id?: string | null;
   variacoes?: Record<string, string> | null;
@@ -53,6 +54,7 @@ export interface CriarProdutoGradePayload {
   markup: number;
   atributos: AtributoGrade[];
   codigo_barras_base?: string | null;
+  imagem_url?: string | null;
   loja_id?: string;
   estoque_inicial_por_variacao?: number;
   categoria?: string;
@@ -62,6 +64,7 @@ export interface AdicionarVariacaoPayload {
   variacoes: Record<string, string>;
   sku?: string;
   codigo_barras?: string;
+  imagem_url?: string | null;
   preco_custo?: number;
   preco_venda?: number;
   markup?: number;

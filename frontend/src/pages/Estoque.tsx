@@ -271,9 +271,17 @@ export const Estoque: React.FC = () => {
                   <tr key={prod.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
-                          <Package className="w-4 h-4" />
-                        </div>
+                        {prod.imagem_url ? (
+                          <img
+                            src={prod.imagem_url}
+                            alt={prod.nome}
+                            className="w-8 h-8 rounded-lg object-cover border border-white/[0.16] flex-shrink-0 bg-black"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-[#000000] border border-white/[0.16] flex items-center justify-center text-emerald-400 flex-shrink-0">
+                            <Package className="w-4 h-4" />
+                          </div>
+                        )}
                         <span className="font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
                           {prod.nome}
                         </span>

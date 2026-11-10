@@ -388,6 +388,7 @@ class ApiClient {
         preco_venda: dados.preco_venda,
         markup: markupBackend,
         codigo_barras: dados.codigo_barras || null,
+        imagem_url: dados.imagem_url || null,
         fornecedor_id: dados.fornecedor_id || null,
       }),
     });
@@ -436,6 +437,7 @@ class ApiClient {
         markup: markupBackend,
         atributos: dados.atributos,
         codigo_barras_base: dados.codigo_barras_base || null,
+        imagem_url: dados.imagem_url || null,
         loja_id: dados.loja_id || null,
         estoque_inicial_por_variacao: dados.estoque_inicial_por_variacao || 0,
       }),
@@ -506,6 +508,8 @@ class ApiClient {
     const mergedAtivo = updates.ativo ?? baseProd?.ativo ?? true;
     const mergedBarcode =
       updates.codigo_barras !== undefined ? updates.codigo_barras : baseProd?.codigo_barras ?? null;
+    const mergedImage =
+      updates.imagem_url !== undefined ? updates.imagem_url : baseProd?.imagem_url ?? null;
     const mergedFornecedor =
       updates.fornecedor_id !== undefined ? updates.fornecedor_id : baseProd?.fornecedor_id ?? null;
 
@@ -517,6 +521,7 @@ class ApiClient {
         preco_venda: mergedVenda,
         markup: markupBackend,
         codigo_barras: mergedBarcode,
+        imagem_url: mergedImage,
         fornecedor_id: mergedFornecedor,
         ativo: mergedAtivo,
       }),

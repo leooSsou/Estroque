@@ -240,22 +240,33 @@ export const PDVFrenteCaixaTab: React.FC<PDVFrenteCaixaTabProps> = ({
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-                      <span className="font-mono">{prod.sku}</span>
-                      <div className="flex items-center gap-1.5">
-                        {hasVariacoes && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/25 text-[10px] font-bold">
-                            {variacoes.length} {variacoes.length === 1 ? 'variação' : 'variações'}
-                          </span>
-                        )}
-                        <span className={stock === 0 ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}>
-                          {stock} un
-                        </span>
+                    <div className="flex items-start gap-2.5 mb-2.5">
+                      {prod.imagem_url && (
+                        <img
+                          src={prod.imagem_url}
+                          alt={prod.nome}
+                          className="w-10 h-10 rounded-lg object-cover border border-white/[0.16] bg-black flex-shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                          <span className="font-mono">{prod.sku}</span>
+                          <div className="flex items-center gap-1.5">
+                            {hasVariacoes && (
+                              <span className="px-1.5 py-0.5 rounded-md bg-yellow-400/10 text-yellow-400 border border-yellow-400/25 text-[10px] font-bold">
+                                {variacoes.length} {variacoes.length === 1 ? 'variação' : 'variações'}
+                              </span>
+                            )}
+                            <span className={stock === 0 ? 'text-rose-400 font-bold' : 'text-slate-300 font-semibold'}>
+                              {stock} un
+                            </span>
+                          </div>
+                        </div>
+                        <h4 className="text-sm font-bold text-white line-clamp-2 group-hover:text-yellow-400 transition-colors">
+                          {prod.nome}
+                        </h4>
                       </div>
                     </div>
-                    <h4 className="text-sm font-bold text-white line-clamp-2 mb-2.5 group-hover:text-yellow-400 transition-colors">
-                      {prod.nome}
-                    </h4>
                   </div>
 
                   <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.14]">
