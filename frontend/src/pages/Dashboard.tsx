@@ -32,7 +32,7 @@ function buildChartData(vendas: Venda[], days: number): ChartDataPoint[] {
   const vendasPorDia = new Map<string, { total: number; count: number }>();
 
   for (const v of vendas) {
-    if (v.status === 'CANCELADA' || v.status === 'CANCELADO') continue;
+    if (v.status === 'CANCELADA' || v.status === 'CANCELADO' || v.status === 'DEVOLVIDA') continue;
     if (!v.data_venda) continue;
 
     const rawDate = typeof v.data_venda === 'string' ? v.data_venda.replace(' ', 'T') : v.data_venda;
@@ -44,9 +44,12 @@ function buildChartData(vendas: Venda[], days: number): ChartDataPoint[] {
     const d = String(dt.getDate()).padStart(2, '0');
     const key = `${y}-${m}-${d}`;
 
+    const valorDevolvido = (v.devolucoes || []).reduce((acc, dev) => acc + (Number(dev.valor_total) || 0), 0);
+    const valorEfetivo = Math.max(0, (Number(v.valor_total) || 0) - valorDevolvido);
+
     const prev = vendasPorDia.get(key) || { total: 0, count: 0 };
     vendasPorDia.set(key, {
-      total: prev.total + (Number(v.valor_total) || 0),
+      total: prev.total + valorEfetivo,
       count: prev.count + 1,
     });
   }
@@ -116,10 +119,18 @@ export const Dashboard: React.FC = () => {
   }, [curvaItems]);
 
   const faturamentoLiquido = metrics?.faturamento_liquido ?? 0;
+  const faturamentoBruto = metrics?.faturamento_bruto ?? faturamentoLiquido;
+  const totalDevolucoes = metrics?.total_devolucoes ?? 0;
   const ticketMedio = metrics?.ticket_medio ?? 0;
   const margemLucro = metrics?.margem_lucro ?? 0;
   const vendasConcluidas = useMemo(
-    () => vendas.filter((v) => v.status !== 'CANCELADA' && v.status !== 'CANCELADO'),
+    () =>
+      vendas.filter(
+        (v) =>
+          v.status !== 'CANCELADA' &&
+          v.status !== 'CANCELADO' &&
+          v.status !== 'DEVOLVIDA'
+      ),
     [vendas]
   );
   const vendasCount =
@@ -137,8 +148,15 @@ export const Dashboard: React.FC = () => {
               <span className="truncate">Visão Consolidada • {activeLoja?.nome || 'Rede Inteira'}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
             </div>
-            <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">
-              R$ {faturamentoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            <div className="flex flex-wrap items-baseline gap-2.5">
+              <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">
+                R$ {faturamentoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+              {totalDevolucoes > 0 && (
+                <span className="text-xs font-semibold text-amber-400/90 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                  - R$ {totalDevolucoes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em devoluções/reembolsos
+                </span>
+              )}
             </div>
           </div>
 
@@ -183,10 +201,10 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Faturamento Bruto"
-          value={`R$ ${faturamentoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+          value={`R$ ${faturamentoBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           icon={DollarSign}
           iconColor="emerald"
-          badge={{ text: faturamentoLiquido > 0 ? 'Ativo' : 'Sem vendas', trend: 'up' }}
+          badge={{ text: faturamentoBruto > 0 ? 'Ativo' : 'Sem vendas', trend: 'up' }}
         />
 
         <StatCard

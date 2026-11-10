@@ -80,6 +80,10 @@ def enviar_fechamento_diario_todos_tenants(db: Optional[Session] = None) -> str:
                                 <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f2f2f2;">Descontos Aplicados:</td>
                                 <td style="padding: 8px; text-align: right; border-bottom: 1px solid #f2f2f2; color: #e74c3c;">- R$ {stats.desconto_total:.2f}</td>
                             </tr>
+                            <tr>
+                                <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f2f2f2;">Devoluções / Reembolsos:</td>
+                                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #f2f2f2; color: #e74c3c;">- R$ {stats.total_devolucoes:.2f}</td>
+                            </tr>
                             <tr style="background-color: #f9f9f9;">
                                 <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f2f2f2;">Faturamento Líquido:</td>
                                 <td style="padding: 8px; text-align: right; font-weight: bold; border-bottom: 1px solid #f2f2f2; color: #2ecc71;">R$ {stats.faturamento_liquido:.2f}</td>
@@ -90,7 +94,7 @@ def enviar_fechamento_diario_todos_tenants(db: Optional[Session] = None) -> str:
                             </tr>
                             <tr>
                                 <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f2f2f2;">Despesas Operacionais:</td>
-                                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #f2f2f2; color: #e74c3c;">- R$ {stats.lucro_liquido - (stats.faturamento_liquido - stats.cmv):.2f}</td>
+                                <td style="padding: 8px; text-align: right; border-bottom: 1px solid #f2f2f2; color: #e74c3c;">- R$ {max(0.0, stats.faturamento_liquido - stats.cmv - stats.lucro_liquido):.2f}</td>
                             </tr>
                             <tr style="background-color: #ecf0f1;">
                                 <td style="padding: 8px; font-weight: bold; border-bottom: 2px solid #bdc3c7;">Lucro Líquido:</td>

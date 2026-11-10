@@ -581,6 +581,7 @@ class DashboardAnalyticsResponse(BaseModel):
     faturamento_bruto: float
     faturamento_liquido: float
     desconto_total: float
+    total_devolucoes: float = 0.0
     cmv: float
     lucro_liquido: float
     margem_lucro: float

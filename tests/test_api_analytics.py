@@ -240,3 +240,162 @@ def test_analytics_bola_gerente(client: TestClient, db_session: Session) -> None
 
     res_err2 = client.get(f"/analytics/curva-abc?loja_id={loja_b_id}", headers=headers_gerente)
     assert res_err2.status_code == 403
+
+
+def test_dashboard_analytics_apos_devolucao_e_reembolso(client: TestClient) -> None:
+    """
+    Valida que ao realizar devolução/reembolso de uma venda (total ou parcial):
+    1. O faturamento líquido no dashboard é deduzido corretamente.
+    2. O total_devolucoes reflete o montante reembolsado.
+    3. O CMV é reduzido proporcionalmente aos itens devolvidos ao estoque.
+    4. O lançamento financeiro de reembolso no caixa não é deduzido em duplicidade do lucro líquido.
+    5. A rota /vendas retorna as devoluções devidamente populadas na entidade.
+    """
+    token, _ = registrar_e_autenticar(client, "AnalytReembolso")
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 1. Criar Loja
+    res_loja = client.post("/lojas/", json={
+        "nome": "Loja Reembolso",
+        "cnpj": gerar_cnpj_valido(),
+        "endereco": "Rua Teste, 100"
+    }, headers=headers)
+    loja_id = res_loja.json()["id"]
+
+    # 2. Criar Produtos:
+    # P1: Custo 20, Venda 50
+    # P2: Custo 40, Venda 100
+    res_p1 = client.post("/produtos/", json={
+        "nome": "Produto Alfa",
+        "sku": f"ALF-{uuid4().hex[:4]}",
+        "preco_custo": 20.0,
+        "preco_venda": 50.0,
+        "markup": 1.5
+    }, headers=headers)
+    p1_id = res_p1.json()["id"]
+
+    res_p2 = client.post("/produtos/", json={
+        "nome": "Produto Beta",
+        "sku": f"BET-{uuid4().hex[:4]}",
+        "preco_custo": 40.0,
+        "preco_venda": 100.0,
+        "markup": 1.5
+    }, headers=headers)
+    p2_id = res_p2.json()["id"]
+
+    # 3. Adicionar Estoque
+    client.post("/estoque/movimentar", json={
+        "loja_id": loja_id,
+        "produto_id": p1_id,
+        "tipo": "ENTRADA",
+        "quantidade": 10,
+        "motivo": "Estoque Inicial"
+    }, headers=headers)
+
+    client.post("/estoque/movimentar", json={
+        "loja_id": loja_id,
+        "produto_id": p2_id,
+        "tipo": "ENTRADA",
+        "quantidade": 10,
+        "motivo": "Estoque Inicial"
+    }, headers=headers)
+
+    # 4. Registrar Venda:
+    # 2 x P1 (2 x 50 = 100) + 1 x P2 (1 x 100 = 100) = R$ 200.00
+    res_venda = client.post("/vendas", json={
+        "loja_id": loja_id,
+        "forma_pagamento": "DINHEIRO",
+        "desconto": 0.0,
+        "itens": [
+            {"produto_id": p1_id, "quantidade": 2},
+            {"produto_id": p2_id, "quantidade": 1}
+        ]
+    }, headers=headers)
+    assert res_venda.status_code == 201
+    venda = res_venda.json()
+    item_p1 = next(it for it in venda["itens"] if it["produto_id"] == p1_id)
+    item_p2 = next(it for it in venda["itens"] if it["produto_id"] == p2_id)
+
+    # 5. Dashboard antes da devolução
+    # Bruto: 200, Líquido: 200, CMV: 2*20 + 1*40 = 80, Lucro: 120
+    dash_antes = client.get("/analytics/dashboard", headers=headers).json()
+    assert dash_antes["faturamento_bruto"] == 200.0
+    assert dash_antes["faturamento_liquido"] == 200.0
+    assert dash_antes["total_devolucoes"] == 0.0
+    assert dash_antes["cmv"] == 80.0
+    assert dash_antes["lucro_liquido"] == 120.0
+    assert dash_antes["ticket_medio"] == 200.0
+
+    # 6. Devolver 1 unidade de P1 com REEMBOLSO_CAIXA (R$ 50)
+    res_dev = client.post(f"/vendas/{venda['id']}/devolver", json={
+        "tipo": "DEVOLUCAO",
+        "tipo_resolucao": "REEMBOLSO_CAIXA",
+        "motivo": "Cliente desistiu de 1 unidade",
+        "itens": [
+            {
+                "item_venda_id": item_p1["id"],
+                "quantidade": 1,
+                "retornar_ao_estoque": True,
+                "condicao": "PERFEITO"
+            }
+        ]
+    }, headers=headers)
+    assert res_dev.status_code == 201
+
+    # 7. Dashboard após devolução parcial com reembolso
+    # Bruto: 200, Devoluções: 50, Líquido: 150
+    # CMV: 80 - 20 (item devolvido) = 60
+    # Lucro: 150 - 60 = 90
+    # Ticket Médio: 150 / 1 venda ativa = 150
+    dash_pos_parcial = client.get("/analytics/dashboard", headers=headers).json()
+    assert dash_pos_parcial["faturamento_bruto"] == 200.0
+    assert dash_pos_parcial["total_devolucoes"] == 50.0
+    assert dash_pos_parcial["faturamento_liquido"] == 150.0
+    assert dash_pos_parcial["cmv"] == 60.0
+    assert dash_pos_parcial["lucro_liquido"] == 90.0
+    assert dash_pos_parcial["ticket_medio"] == 150.0
+
+    # 8. Verificar que a listagem de vendas agora carrega as devoluções
+    res_vendas = client.get(f"/vendas/?loja_id={loja_id}", headers=headers)
+    assert res_vendas.status_code == 200
+    vendas_list = res_vendas.json()
+    v_found = next(v for v in vendas_list if v["id"] == venda["id"])
+    assert v_found["status"] == "PARCIALMENTE_DEVOLVIDA"
+    assert len(v_found["devolucoes"]) == 1
+    assert v_found["devolucoes"][0]["valor_total"] == 50.0
+
+    # 9. Devolver o restante da venda (1 P1 restante + 1 P2) com CREDITO_LOJA
+    res_dev_total = client.post(f"/vendas/{venda['id']}/devolver", json={
+        "tipo": "DEVOLUCAO",
+        "tipo_resolucao": "REEMBOLSO_CAIXA",
+        "motivo": "Devolução do restante da compra",
+        "itens": [
+            {
+                "item_venda_id": item_p1["id"],
+                "quantidade": 1,
+                "retornar_ao_estoque": True,
+                "condicao": "PERFEITO"
+            },
+            {
+                "item_venda_id": item_p2["id"],
+                "quantidade": 1,
+                "retornar_ao_estoque": True,
+                "condicao": "PERFEITO"
+            }
+        ]
+    }, headers=headers)
+    assert res_dev_total.status_code == 201
+
+    # 10. Dashboard após devolução total
+    # Bruto: 200, Devoluções: 200, Líquido: 0.0, CMV: 0.0, Lucro: 0.0, Ticket Médio: 0.0
+    dash_pos_total = client.get("/analytics/dashboard", headers=headers).json()
+    assert dash_pos_total["faturamento_bruto"] == 200.0
+    assert dash_pos_total["total_devolucoes"] == 200.0
+    assert dash_pos_total["faturamento_liquido"] == 0.0
+    assert dash_pos_total["cmv"] == 0.0
+    assert dash_pos_total["lucro_liquido"] == 0.0
+    assert dash_pos_total["ticket_medio"] == 0.0
+
+    # Curva ABC após devolução total: sem faturamento retido
+    curva_pos = client.get("/analytics/curva-abc", headers=headers).json()
+    assert all(item["faturamento"] == 0.0 for item in curva_pos["itens"]) or len(curva_pos["itens"]) == 0

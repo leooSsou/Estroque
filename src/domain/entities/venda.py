@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from src.domain.entities.devolucao import Devolucao
 from src.domain.entities.item_venda import ItemVenda
 from src.domain.entities.pagamento_venda import PagamentoVenda
 
@@ -14,7 +15,7 @@ class Venda:
     """
     loja_id: UUID
     usuario_id: UUID  # Vendedor
-    status: str       # PENDENTE, PAGO, CANCELADO
+    status: str       # PENDENTE, PAGO, CANCELADO, CANCELADA, PARCIALMENTE_DEVOLVIDA, DEVOLVIDA
     forma_pagamento: str  # DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, CREDIARIO, MULTIPLO
     valor_total: float
     desconto: float
@@ -24,6 +25,7 @@ class Venda:
     pagamentos: list[PagamentoVenda] = field(default_factory=list)
     id: UUID = field(default_factory=uuid4)
     data_venda: datetime | None = None
+    devolucoes: list[Devolucao] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if not isinstance(self.loja_id, UUID):

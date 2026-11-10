@@ -249,6 +249,7 @@ export interface DashboardAnalytics {
   faturamento_bruto: number;
   faturamento_liquido: number;
   desconto_total: number;
+  total_devolucoes?: number;
   cmv: number;
   lucro_liquido: number;
   margem_lucro: number;
