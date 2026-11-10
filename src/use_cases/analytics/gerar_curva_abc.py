@@ -5,7 +5,11 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from src.infrastructure.database.models import ItemVendaModel, ProdutoModel, VendaModel
+from src.infrastructure.database.models import (
+    ItemVendaModel,
+    ProdutoModel,
+    VendaModel,
+)
 
 
 @dataclass(frozen=True)
@@ -41,8 +45,11 @@ class GerarCurvaABC:
         tenant_id = input_data.tenant_id
         self.db.info["tenant_id"] = tenant_id
 
-        # 1. Base Query para obter vendas do período/loja
-        vendas_query = self.db.query(VendaModel).filter(VendaModel.tenant_id == tenant_id)
+        # 1. Base Query para obter vendas do período/loja (desconsidera canceladas e totalmente devolvidas)
+        vendas_query = self.db.query(VendaModel).filter(
+            VendaModel.tenant_id == tenant_id,
+            ~VendaModel.status.in_(["CANCELADA", "CANCELADO", "DEVOLVIDA"])
+        )
         if input_data.loja_id:
             vendas_query = vendas_query.filter(VendaModel.loja_id == input_data.loja_id)
         if input_data.data_inicio:
@@ -51,11 +58,24 @@ class GerarCurvaABC:
             vendas_query = vendas_query.filter(VendaModel.data_venda <= input_data.data_fim)
 
         vendas_ids = [v.id for v in vendas_query.all()]
+        vendas = vendas_query.all()
 
-        if not vendas_ids:
+        if not vendas:
             return CurvaABCOutput(itens=[])
 
-        # 2. Busca itens de venda e calcula receita por produto
+        # Mapeia quantidades devolvidas por produto a partir das devoluções das vendas
+        qtd_devolvida_por_produto: dict[UUID, int] = {}
+        for v in vendas:
+            devolucoes_venda = getattr(v, "devolucoes", None)
+            if isinstance(devolucoes_venda, list):
+                for dev in devolucoes_venda:
+                    for it in getattr(dev, "itens", []):
+                        qtd_dev = it.quantidade or 0
+                        qtd_devolvida_por_produto[it.produto_id] = (
+                            qtd_devolvida_por_produto.get(it.produto_id, 0) + qtd_dev
+                        )
+
+        # 2. Busca itens de venda e calcula receita líquida por produto
         itens = self.db.query(
             ItemVendaModel.produto_id,
             ProdutoModel.nome,
@@ -68,7 +88,10 @@ class GerarCurvaABC:
 
         receita_por_produto = {}
         for produto_id, nome, sku, qtd, preco_un in itens:
-            receita = qtd * preco_un
+            qtd_efetiva = max(0, qtd - qtd_devolvida_por_produto.get(produto_id, 0))
+            if qtd_efetiva <= 0:
+                continue
+            receita = qtd_efetiva * preco_un
             if produto_id not in receita_por_produto:
                 receita_por_produto[produto_id] = {
                     "nome": nome,

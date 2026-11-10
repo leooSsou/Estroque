@@ -427,6 +427,8 @@ def test_bola_transferencias_receber_alheia_deve_retornar_404(client: TestClient
 # --- TESTES DE CONCORRÊNCIA ---
 
 pg_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas")
+if pg_url.startswith("postgresql://") or pg_url.startswith("postgres://"):
+    pg_url = pg_url.replace("postgres://", "postgresql+psycopg2://", 1) if pg_url.startswith("postgres://") else pg_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 pg_engine = create_engine(pg_url)
 PgSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=pg_engine)
 

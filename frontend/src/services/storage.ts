@@ -816,7 +816,13 @@ class StorageService {
     devolucoes.unshift(devolucao);
     this.set('devolucoes', devolucoes);
 
-    venda.status = 'PARCIALMENTE_DEVOLVIDA';
+    // Avalia se venda foi totalmente devolvida ou parcialmente devolvida
+    const totalItensVenda = (venda.itens || []).reduce((acc, i) => acc + (i.quantidade || 1), 0);
+    const totalItensDevolvidos = devolucoes
+      .filter((d) => d.venda_id === venda.id)
+      .reduce((acc, d) => acc + (d.itens || []).reduce((sum, di) => sum + (di.quantidade || 0), 0), 0);
+
+    venda.status = totalItensDevolvidos >= totalItensVenda ? 'DEVOLVIDA' : 'PARCIALMENTE_DEVOLVIDA';
     this.set('vendas', vendas);
 
     return devolucao;
@@ -1046,18 +1052,29 @@ class StorageService {
     const produtos = this.getProdutos();
     const vendas = this.getVendas();
     const financeiro = this.getFinanceiro();
+    const devolucoes = this.get<Devolucao[]>('devolucoes', []);
 
-    // Filtra vendas por loja se especificada
-    const vendasFiltradas = lojaId ? vendas.filter((v) => v.loja_id === lojaId) : vendas;
+    // Filtra vendas por loja se especificada, desconsiderando canceladas
+    const vendasFiltradas = (lojaId ? vendas.filter((v) => v.loja_id === lojaId) : vendas).filter(
+      (v) => v.status !== 'CANCELADA' && v.status !== 'CANCELADO'
+    );
+    const devolucoesFiltradas = lojaId ? devolucoes.filter((d) => d.loja_id === lojaId) : devolucoes;
+    const totalDevolucoes = devolucoesFiltradas.reduce((acc, d) => acc + (d.valor_total || 0), 0);
+
     const faturamentoBruto = vendasFiltradas.reduce((acc, v) => acc + v.valor_total + (v.desconto || 0), 0);
     const descontoTotal = vendasFiltradas.reduce((acc, v) => acc + (v.desconto || 0), 0);
-    const faturamentoLiquido = faturamentoBruto - descontoTotal;
-    const countVendas = vendasFiltradas.length;
+    const faturamentoLiquido = Math.max(0, faturamentoBruto - descontoTotal - totalDevolucoes);
+
+    const vendasAtivas = vendasFiltradas.filter((v) => v.status !== 'DEVOLVIDA');
+    const countVendas = vendasAtivas.length;
     const ticketMedio = countVendas > 0 ? faturamentoLiquido / countVendas : 0;
 
-    // CMV estimado (aprox. 56% das vendas)
+    // CMV estimado (aprox. 56% das vendas líquidas retidas)
     const cmv = faturamentoLiquido * 0.562;
-    const despesas = financeiro.filter((f) => f.tipo === 'DESPESA').reduce((acc, f) => acc + f.valor, 0);
+    // Exclui reembolsos de despesas operacionais para evitar dupla dedução da receita
+    const despesas = financeiro
+      .filter((f) => f.tipo === 'DESPESA' && !(f.categoria || '').includes('Reembolso'))
+      .reduce((acc, f) => acc + f.valor, 0);
     const lucroLiquido = faturamentoLiquido - cmv - despesas;
     const margemLucro = faturamentoLiquido > 0 ? (lucroLiquido / faturamentoLiquido) * 100 : 0;
 
@@ -1075,6 +1092,7 @@ class StorageService {
       faturamento_bruto: Math.round(faturamentoBruto * 100) / 100,
       faturamento_liquido: Math.round(faturamentoLiquido * 100) / 100,
       desconto_total: Math.round(descontoTotal * 100) / 100,
+      total_devolucoes: Math.round(totalDevolucoes * 100) / 100,
       cmv: Math.round(cmv * 100) / 100,
       lucro_liquido: Math.round(lucroLiquido * 100) / 100,
       margem_lucro: Math.round(margemLucro * 10) / 10,

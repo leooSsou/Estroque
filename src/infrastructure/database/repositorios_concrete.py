@@ -995,6 +995,37 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
                     tenant_id=model.tenant_id
                 )
             ]
+        devolucoes_entity = [
+            Devolucao(
+                id=d.id,
+                venda_id=d.venda_id,
+                loja_id=d.loja_id,
+                usuario_id=d.usuario_id,
+                cliente_id=d.cliente_id,
+                tipo=d.tipo,
+                tipo_resolucao=d.tipo_resolucao,
+                valor_total=d.valor_total,
+                motivo=d.motivo,
+                tenant_id=d.tenant_id,
+                itens=[
+                    ItemDevolucao(
+                        id=it.id,
+                        devolucao_id=it.devolucao_id,
+                        item_venda_id=it.item_venda_id,
+                        produto_id=it.produto_id,
+                        quantidade=it.quantidade,
+                        preco_unitario=it.preco_unitario,
+                        valor_total=it.valor_total,
+                        retornar_ao_estoque=it.retornar_ao_estoque,
+                        condicao=it.condicao,
+                        tenant_id=it.tenant_id,
+                    )
+                    for it in getattr(d, "itens", [])
+                ],
+                data_devolucao=d.data_devolucao,
+            )
+            for d in getattr(model, "devolucoes", [])
+        ]
         return Venda(
             id=model.id,
             loja_id=model.loja_id,
@@ -1007,7 +1038,8 @@ class RepositorioVendaSQLAlchemy(VendaRepository):
             tenant_id=model.tenant_id,
             itens=itens_entity,
             pagamentos=pagamentos_entity,
-            data_venda=model.data_venda
+            data_venda=model.data_venda,
+            devolucoes=devolucoes_entity,
         )
 
     def salvar(self, venda: Venda) -> Venda:
