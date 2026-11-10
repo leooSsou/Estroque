@@ -9,13 +9,11 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { Select } from '../components/common/Select';
 import {
-  Wallet,
   ArrowDownRight,
   ArrowUpRight,
   Plus,
   Mail,
   Send,
-  Calendar,
   Clock,
   CheckCircle2,
   DollarSign,
@@ -156,7 +154,7 @@ export const Financeiro: React.FC = () => {
       </div>
 
       {/* Financial KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           title="Receitas"
           value={`R$ ${totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
@@ -173,13 +171,15 @@ export const Financeiro: React.FC = () => {
           badge={{ text: 'Controlado', trend: 'neutral' }}
         />
 
-        <StatCard
-          title="Saldo em Caixa"
-          value={`R$ ${saldoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
-          icon={DollarSign}
-          color={saldoLiquido >= 0 ? 'emerald' : 'rose'}
-          badge={{ text: saldoLiquido >= 0 ? '+ Superávit' : 'Déficit', trend: saldoLiquido >= 0 ? 'up' : 'warning' }}
-        />
+        <div className="col-span-2 sm:col-span-1">
+          <StatCard
+            title="Saldo em Caixa"
+            value={`R$ ${saldoLiquido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+            icon={DollarSign}
+            color={saldoLiquido >= 0 ? 'emerald' : 'rose'}
+            badge={{ text: saldoLiquido >= 0 ? '+ Superávit' : 'Déficit', trend: saldoLiquido >= 0 ? 'up' : 'warning' }}
+          />
+        </div>
       </div>
 
       {/* Main Grid: Entries Table & Celery Routine Widget */}
@@ -208,10 +208,10 @@ export const Financeiro: React.FC = () => {
               )}
             </div>
 
-            <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#000000] border border-white/[0.16]">
+            <div className="flex items-center gap-1.5 p-1 sm:p-1.5 rounded-xl bg-[#000000] border border-white/[0.16] overflow-x-auto table-scrollbar max-w-full">
               <button
                 onClick={() => setTipoFilter('TODOS')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 active:scale-95 ${
                   tipoFilter === 'TODOS'
                     ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold scale-[1.02]'
                     : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -225,7 +225,7 @@ export const Financeiro: React.FC = () => {
 
               <button
                 onClick={() => setTipoFilter('RECEITA')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 active:scale-95 ${
                   tipoFilter === 'RECEITA'
                     ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 font-bold scale-[1.02]'
                     : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -239,7 +239,7 @@ export const Financeiro: React.FC = () => {
 
               <button
                 onClick={() => setTipoFilter('DESPESA')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 active:scale-95 ${
                   tipoFilter === 'DESPESA'
                     ? 'bg-rose-600 text-white shadow-md shadow-rose-600/25 font-bold scale-[1.02]'
                     : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -253,7 +253,7 @@ export const Financeiro: React.FC = () => {
 
               <button
                 onClick={() => setTipoFilter('PENDENTE')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 active:scale-95 ${
                   tipoFilter === 'PENDENTE'
                     ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 font-bold scale-[1.02]'
                     : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
@@ -270,7 +270,8 @@ export const Financeiro: React.FC = () => {
           <BentoCard
             title="Lançamentos & Extrato Contábil"
           >
-            <div className="overflow-x-auto table-scrollbar pb-2">
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto table-scrollbar pb-2">
               <table className="w-full text-left min-w-[950px]">
                 <thead className="bg-[#000000] border-b border-white/[0.16]">
                   <tr className="text-xs font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">
@@ -284,44 +285,129 @@ export const Financeiro: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.14]">
-                  {filteredLancamentos.map((l) => (
-                    <tr key={l.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
-                      <td className="py-3.5 px-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
-                        {new Date(l.data_lancamento).toLocaleDateString('pt-BR')}
+                  {filteredLancamentos.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-xs text-slate-500">
+                        Nenhum lançamento financeiro encontrado para os filtros selecionados.
                       </td>
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                    </tr>
+                  ) : (
+                    filteredLancamentos.map((l) => (
+                      <tr key={l.id} className="hover:bg-white/[0.04] transition-colors group whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
+                          {new Date(l.data_lancamento).toLocaleDateString('pt-BR')}
+                        </td>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <Badge variant={l.tipo === 'RECEITA' ? 'emerald' : 'danger'}>
+                            {l.tipo}
+                          </Badge>
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
+                          {l.descricao || l.categoria}
+                        </td>
+                        <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
+                          {l.categoria}
+                        </td>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
+                            {l.status_pagamento === 'PAGO' ? 'Liquidado' : 'A Pagar'}
+                          </Badge>
+                        </td>
+                        <td
+                          className={`py-3.5 px-4 text-sm font-bold text-right whitespace-nowrap ${
+                            l.tipo === 'RECEITA' ? 'text-emerald-400' : 'text-rose-400'
+                          }`}
+                        >
+                          {l.tipo === 'RECEITA' ? '+' : '-'} {l.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </td>
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          {l.status_pagamento === 'PENDENTE' ? (
+                            <button
+                              type="button"
+                              onClick={() => handleQuitarLancamento(l)}
+                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
+                              title="Quitar lançamento e marcar como PAGO"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Dar Baixa (Pagar)</span>
+                            </button>
+                          ) : (
+                            <span className="text-xs font-semibold text-emerald-400/80 inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                              Pago
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List View */}
+            <div className="block sm:hidden space-y-3">
+              {filteredLancamentos.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-500">
+                  Nenhum lançamento financeiro encontrado para os filtros selecionados.
+                </div>
+              ) : (
+                filteredLancamentos.map((l) => (
+                  <div
+                    key={l.id}
+                    className="p-3.5 rounded-xl bg-[#000000] border border-white/[0.16] space-y-2.5 hover:border-white/[0.24] transition-all"
+                  >
+                    {/* Header: Date + Badges */}
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-2">
                         <Badge variant={l.tipo === 'RECEITA' ? 'emerald' : 'danger'}>
                           {l.tipo}
                         </Badge>
-                      </td>
-                      <td className="py-3.5 px-4 font-bold text-sm text-white group-hover:text-emerald-400 transition-colors whitespace-nowrap">
+                        <span className="text-slate-400 font-medium text-[11px]">
+                          {new Date(l.data_lancamento).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+
+                      <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
+                        {l.status_pagamento === 'PAGO' ? 'Liquidado' : 'A Pagar'}
+                      </Badge>
+                    </div>
+
+                    {/* Content: Description & Category */}
+                    <div className="min-w-0">
+                      <div className="font-bold text-sm text-white truncate">
                         {l.descricao || l.categoria}
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-slate-400 whitespace-nowrap">
+                      </div>
+                      <div className="text-xs text-slate-400 truncate mt-0.5">
                         {l.categoria}
-                      </td>
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <Badge variant={l.status_pagamento === 'PAGO' ? 'emerald' : 'amber'}>
-                          {l.status_pagamento === 'PAGO' ? 'Liquidado' : 'A Pagar'}
-                        </Badge>
-                      </td>
-                      <td
-                        className={`py-3.5 px-4 text-sm font-bold text-right whitespace-nowrap ${
-                          l.tipo === 'RECEITA' ? 'text-emerald-400' : 'text-rose-400'
-                        }`}
-                      >
-                        {l.tipo === 'RECEITA' ? '+' : '-'} {l.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                      </td>
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      </div>
+                    </div>
+
+                    {/* Footer: Amount & Action */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.14]">
+                      <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                          Valor
+                        </span>
+                        <span
+                          className={`text-base font-bold ${
+                            l.tipo === 'RECEITA' ? 'text-emerald-400' : 'text-rose-400'
+                          }`}
+                        >
+                          {l.tipo === 'RECEITA' ? '+' : '-'} {l.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </span>
+                      </div>
+
+                      <div>
                         {l.status_pagamento === 'PENDENTE' ? (
                           <button
                             type="button"
                             onClick={() => handleQuitarLancamento(l)}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
                             title="Quitar lançamento e marcar como PAGO"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Dar Baixa (Pagar)</span>
+                            <span>Dar Baixa</span>
                           </button>
                         ) : (
                           <span className="text-xs font-semibold text-emerald-400/80 inline-flex items-center gap-1">
@@ -329,11 +415,11 @@ export const Financeiro: React.FC = () => {
                             Pago
                           </span>
                         )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </BentoCard>
         </div>
@@ -344,29 +430,29 @@ export const Financeiro: React.FC = () => {
             title="Fechamento Diário"
           >
             <div className="space-y-4 pt-1">
-              <div className="p-4 rounded-xl bg-[#000000] border border-white/[0.16] space-y-3">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-[#000000] border border-white/[0.16] space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                    <Clock className="w-3.5 h-3.5" /> Próxima Execução
+                    <Clock className="w-3.5 h-3.5 flex-shrink-0" /> Próxima Execução
                   </span>
                   <span className="text-slate-400">Hoje às 23:59:00</span>
                 </div>
 
-                <div className="border-t border-white/[0.16] pt-2.5 text-xs text-slate-300 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="border-t border-white/[0.16] pt-2.5 text-xs text-slate-300 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <span>Totalização de vendas por forma de pagamento</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <span>Cálculo de CMV e Lucro Bruto do dia</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <span>Alerta de itens em ruptura e estoque crítico</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="flex items-start gap-2">
+                    <Mail className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <span>Disparo de e-mail executivo ao proprietário</span>
                   </div>
                 </div>
@@ -374,7 +460,7 @@ export const Financeiro: React.FC = () => {
 
               <button
                 onClick={handleResendDailyEmail}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white flex items-center justify-center gap-2 transition-all"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#000000] hover:bg-white/[0.08] border border-white/[0.16] text-xs font-semibold text-slate-200 hover:text-white flex items-center justify-center gap-2 transition-all active:scale-95"
               >
                 <Send className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Simular Envio de Relatório</span>
@@ -454,17 +540,17 @@ export const Financeiro: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/[0.16]">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-white/[0.16]">
             <button
               type="button"
               onClick={() => setNewExpenseModal(false)}
-              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all"
+              className="h-11 px-5 rounded-xl bg-[#000000] hover:bg-white/[0.08] text-sm font-semibold text-slate-300 hover:text-white border border-white/[0.16] active:scale-95 transition-all text-center"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all"
+              className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold shadow-md shadow-emerald-600/25 active:scale-95 transition-all text-center"
             >
               Lançar Despesa
             </button>
