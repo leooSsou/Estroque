@@ -19,9 +19,13 @@ load_dotenv()
 # Utiliza DATABASE_TEST_URL para testes
 DATABASE_TEST_URL = os.getenv("DATABASE_TEST_URL", "sqlite:///./gerenciador_saas_test.db")
 
-# Configuração do Engine do banco de dados de testes
-connect_args = {"check_same_thread": False} if DATABASE_TEST_URL.startswith("sqlite") else {}
-test_engine = create_engine(DATABASE_TEST_URL, connect_args=connect_args)
+# Configuração do Engine do banco de dados de testes com pool otimizado para concorrência
+engine_kwargs = {"connect_args": {"check_same_thread": False}} if DATABASE_TEST_URL.startswith("sqlite") else {
+    "pool_size": 20,
+    "max_overflow": 30,
+    "pool_pre_ping": True,
+}
+test_engine = create_engine(DATABASE_TEST_URL, **engine_kwargs)
 
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 

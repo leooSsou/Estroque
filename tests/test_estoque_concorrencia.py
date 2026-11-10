@@ -39,7 +39,7 @@ CNPJ_LOJA_A = "02.188.445/0001-72"
 pg_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres_password@postgres:5432/gerenciador_saas")
 if pg_url.startswith("postgresql://") or pg_url.startswith("postgres://"):
     pg_url = pg_url.replace("postgres://", "postgresql+psycopg2://", 1) if pg_url.startswith("postgres://") else pg_url.replace("postgresql://", "postgresql+psycopg2://", 1)
-pg_engine = create_engine(pg_url)
+pg_engine = create_engine(pg_url, pool_size=20, max_overflow=30, pool_pre_ping=True)
 PgSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=pg_engine)
 
 # Verifica se o PostgreSQL está disponível para pular os testes se não estiver

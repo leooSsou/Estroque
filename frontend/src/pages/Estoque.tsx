@@ -8,17 +8,14 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { Select } from '../components/common/Select';
 import {
-  Boxes,
   ArrowDownRight,
   ArrowUpRight,
   Filter,
   Plus,
   Package,
-  Layers,
   Search,
   Store,
   X,
-  AlertTriangle,
 } from 'lucide-react';
 
 export const Estoque: React.FC = () => {

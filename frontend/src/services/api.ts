@@ -12,7 +12,6 @@ import {
   TransferenciaEstoque,
   Venda,
   FormaPagamento,
-  PagamentoVenda,
   Devolucao,
   RegistrarDevolucaoPayload,
   VendaEmEspera,

@@ -5,15 +5,6 @@ import { api } from '../services/api';
 import { CurvaABCItem } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
-import {
-  BarChart3,
-  TrendingUp,
-  Sparkles,
-  ShoppingBag,
-  Percent,
-  AlertCircle,
-  ArrowRight,
-} from 'lucide-react';
 
 export const Analytics: React.FC = () => {
   const { activeLoja } = useAuth();

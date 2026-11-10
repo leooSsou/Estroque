@@ -6,12 +6,8 @@ import { Produto } from '../types';
 import { BentoCard } from '../components/common/BentoCard';
 import { Badge } from '../components/common/Badge';
 import {
-  ClipboardCheck,
   Barcode,
-  Search,
   CheckCircle2,
-  AlertTriangle,
-  RotateCcw,
   Sparkles,
   X,
 } from 'lucide-react';
